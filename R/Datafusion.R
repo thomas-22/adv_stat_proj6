@@ -18,10 +18,12 @@ FCMStress <- read_delim("Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
   mutate(Collar_t_ = stringr::str_c(Collar_day, Collar_time, sep = " ") %>%
            lubridate::parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
          Waypoint_t_ = stringr::str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
-           lubridate::parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M"))) %>%
+           lubridate::parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
+         Sender.ID = as.factor(Sender.ID),
+         Sex = as.factor(Sex)) %>%
   select(-Collar_day, -Collar_time, -Waypoint_day, -Waypoint_time)
 
-
+str(FCMStress)
 summary(FCMStress)
 vapply(FCMStress, function(x) {all(is.na(x))}, logical(1))
 
