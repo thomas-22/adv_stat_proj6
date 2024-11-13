@@ -31,9 +31,9 @@ sender_data <- Movement %>%
 unique_dates <- as.Date(sender_data$t_)
 unique_dates <- unique(unique_dates)
 
-# Select a random starting date for the 31-day period
+# Select a random starting date for the 7-day period
 start_date <- sample(unique_dates, 1)
-end_date <- start_date + 30 # 31 consecutive days
+end_date <- start_date + 6 # 31 consecutive days
 
 # Filter data for the selected 7-day period
 week_data <- sender_data %>%
