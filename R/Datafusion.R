@@ -1,6 +1,8 @@
 library(readr)
 library(dplyr)
 library(lubridate)
+#install.packages("readxl")
+library(readxl)
 
 Movement <- read_delim("Data/Movement - CRS=ETRS UTM 33N.csv", delim = ";")[,2:5] %>%
   mutate(Sender.ID = factor(Sender.ID),
@@ -22,6 +24,9 @@ FCMStress <- read_delim("Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
          Sender.ID = as.factor(Sender.ID),
          Sex = as.factor(Sex)) %>%
   select(-Collar_day, -Collar_time, -Waypoint_day, -Waypoint_time)
+
+ReproductionSuccess <- read_excel("Data/Reproduction Success Results.xlsx")
+
 
 str(FCMStress)
 summary(FCMStress)
