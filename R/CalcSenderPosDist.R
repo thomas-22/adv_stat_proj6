@@ -17,7 +17,8 @@ interpolated_positions <- data.frame()
 
 # Loop through all hunting events
 for (i in 1:nrow(HuntEventsreduced)) {
-  print(paste("Interpolate Positions:", i, "of", nrow(HuntEventsreduced)))
+  cat(sprintf("Interpolate Positions: %d of %d", i, nrow(HuntEventsreduced)), "\r")
+  #cat("\n")
   hunt_time <- HuntEventsreduced$t_[i]
   hunt_x <- HuntEventsreduced$X[i]
   hunt_y <- HuntEventsreduced$Y[i]
@@ -93,20 +94,22 @@ for (i in 1:nrow(HuntEventsreduced)) {
 }
 
 #Kick out rows with NAs
-interpolated_positions_clean <- na.omit(interpolated_positions)
+StressEvents <- na.omit(interpolated_positions)
 
 #Create the column that contains the distance 
 #between the hunting event and the interpolated position
-interpolated_positions_clean$Distance <- rep(0, nrow(interpolated_positions_clean))
-
+StressEvents$Distance <- rep(0, nrow(StressEvents))
+cat("\n")
 #Calculate the distances
-for (i in 1:nrow(interpolated_positions_clean)) {
-  print(paste("Distance Calculation:", i, "of", nrow(interpolated_positions_clean)))
-  point1 <- st_point(c(interpolated_positions_clean$HuntEventX[i],
-                       interpolated_positions_clean$HuntEventY[i]))
-  point2 <- st_point(c(interpolated_positions_clean$InterpolatedX[i],
-                       interpolated_positions_clean$InterpolatedY[i]))
+for (i in 1:nrow(StressEvents)) {
+  cat(sprintf("Distance Calculation: %d of %d", i, nrow(StressEvents)), "\r")
+  point1 <- st_point(c(StressEvents$HuntEventX[i],
+                       StressEvents$HuntEventY[i]))
+  point2 <- st_point(c(StressEvents$InterpolatedX[i],
+                       StressEvents$InterpolatedY[i]))
   utm_points <- st_sfc(point1, point2, crs = 32633)
-  interpolated_positions_clean$Distance[i] <- st_distance(utm_points[1], utm_points[2])
+  StressEvents$Distance[i] <- st_distance(utm_points[1], utm_points[2])
 }
-
+cat("\n")
+StressEvents <- StressEvents %>%
+  mutate(StressorID = row_number())
