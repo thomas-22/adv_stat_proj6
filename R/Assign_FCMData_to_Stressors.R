@@ -4,8 +4,8 @@ library(ggplot2)
 #source("./R/CalcSenderPosDist.R")
 
 distance_threshold <- 3500 #in Meters
-gut_retention_time_lower <- 10 #in Hours
-gut_retention_time_upper <- 35 #in Hours
+gut_retention_time_lower <- 13 #in Hours
+gut_retention_time_upper <- 100 #in Hours
 
 # Create an empty data frame to store results
 FCMData_Assigned <- data.frame(Sender.ID = integer(),
@@ -94,6 +94,9 @@ specific_n <- sum(!is.na(fcm_specific$ng_g))
 reference_mean <- mean(fcm_reference$ng_g, na.rm = TRUE)
 reference_n <- sum(!is.na(fcm_reference$ng_g))
 
+lm1 <- lm(fcm_specific$ng_g ~ fcm_specific$Distance)
+lm1$coefficients[2]
+
 ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
   geom_point(color = "blue") +
   geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
@@ -105,17 +108,17 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
     y = "ng_g"
   ) +
   # Add annotations for fcm_specific
-  annotate("text", x = 2000, y = 1000, hjust = 1, vjust = 1,
+  annotate("text", x = Inf, y = Inf, hjust = 1, vjust = 1,
            label = paste("fcm_specific (blue):",
                          "\nn =", specific_n,
                          "\nmean =", round(specific_mean, 2)),
            color = "blue", size = 3.5) +
-  annotate("text", x = 2000, y = 750, hjust = 1, vjust = 1,
+  annotate("text", x = Inf, y = Inf, hjust = 1, vjust = 2.33,
            label = paste("fcm_reference (red):",
                          "\nn =", reference_n,
                          "\nmean =", round(reference_mean, 2)),
            color = "red", size = 3.5) +
-  annotate("text", x = 3300, y = 1000, hjust = 1, vjust = 1,
+  annotate("text", x = Inf, y = Inf, hjust = 1, vjust = 2.5,
            label = paste("Gut Retention Lower Boundary (Hours):", gut_retention_time_lower, 
                          "\nGut Retention Upper Boundary (Hours):", gut_retention_time_upper, 
                          "\nDistance Threshhold (Meters):", distance_threshold, 
