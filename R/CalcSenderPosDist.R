@@ -15,6 +15,8 @@ source("./R/Datafusion.R")
 # Initialize an empty data frame
 interpolated_positions <- data.frame()
 
+sender_ids <- unique(Movement$Sender.ID)
+
 # Loop through all hunting events
 for (i in 1:nrow(HuntEventsreduced)) {
   cat(sprintf("Interpolate Positions: %d of %d", i, nrow(HuntEventsreduced)), "\r")
@@ -24,7 +26,7 @@ for (i in 1:nrow(HuntEventsreduced)) {
   hunt_y <- HuntEventsreduced$Y[i]
   
   # For each hunting event, loop through each unique Sender.ID in movement data
-  for (sender_id in unique(Movement$Sender.ID)) {
+  for (sender_id in sender_ids) {
     # Filter movement data for the specific sender
     sender_data <- Movement[Movement$Sender.ID == sender_id, ]
     
@@ -58,6 +60,23 @@ for (i in 1:nrow(HuntEventsreduced)) {
       y2 <- as.numeric(after_event$y_)
       time2 <- after_event$t_
       
+      # If the time of hunting event coincides with the time of an entry in Movement,
+      # before_event is identical to after_event. No interpolation is needed.
+      if (time1 == time2) {
+        interpolated_x <- x2
+        interpolated_y <- y2
+        interpolated_positions <- rbind(interpolated_positions, data.frame(
+          Sender.ID = sender_id,
+          HuntEventTime = hunt_time,
+          HuntEventX = hunt_x,
+          HuntEventY = hunt_y,
+          InterpolatedX = interpolated_x,
+          InterpolatedY = interpolated_y,
+          Speed = 0
+        ))
+        next
+      }
+
       # Calculate distance in meters and time difference in seconds
       point1 <- st_point(c(x1, y1))
       point2 <- st_point(c(x2, y2))
