@@ -6,7 +6,8 @@ library(readxl)
 
 Movement <- read_delim("Data/Movement - CRS=ETRS UTM 33N.csv", delim = ";")[,2:5] %>%
   mutate(Sender.ID = factor(Sender.ID),
-         t_ = lubridate::parse_date_time(t_, orders = "%d/%m/%Y %h:%M"))
+         t_ = lubridate::parse_date_time(t_, orders = "%d/%m/%Y %h:%M")) %>%
+  arrange(Sender.ID, t_)
 str(Movement)
 
 HuntEvents <- read_delim("Data/Hunt Events - CRS= ETRS UTM 33N.csv", delim = ",")[,2:5] %>%
@@ -15,6 +16,13 @@ HuntEvents <- read_delim("Data/Hunt Events - CRS= ETRS UTM 33N.csv", delim = ","
 str(HuntEvents)
 # What to do with NA's? here: just drop the lines
 HuntEventsreduced <- HuntEvents[!is.na(HuntEvents$t_), 3:5]
+
+# Exclude hunting events after the last FCM sample
+last_sample_time <- max(FCMStress$Collar_t_)
+HuntEventsreduced <- HuntEventsreduced %>%
+  arrange(t_) %>%
+  filter(t_ <= last_sample_time)
+
 
 FCMStress <- read_delim("Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv")[2:14] %>%
   mutate(Collar_t_ = stringr::str_c(Collar_day, Collar_time, sep = " ") %>%

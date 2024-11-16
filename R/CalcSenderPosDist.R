@@ -15,6 +15,8 @@ source("./R/Datafusion.R")
 # Initialize an empty data frame
 interpolated_positions <- data.frame()
 
+sender_ids <- unique(Movement$Sender.ID)
+
 # Loop through all hunting events
 for (i in 1:nrow(HuntEventsreduced)) {
   cat(sprintf("Interpolate Positions: %d of %d", i, nrow(HuntEventsreduced)), "\r")
@@ -24,12 +26,12 @@ for (i in 1:nrow(HuntEventsreduced)) {
   hunt_y <- HuntEventsreduced$Y[i]
   
   # For each hunting event, loop through each unique Sender.ID in movement data
-  for (sender_id in unique(Movement$Sender.ID)) {
+  for (sender_id in sender_ids) {
     # Filter movement data for the specific sender
     sender_data <- Movement[Movement$Sender.ID == sender_id, ]
     
-    # Sort data
-    sender_data <- sender_data[order(sender_data$t_), ]
+    # Sort data => already sorted in Datafusion
+    # sender_data <- sender_data[order(sender_data$t_), ]
     
     # Find the row just before the hunting event
     before_event <- sender_data[sender_data$t_ <= hunt_time, ]
@@ -113,3 +115,6 @@ for (i in 1:nrow(StressEvents)) {
 cat("\n")
 StressEvents <- StressEvents %>%
   mutate(StressorID = row_number())
+
+# Save pre-processed data
+saveRDS(StressEvents, file.path("Data", "StressEvents.Rds"))
