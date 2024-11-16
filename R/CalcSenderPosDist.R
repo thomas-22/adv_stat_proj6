@@ -8,12 +8,13 @@ library(scales)
 library(lubridate)
 library(geosphere)
 library(sf)
+library(units)
 
 #getwd()
 source("./R/Datafusion.R")
 
 # Initialize an empty data frame
-interpolated_positions <- data.frame()
+# interpolated_positions <- data.frame()
 
 sender_ids <- unique(Movement$Sender.ID)
 
@@ -95,30 +96,29 @@ sender_ids <- unique(Movement$Sender.ID)
 #   }
 # }
 
-#Kick out rows with NAs
-StressEvents <- na.omit(interpolated_positions)
+# #Kick out rows with NAs
+# StressEvents <- na.omit(interpolated_positions)
 
-#Create the column that contains the distance 
-#between the hunting event and the interpolated position
-StressEvents$Distance <- rep(0, nrow(StressEvents))
-cat("\n")
-#Calculate the distances
-for (i in 1:nrow(StressEvents)) {
-  cat(sprintf("Distance Calculation: %d of %d", i, nrow(StressEvents)), "\r")
-  point1 <- st_point(c(StressEvents$HuntEventX[i],
-                       StressEvents$HuntEventY[i]))
-  point2 <- st_point(c(StressEvents$InterpolatedX[i],
-                       StressEvents$InterpolatedY[i]))
-  utm_points <- st_sfc(point1, point2, crs = 32633)
-  StressEvents$Distance[i] <- st_distance(utm_points[1], utm_points[2])
-}
-cat("\n")
-StressEvents <- StressEvents %>%
-  mutate(StressorID = row_number())
+# #Create the column that contains the distance 
+# #between the hunting event and the interpolated position
+# StressEvents$Distance <- rep(0, nrow(StressEvents))
+# cat("\n")
+# #Calculate the distances
+# for (i in 1:nrow(StressEvents)) {
+#   cat(sprintf("Distance Calculation: %d of %d", i, nrow(StressEvents)), "\r")
+#   point1 <- st_point(c(StressEvents$HuntEventX[i],
+#                        StressEvents$HuntEventY[i]))
+#   point2 <- st_point(c(StressEvents$InterpolatedX[i],
+#                        StressEvents$InterpolatedY[i]))
+#   utm_points <- st_sfc(point1, point2, crs = 32633)
+#   StressEvents$Distance[i] <- st_distance(utm_points[1], utm_points[2])
+# }
+# cat("\n")
+# StressEvents <- StressEvents %>%
+#   mutate(StressorID = row_number())
 
-# Save pre-processed data
-saveRDS(StressEvents, file.path("Data", "StressEvents.Rds"))
-
+# # Save pre-processed data
+# saveRDS(StressEvents, file.path("Data", "StressEvents.Rds"))
 
 
 # alternative approach to find before and after
@@ -152,38 +152,52 @@ for (i in 1:n_rows) {
   x2 <- current_row$x_after
   y2 <- current_row$y_after
   time2 <- current_row$t_after
-  
-  # Calculate distance in meters and time difference in seconds
-  point1 <- st_point(c(x1, y1))
-  point2 <- st_point(c(x2, y2))
-  utm_points <- st_sfc(point1, point2, crs = 32633)
-  distance <- st_distance(utm_points[1], utm_points[2])
-  
-  time_diff <- as.numeric(difftime(time2, time1, units = "secs"))
-  
-  # Calculate average speed (meters per second)
-  speed <- distance / time_diff
-  
-  # Calculate time difference from before event to hunting event
-  time_to_hunt <- as.numeric(difftime(hunt_time, time1, units = "secs"))
-  
-  # Calculate interpolation factor (fraction of distance covered)
-  interpolation_factor <- time_to_hunt / time_diff
-  
-  # Interpolate the position at the hunting event time
-  interpolated_x <- x1 + interpolation_factor * (x2 - x1)
-  interpolated_y <- y1 + interpolation_factor * (y2 - y1)
+
+  # If hunting time == movement entry time, then t_before == t_after.
+  # No interpolation is needed.
+  if (time1 == time2) {
+    interpolated_x <- x2
+    interpolated_y <- y2
+    speed <- 0
+  } else {
+    # Calculate distance in meters and time difference in seconds
+    point1 <- st_point(c(x1, y1))
+    point2 <- st_point(c(x2, y2))
+    utm_points <- st_sfc(point1, point2, crs = 32633)
+    distance <- st_distance(utm_points[1], utm_points[2], by_element = TRUE)
+    distance <- set_units(distance, NULL)
+    
+    time_diff <- as.numeric(difftime(time2, time1, units = "secs"))
+    
+    # Calculate average speed (meters per second)
+    speed <- distance / time_diff
+    
+    # Calculate time difference from before event to hunting event
+    time_to_hunt <- as.numeric(difftime(hunt_time, time1, units = "secs"))
+    
+    # Calculate interpolation factor (fraction of distance covered)
+    interpolation_factor <- time_to_hunt / time_diff
+    
+    # Interpolate the position at the hunting event time
+    interpolated_x <- x1 + interpolation_factor * (x2 - x1)
+    interpolated_y <- y1 + interpolation_factor * (y2 - y1)
+  }
 
   StressEvents[i, "InterpolatedX"] <- interpolated_x
   StressEvents[i, "InterpolatedY"] <- interpolated_y
   StressEvents[i, "Speed"] <- speed
 
-  # Calculate distance
+  # Calculate distance between hunting event and interpolated position
   point1 <- st_point(c(current_row$HuntEventX, current_row$HuntEventY))
   point2 <- st_point(c(interpolated_x, interpolated_y))
   utm_points <- st_sfc(point1, point2, crs = 32633)
-  StressEvents[i, "Distance"] <- st_distance(utm_points[1], utm_points[2])
+  distance <- st_distance(utm_points[1], utm_points[2])
+  distance <- set_units(distance, NULL)
+  StressEvents[i, "Distance"] <- distance
 }
+
+# StressEvents <- StressEvents %>%
+  # select(-x_before, -x_after, -y_before, -y_after, t_before, t_after)
 
 View(StressEvents)
 saveRDS(StressEvents, "Data/StressEvents2.Rds")
