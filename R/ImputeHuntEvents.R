@@ -4,6 +4,8 @@ library(lubridate)
 
 source("R/Datafusion.R")
 
+set.seed(1453)
+
 HuntEvents_pre <- arrange(HuntEvents, t_) %>%
   mutate(
     missing_t = is.na(t_),
@@ -83,21 +85,14 @@ n_data <- nrow(all_data)
 train_data <- all_data[sample.int(n_data, 0.8 * n_data), ]
 test_data <- setdiff(all_data, train_data)
 
-form <- formula(t_target ~ X + Y)
-knn1 <- kknn(form, train_data, test_data, kernel = "rectangular")
-
-res1 <- tibble(
-  t_test = test_data$t_target,
-  t_pred = knn1$fitted.values
+# leave-one-out CV
+knn_cv <- train.kknn(form, train_data, kmax = 20,
+  kernel = c("rectangular", "optimal", "triangular", "gaussian")
 )
-View(res1)  # FAILURE
+knn_cv
 
-# Trail 1: CV
-knn2 <- train.kknn(form, train_data, kmax = 20, kernel = "optimal")
-knn2  # best k = 2
-
-best_kernel = knn2$best.parameters$kernel
-best_k = knn2$best.parameters$k
+best_kernel = knn_cv$best.parameters$kernel
+best_k = knn_cv$best.parameters$k
 
 res2 <- tibble(
   Date = test_data$Date,
@@ -114,7 +109,6 @@ res2 %>%
   summarise(
     accuracy = sum(abs(t_test - t_pred) < 1) / nrow(res2)
   )
-# FAILURE!
 
 
 ##############################################################################
