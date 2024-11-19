@@ -6,7 +6,7 @@
 
 ### **Answer**:
 The articles do not specifically mention a 30-hour time point. However, based on the description of "approximately 24–36 hours," it seems reasonable to assume that cortisol levels may return to normal around 30 hours after stimulation.
-
+For detailed analysis, please see the file cortisol_level.R in Ziqi Xu's new branch.
 ---
 
 ## 2. The mechanism of cortisol level elevation:
