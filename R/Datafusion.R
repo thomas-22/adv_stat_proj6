@@ -11,10 +11,11 @@ str(Movement)
 
 HuntEvents <- read_delim("Data/Hunt Events - CRS= ETRS UTM 33N.csv", delim = ",")[,2:5] %>%
   mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
-           lubridate::parse_date_time(orders = "%d/%m/%Y %h:%M:%s"))
+           lubridate::parse_date_time(orders = "%d/%m/%Y %h:%M:%s")) %>%
+  rename(Date = Datum, Time = Zeit)
 str(HuntEvents)
 # What to do with NA's? here: just drop the lines
-HuntEventsreduced <- HuntEvents[!is.na(HuntEvents$t_), 3:5]
+HuntEventsreduced <- na.omit(HuntEvents)
 
 FCMStress <- read_delim("Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv")[2:14] %>%
   mutate(Collar_t_ = stringr::str_c(Collar_day, Collar_time, sep = " ") %>%
