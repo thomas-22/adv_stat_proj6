@@ -5,11 +5,11 @@ library(plotly)
 
 #source("./R/CalcSenderPosDist.R")
 
-ignoreall_filters <- TRUE
+ignoreall_filters <- FALSE
 
-distance_threshold <- 5000 #in Meters
-gut_retention_time_lower <- 0 #in Hours
-gut_retention_time_upper <- 100 #in Hours
+distance_threshold <- 50000 #in Meters
+gut_retention_time_lower <- 9 #in Hours
+gut_retention_time_upper <- 29 #in Hours
 
 # Create an empty data frame to store results
 FCMData_Assigned <- data.frame(Sender.ID = integer(),
@@ -141,15 +141,15 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
 
 #Some magic
 
-ggplot(fcm_specific, aes(x = ((1/Distance^2)*((as.numeric(TimeDiff)-9)*(as.numeric(TimeDiff)-29))), y = ng_g)) +
+ggplot(fcm_specific, aes(x = ((1/Distance^2)*(-(as.numeric(TimeDiff)-9)*(as.numeric(TimeDiff)-29))), y = ng_g)) +
   geom_point(color = "blue") +
-  scale_x_reverse(limits = c(0.0010, 0)) +
+  scale_x_log10() +
   geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
   geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
   geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
   labs(
     title = "Plot of ng_g vs\n1/Distance^2 * Polynomial(deg 2 of TimeDiff) with Max at 19 and Zeros at 9 and 29",
-    x = "Importance Factor",
+    x = "Impact Factor",
     y = "ng_g"
   ) +
   theme_minimal() +
