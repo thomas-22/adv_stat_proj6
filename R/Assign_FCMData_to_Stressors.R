@@ -1,7 +1,11 @@
 library(dplyr)
 library(ggplot2)
+#install.packages("plotly")
+library(plotly)
 
 #source("./R/CalcSenderPosDist.R")
+
+ignoreall_filters <- TRUE
 
 distance_threshold <- 5000 #in Meters
 gut_retention_time_lower <- 0 #in Hours
@@ -61,8 +65,12 @@ for (i in 1:nrow(FCMStress)) {
   }
 }
 
-interesting_data <- FCMData_Assigned %>%
-  filter(Distance <= distance_threshold)
+if (ignoreall_filters == FALSE) {
+  interesting_data <- FCMData_Assigned %>%
+    filter(Distance <= distance_threshold)
+} else {
+  interesting_data <- FCMData_Assigned
+}
 
 unique_sample_ids <- interesting_data %>%
   distinct(Sample_ID)
@@ -135,7 +143,7 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
 
 ggplot(fcm_specific, aes(x = ((1/Distance^2)*((as.numeric(TimeDiff)-9)*(as.numeric(TimeDiff)-29))), y = ng_g)) +
   geom_point(color = "blue") +
-  scale_x_reverse(limits = c(0.0016, 0)) +
+  scale_x_reverse(limits = c(0.0010, 0)) +
   geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
   geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
   geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
@@ -146,6 +154,19 @@ ggplot(fcm_specific, aes(x = ((1/Distance^2)*((as.numeric(TimeDiff)-9)*(as.numer
   ) +
   theme_minimal() +
   theme(plot.margin = margin(5, 50, 5, 5))
+
+
+#3D Plot:
+plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g, 
+        type = "scatter3d", mode = "markers", 
+        marker = list(size = 5, color = 'blue', 
+                      line = list(color = 'black', width = 2))) %>%
+  layout(title = "3D Plot with Black Outline",
+         scene = list(
+           xaxis = list(title = 'Distance'),
+           yaxis = list(title = 'TimeDiff'),
+           zaxis = list(title = 'ng_g')
+         ))
 
 
 
