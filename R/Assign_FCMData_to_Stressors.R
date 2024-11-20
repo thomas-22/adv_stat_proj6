@@ -1,11 +1,11 @@
 library(dplyr)
 library(ggplot2)
 
-#source("./R/CalcSenderPosDist.R")
+source("./R/CalcSenderPosDist.R")
 
-distance_threshold <- 3500 #in Meters
+distance_threshold <- 3000 #in Meters
 gut_retention_time_lower <- 13 #in Hours
-gut_retention_time_upper <- 100 #in Hours
+gut_retention_time_upper <- 30 #in Hours
 
 # Create an empty data frame to store results
 FCMData_Assigned <- data.frame(Sender.ID = integer(),
@@ -34,9 +34,12 @@ for (i in 1:nrow(FCMStress)) {
   ng_g <- sample_row$ng_g
   
   matching_events <- StressEvents %>%
-    filter(Sender.ID == sender_id &
-             difftime(collar_time, HuntEventTime, units = "hours") >= gut_retention_time_lower &
-             difftime(collar_time, HuntEventTime, units = "hours") <= gut_retention_time_upper)
+    mutate(Sender.ID = as.character(Sender.ID)) %>%
+    filter(
+      Sender.ID == as.character(sender_id) & 
+        difftime(collar_time, HuntEventTime, units = "hours") >= gut_retention_time_lower &
+        difftime(collar_time, HuntEventTime, units = "hours") <= gut_retention_time_upper
+    )
   
   # If there are matching events, create entries in the FCMData_Assigned data frame
   if (nrow(matching_events) > 0) {
