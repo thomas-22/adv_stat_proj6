@@ -1,11 +1,15 @@
 library(dplyr)
 library(ggplot2)
+#install.packages("plotly")
+library(plotly)
 
 #source("./R/CalcSenderPosDist.R")
 
-distance_threshold <- 3500 #in Meters
-gut_retention_time_lower <- 13 #in Hours
-gut_retention_time_upper <- 100 #in Hours
+ignoreall_filters <- FALSE
+
+distance_threshold <- 50000 #in Meters
+gut_retention_time_lower <- 9 #in Hours
+gut_retention_time_upper <- 29 #in Hours
 
 # Create an empty data frame to store results
 FCMData_Assigned <- data.frame(Sender.ID = integer(),
@@ -34,9 +38,12 @@ for (i in 1:nrow(FCMStress)) {
   ng_g <- sample_row$ng_g
   
   matching_events <- StressEvents %>%
-    filter(Sender.ID == sender_id &
-             difftime(collar_time, HuntEventTime, units = "hours") >= gut_retention_time_lower &
-             difftime(collar_time, HuntEventTime, units = "hours") <= gut_retention_time_upper)
+    mutate(Sender.ID = as.character(Sender.ID)) %>%
+    filter(
+      Sender.ID == as.character(sender_id) & 
+        difftime(collar_time, HuntEventTime, units = "hours") >= gut_retention_time_lower &
+        difftime(collar_time, HuntEventTime, units = "hours") <= gut_retention_time_upper
+    )
   
   # If there are matching events, create entries in the FCMData_Assigned data frame
   if (nrow(matching_events) > 0) {
@@ -58,8 +65,12 @@ for (i in 1:nrow(FCMStress)) {
   }
 }
 
-interesting_data <- FCMData_Assigned %>%
-  filter(Distance <= distance_threshold)
+if (ignoreall_filters == FALSE) {
+  interesting_data <- FCMData_Assigned %>%
+    filter(Distance <= distance_threshold)
+} else {
+  interesting_data <- FCMData_Assigned
+}
 
 unique_sample_ids <- interesting_data %>%
   distinct(Sample_ID)
@@ -127,6 +138,35 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
            color = "green", size = 3.5) +
   theme_minimal() +
   theme(plot.margin = margin(5, 50, 5, 5))
+
+#Some magic
+
+ggplot(fcm_specific, aes(x = ((1/Distance^2)*(-(as.numeric(TimeDiff)-9)*(as.numeric(TimeDiff)-29))), y = ng_g)) +
+  geom_point(color = "blue") +
+  scale_x_log10() +
+  geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
+  geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
+  geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
+  labs(
+    title = "Plot of ng_g vs\n1/Distance^2 * Polynomial(deg 2 of TimeDiff) with Max at 19 and Zeros at 9 and 29",
+    x = "Impact Factor",
+    y = "ng_g"
+  ) +
+  theme_minimal() +
+  theme(plot.margin = margin(5, 50, 5, 5))
+
+
+#3D Plot:
+plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g, 
+        type = "scatter3d", mode = "markers", 
+        marker = list(size = 5, color = 'blue', 
+                      line = list(color = 'black', width = 2))) %>%
+  layout(title = "3D Plot with Black Outline",
+         scene = list(
+           xaxis = list(title = 'Distance'),
+           yaxis = list(title = 'TimeDiff'),
+           zaxis = list(title = 'ng_g')
+         ))
 
 
 
