@@ -15,6 +15,10 @@ HuntEvents <- read_delim("Data/Hunt Events - CRS= ETRS UTM 33N.csv", delim = ","
 str(HuntEvents)
 # What to do with NA's? here: just drop the lines. Drop any duplicate entries.
 HuntEventsreduced <- distinct(HuntEvents[!is.na(HuntEvents$t_), 3:5])
+HuntEvents_NoTime <- distinct(HuntEvents[is.na(HuntEvents$t_), 1:4])
+HuntEvents_NoTime <- HuntEvents_NoTime %>% select(-Zeit)
+HuntEvents_NoTime$Datum <- as.Date(HuntEvents_NoTime$Datum, format = "%d/%m/%Y")
+
 
 FCMStress <- read_delim("Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv")[2:14] %>%
   mutate(Collar_t_ = stringr::str_c(Collar_day, Collar_time, sep = " ") %>%

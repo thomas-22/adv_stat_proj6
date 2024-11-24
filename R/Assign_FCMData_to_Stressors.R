@@ -8,8 +8,8 @@ library(plotly)
 ignoreall_filters <- FALSE
 
 distance_threshold <- 50000 #in Meters
-gut_retention_time_lower <- 9 #in Hours
-gut_retention_time_upper <- 29 #in Hours
+gut_retention_time_lower <- 0 #in Hours
+gut_retention_time_upper <- 38 #in Hours
 
 # Create an empty data frame to store results
 FCMData_Assigned <- data.frame(Sender.ID = integer(),
@@ -141,14 +141,14 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
 
 #Some magic
 
-ggplot(fcm_specific, aes(x = ((1/Distance^2)*(-(as.numeric(TimeDiff)-9)*(as.numeric(TimeDiff)-29))), y = ng_g)) +
+ggplot(fcm_specific, aes(x = ((1/Distance^2)*(-(as.numeric(TimeDiff)-gut_retention_time_lower)*(as.numeric(TimeDiff)-gut_retention_time_upper))), y = ng_g)) +
   geom_point(color = "blue") +
   scale_x_log10() +
   geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
   geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
   geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
   labs(
-    title = "Plot of ng_g vs\n1/Distance^2 * Polynomial(deg 2 of TimeDiff) with Max at 19 and Zeros at 9 and 29",
+    title = paste("Plot of ng_g vs\n1/Distance^2 * Polynomial(deg 2 of TimeDiff) with Max at 19 and Zeros at 0 and 38"),
     x = "Impact Factor",
     y = "ng_g"
   ) +
@@ -157,16 +157,18 @@ ggplot(fcm_specific, aes(x = ((1/Distance^2)*(-(as.numeric(TimeDiff)-9)*(as.nume
 
 
 #3D Plot:
-plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g, 
-        type = "scatter3d", mode = "markers", 
-        marker = list(size = 5, color = 'blue', 
-                      line = list(color = 'black', width = 2))) %>%
-  layout(title = "3D Plot with Black Outline",
-         scene = list(
-           xaxis = list(title = 'Distance'),
-           yaxis = list(title = 'TimeDiff'),
-           zaxis = list(title = 'ng_g')
-         ))
+# plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g, 
+#         type = "scatter3d", mode = "markers", 
+#         marker = list(size = 5, color = 'blue', 
+#                       line = list(color = 'black', width = 2))) %>%
+#   layout(title = "3D Plot with Black Outline",
+#          scene = list(
+#            xaxis = list(title = 'Distance'),
+#            yaxis = list(title = 'TimeDiff'),
+#            zaxis = list(title = 'ng_g')
+#          ))
+
+
 
 
 
