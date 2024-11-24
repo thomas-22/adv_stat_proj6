@@ -1,0 +1,4 @@
+1) euclidian distance between every deer and a hunting event at any given time
+2) some space-time distance?
+3) if prior knowledge for the movement patters of deers exist: baysian spatial Inference? (spBayes)
+4) 

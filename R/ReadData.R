@@ -9,6 +9,3 @@ data_huntevents_raw <- read.csv("data/Hunt Events - CRS= ETRS UTM 33N.csv",
 data_movement_raw <- read.csv("data/Movement - CRS=ETRS UTM 33N.csv", 
                               header = TRUE, sep = ";")
 
-
-
-

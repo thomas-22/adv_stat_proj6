@@ -1,0 +1,4 @@
+1) NA's in the time column of Huntiung Events data - is there a way to impute them?
+2) are the times Z-times? A/B-time? (summer/winter)?
+3) is there prior knowledge on the movement patterns of deers?
+4) is there prior knowledge on the appearance of hunting events?
