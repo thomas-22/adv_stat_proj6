@@ -14,15 +14,17 @@ interpolated_positions <- rbindlist(lapply(1:nrow(HuntEventsDT), function(i) {
   hunt_y <- HuntEventsDT$Y[i]
   
   # Filter rows only for Sender.IDs with timestamps around the hunting event
-  relevant_data <- MovementDT[, .SD[
-    t_ <= hunt_time | t_ >= hunt_time
-  ], by = Sender.ID]
+  relevant_data <- MovementDT[
+    , .SD[t_ <= hunt_time | t_ >= hunt_time], by = Sender.ID]
   
-  # Calculate before and after rows per Sender.ID
+  # Sort relevant_data by time to ensure accuracy
+  setorder(relevant_data, t_)
+  
+  # Calculate the closest rows before and after the event per Sender.ID
   before_event <- relevant_data[, .SD[t_ <= hunt_time][.N], by = Sender.ID]
   after_event <- relevant_data[, .SD[t_ >= hunt_time][1], by = Sender.ID]
   
-  # Merge before and after events
+  # Merge before and after events, renaming columns appropriately
   merged_events <- merge(before_event, after_event, by = "Sender.ID", suffixes = c("_before", "_after"))
   
   # Perform interpolation
@@ -39,8 +41,10 @@ interpolated_positions <- rbindlist(lapply(1:nrow(HuntEventsDT), function(i) {
                                      as.numeric(difftime(t__after, t__before, units = "secs"))) * (y__after - y__before)
     )
   ]
-return(interpolated)
+  
+  interpolated
 }))
+
 
 # Convert the result back to a data.frame
 interpolated_positions <- as.data.frame(interpolated_positions)

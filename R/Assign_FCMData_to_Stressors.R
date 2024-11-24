@@ -5,11 +5,13 @@ library(plotly)
 
 #source("./R/CalcSenderPosDist.R")
 
-ignoreall_filters <- FALSE
+ignoreall_filters <- TRUE
 
 distance_threshold <- 50000 #in Meters
-gut_retention_time_lower <- 0 #in Hours
-gut_retention_time_upper <- 38 #in Hours
+
+gut_retention_time_lower <- 9 #in Hours
+gut_retention_time_upper <- 29 #in Hours
+gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
 
 # Create an empty data frame to store results
 FCMData_Assigned <- data.frame(Sender.ID = integer(),
@@ -140,21 +142,30 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
   theme(plot.margin = margin(5, 50, 5, 5))
 
 #Some magic
+fcm_specific$Impact_Factor <- fcm_specific$StressorID
+for (i in 1:nrow(fcm_specific)) {
+  fcm_specific[i,]$Impact_Factor <- ((1/fcm_specific[i,]$Distance^2)*
+                                       (1/(abs(diff(c(as.numeric(fcm_specific[i,]$TimeDiff), gut_retention_mean))))^0.5))*
+    10000000
+}
+fcm_specific_impacted <- subset(fcm_specific, Impact_Factor > 0.1)
 
-ggplot(fcm_specific, aes(x = ((1/Distance^2)*(-(as.numeric(TimeDiff)-gut_retention_time_lower)*(as.numeric(TimeDiff)-gut_retention_time_upper))), y = ng_g)) +
+lm1 <- lm(ng_g ~ Impact_Factor, data=fcm_specific_impacted)
+summary(lm1)
+
+ggplot(fcm_specific_impacted, aes(x = Impact_Factor, y = ng_g)) +
   geom_point(color = "blue") +
   scale_x_log10() +
   geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
   geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
   geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
   labs(
-    title = paste("Plot of ng_g vs\n1/Distance^2 * Polynomial(deg 2 of TimeDiff) with Max at 19 and Zeros at 0 and 38"),
+    title = "Plot of ng_g vs\nImpact Factor(1/distance^2 * 1/Absolute Difference to 19 Hrs)",
     x = "Impact Factor",
     y = "ng_g"
   ) +
   theme_minimal() +
   theme(plot.margin = margin(5, 50, 5, 5))
-
 
 #3D Plot:
 # plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g, 
