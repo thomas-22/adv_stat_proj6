@@ -10,6 +10,7 @@ kmout20 <- kmeans(train20, centers = 3)
 
 winter20$group <- kmout20$cluster
   
+#centers20 <- kmout20$centers
 winter20$group <- factor(winter20$group, levels = c(1,2,3), labels = c("A", "B", "C"))
 
 ggplot(winter20, aes(x_, y_, color = group)) + 
@@ -28,6 +29,8 @@ winter21 <- Movement %>%
 train21 <- winter21 %>% select(x_, y_)
 
 kmout21 <- kmeans(train21, centers = 4)
+
+#centers21 <- kmout21$centers
 
 winter21$group <- kmout21$cluster
 
@@ -53,7 +56,7 @@ winter22$group <- factor(winter22$group, levels = c(1,2,3), labels = c("A", "B",
 ggplot(winter22, aes(x_, y_, color = group)) + 
   geom_point()
 
-
+#centers22 <- kmout22$centers
 #### 2023 ####
 winter23 <- Movement %>%
   filter(t_ %within% as.interval(as_datetime("2023-01-30"), as_datetime("2023-01-31"))) %>%
@@ -71,5 +74,9 @@ winter23$group <- factor(winter23$group, levels = c(1,2,3), labels = c("A", "B",
 ggplot(winter23, aes(x_, y_, color = group)) + 
   geom_point()
 
+#centers23 <- kmout23$centers
 
 min(Movement$t_)
+
+centers <- list(centers20, centers21, centers22, centers23)
+saveRDS(centers, "data/centers.RDS")
