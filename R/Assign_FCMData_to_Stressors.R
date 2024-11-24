@@ -4,6 +4,7 @@ library(ggplot2)
 library(plotly)
 
 #source("./R/CalcSenderPosDist.R")
+#source("./R/CalcAvgDistance_ForMissingTimes.R")
 
 ignoreall_filters <- TRUE
 
@@ -66,6 +67,10 @@ for (i in 1:nrow(FCMStress)) {
     }
   }
 }
+
+#fcms_assigned_to_huntevents_notime <- fcms_assigned_to_huntevents_notime[, names(FCMData_Assigned)]
+
+#test <- rbind(FCMData_Assigned, fcms_assigned_to_huntevents_notime)
 
 if (ignoreall_filters == FALSE) {
   interesting_data <- FCMData_Assigned %>%
