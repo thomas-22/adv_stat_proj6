@@ -13,7 +13,28 @@ library(sf)
 
 #getwd()
 source("./R/Datafusion.R")
+source("./R/CalcSenderPosDist.R")
 
+#-------------------------------------------------------------------------------
+# check if the new implementation for computing distances agree with the old one.
+StressEvents <- readRDS("Data/StressEvents.RDS")
+FCMStress <- read_fcm()
+sender_ids <- levels(FCMStress$Sender.ID)
+HuntEvents <- read_hunting()
+data_to_locate <- tibble(
+  Sender.ID = factor(c("4937", "5947", "2925"), levels = sender_ids),
+  Hunt.ID = c(1, 1, 1)
+)
+
+# New
+StressEvents2 <- get_distances(data_to_locate, verbose = TRUE)
+View(StressEvents2)
+# Old
+StressEvents1 <- StressEvents %>%
+  filter(Sender.ID %in% c("2925", "4937", "5947"),
+         HuntEventTime == ymd_hms("2020-05-07 23:00:00")) %>%
+View(StressEvents1)
+#-------------------------------------------------------------------------------
 # Round coordinates
 Movement$x_ <- as.numeric(round(Movement$x_, 0))
 HuntEventsreduced$X <- as.numeric(round(HuntEventsreduced$X, 0))
