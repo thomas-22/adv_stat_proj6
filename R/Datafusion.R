@@ -74,7 +74,7 @@ read_movement <- function(folder = "Data", fcm_data = read_fcm(folder)) {
     as_tibble() %>%
     mutate(Sender.ID = factor(Sender.ID, levels = sender_ids),
            t_ = parse_date_time(t_, orders = "%d/%m/%Y %h:%M")) %>%
-    filter(date(t_) >= first_date, date(t_) <= last_date) %>%
+    filter(date(t_) >= first_date - days(10), date(t_) <= last_date + days(10)) %>%
     select(Sender.ID, x_, y_, t_)
   
   return(Movement)

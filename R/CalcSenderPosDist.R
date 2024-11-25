@@ -4,7 +4,11 @@
 
 # Parameters:
 # - `data_to_locate`: tibble with columns "Sender.ID", "Hunt.ID"
-get_distances <- function(data_to_locate, folder = "Data") {
+# - `folder`: character(1), path to the data folder
+# - `verbose`: logical(1), whether to include interpolated coords (TRUE) or
+#   only distances (FALSE, default)
+# return: tibble
+get_distances <- function(data_to_locate, folder = "Data", verbose = FALSE) {
   # library(data.table)
   library(sf)
   
@@ -48,18 +52,21 @@ get_distances <- function(data_to_locate, folder = "Data") {
     mutate(Distance = st_distance(
       st_sfc(st_point(c(HuntX, HuntY)), crs = 32633),
       st_sfc(st_point(c(InterpolatedX, InterpolatedY)), crs = 32633)
-    )[[1]]) %>%
-    select(Sender.ID, Hunt.ID, HuntDate, HuntTime, HuntTimeMissing, Distance)
+    )[[1]])
+  
+  if (!verbose) {
+    data_with_time <- data_with_time %>%
+      select(Sender.ID, Hunt.ID, HuntDate, HuntTime, HuntTimeMissing, Distance)
+  }
 
-  # If timestamp does not exist, find average distance on the day of hunting event.
+  # If timestamp is missing, find average distance on the day of hunting event.
   # TBD: compute the average distance from the deer to the hunting event
   # on the day of the hunting event
   data_without_time <- data_with_time[0, ]
   
   data_all <- full_join(
     data_with_time,
-    data_without_time,
-    join_by(Sender.ID, Hunt.ID, HuntDate, HuntTime, HuntTimeMissing, Distance)
+    data_without_time
   )
   
   return(data_all)
