@@ -260,15 +260,23 @@ data_full <- FCMStress %>%
     TimeDiff = as.numeric(TimeDiff),
     Distance = Distance / 1000,
     AvgDistance = AvgDistance / 1000,
-    TimeDiffInvSq = 1 / TimeDiff,
+    TimeDiffInv = 1 / TimeDiff,
     DistanceInvSq = 1 / Distance^2,
     AvgDistanceInvSq = 1 / AvgDistance^2,ng_g
+  ) %>%
+  mutate(
+    TimeDiff = ifelse(is.na(TimeDiff), 0, TimeDiff),
+    Distance = ifelse(is.na(Distance), 0, Distance),
+    DateDiff = ifelse(is.na(DateDiff), 0, DateDiff),
+    AvgDistance = ifelse(is.na(AvgDistance), 0, AvgDistance),
+    TimeDiffInv = ifelse(is.na(TimeDiffInv), 0, TimeDiffInv),
+    DistanceInvSq = ifelse(is.na(DistanceInvSq), 0, DistanceInvSq),
+    AvgDistanceInvSq = ifelse(is.na(AvgDistanceInvSq), 0, AvgDistanceInvSq),
+    hasRelevantHunt = is.finite(Hunt.ID_lastrel1) | is.finite(Hunt.ID_lastrel2)
   )
- 
-data_full$TimeDiff[is.na(data_full$TimeDiff)] <- 0
-data_full$Distance[is.na(data_full$Distance)] <- 0
-data_full$DateDiff[is.na(data_full$DateDiff)] <- 0
-data_full$AvgDistance[is.na(data_full$AvgDistance)] <- 0
+
+# data_full$hasRelevantHunt <- is.finite(data_full$Hunt.ID_lastrel1) |
+#   is.finite(data_full$Hunt.ID_lastrel2)
 
 View(data_full)
 summary(data_full)
@@ -276,16 +284,15 @@ summary(data_full)
 # LMM
 library(lme4)
 m1 <- lmer(
-  ng_g ~ TimeDiffInvSq + DistanceInvSq + TimeDiffInvSq * DistanceInvSq +
-    factor(DateDiff) + AvgDistanceInvSq +
-    (1 | Sender.ID),
+  ng_g ~ TimeDiffInv + DistanceInvSq + TimeDiffInv * DistanceInvSq +
+    AvgDistanceInvSq + hasRelevantHunt + (1 | Sender.ID),
   data_full
 )
 summary(m1)
 
 m2 <- lmer(
   ng_g ~ TimeDiff + Distance + TimeDiff * Distance +
-    factor(DateDiff) + AvgDistance +
+    AvgDistance + hasRelevantHunt +
     (1 | Sender.ID),
   data_full
 )
