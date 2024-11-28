@@ -214,3 +214,47 @@ RelevantHuntEvents <- RelevantHuntEvents %>%
 #   filter(!is.na(Hunt.ID_rel1) | !is.na(Hunt.ID_rel1)) %>%
 #   distinct(Sender.ID, DefecTime)
 #-------------------------------------------------------------------------------
+
+# only keep the last relevant hunting event
+# type 1
+data1 <- RelevantHuntEvents %>%
+  filter(Hunt.ID_timerel1 == Hunt.ID_lastrel1) %>%
+  left_join(
+    HuntEvents %>% select(Hunt.ID, Date),
+    join_by(Hunt.ID_lastrel1 == Hunt.ID)
+  ) %>%
+  mutate(DateDiff = date(DefecTime) - Date) %>%
+  select(Sender.ID, DefecTime, Hunt.ID_lastrel1, DateDiff, AvgDistance) %>%
+  distinct()
+
+View(data1)
+
+data2 <- RelevantHuntEvents %>%
+  filter(Hunt.ID_timerel2 == Hunt.ID_lastrel2) %>%
+  left_join(
+    HuntEvents %>% select(Hunt.ID, t_),
+    join_by(Hunt.ID_lastrel2 == Hunt.ID)
+  ) %>%
+  mutate(TimeDiff = difftime(DefecTime, t_, units = "hours")) %>%
+  select(Sender.ID, DefecTime, Hunt.ID_lastrel2, TimeDiff, Distance) %>%
+  distinct()
+
+View(data2)
+
+
+data <- full_join(data1, data2)
+data$TimeDiff[is.na(data$TimeDiff)] <- 0
+data$Distance[is.na(data$Distance)] <- 0
+data$DateDiff[is.na(data$DateDiff)] <- 0
+data$AvgDistance[is.na(data$AvgDistance)] <- 0
+  
+View(data)
+
+# merge back
+data_full <- FCMStress %>%
+  left_join(
+    data,
+    join_by(Sender.ID, DefecTime)
+  )
+
+View(data_full)
