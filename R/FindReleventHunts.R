@@ -255,10 +255,38 @@ data_full <- FCMStress %>%
   left_join(
     data,
     join_by(Sender.ID, DefecTime)
+  ) %>%
+  mutate(
+    TimeDiff = as.numeric(TimeDiff),
+    Distance = Distance / 1000,
+    AvgDistance = AvgDistance / 1000,
+    TimeDiffInvSq = 1 / TimeDiff,
+    DistanceInvSq = 1 / Distance^2,
+    AvgDistanceInvSq = 1 / AvgDistance^2,ng_g
   )
+ 
 data_full$TimeDiff[is.na(data_full$TimeDiff)] <- 0
 data_full$Distance[is.na(data_full$Distance)] <- 0
 data_full$DateDiff[is.na(data_full$DateDiff)] <- 0
 data_full$AvgDistance[is.na(data_full$AvgDistance)] <- 0
 
 View(data_full)
+summary(data_full)
+
+# LMM
+library(lme4)
+m1 <- lmer(
+  ng_g ~ TimeDiffInvSq + DistanceInvSq + TimeDiffInvSq * DistanceInvSq +
+    factor(DateDiff) + AvgDistanceInvSq +
+    (1 | Sender.ID),
+  data_full
+)
+summary(m1)
+
+m2 <- lmer(
+  ng_g ~ TimeDiff + Distance + TimeDiff * Distance +
+    factor(DateDiff) + AvgDistance +
+    (1 | Sender.ID),
+  data_full
+)
+summary(m2)
