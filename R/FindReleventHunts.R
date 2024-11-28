@@ -243,10 +243,10 @@ View(data2)
 
 
 data <- full_join(data1, data2)
-data$TimeDiff[is.na(data$TimeDiff)] <- 0
-data$Distance[is.na(data$Distance)] <- 0
-data$DateDiff[is.na(data$DateDiff)] <- 0
-data$AvgDistance[is.na(data$AvgDistance)] <- 0
+# data$TimeDiff[is.na(data$TimeDiff)] <- 0
+# data$Distance[is.na(data$Distance)] <- 0
+# data$DateDiff[is.na(data$DateDiff)] <- 0
+# data$AvgDistance[is.na(data$AvgDistance)] <- 0
   
 View(data)
 
@@ -256,5 +256,9 @@ data_full <- FCMStress %>%
     data,
     join_by(Sender.ID, DefecTime)
   )
+data_full$TimeDiff[is.na(data_full$TimeDiff)] <- 0
+data_full$Distance[is.na(data_full$Distance)] <- 0
+data_full$DateDiff[is.na(data_full$DateDiff)] <- 0
+data_full$AvgDistance[is.na(data_full$AvgDistance)] <- 0
 
 View(data_full)
