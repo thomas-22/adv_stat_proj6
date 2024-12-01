@@ -1,28 +1,21 @@
-# get dataframes
-ReproductionSuccess <- prep.Pregnancy.data()
-Movement <- prep.Movement.data()
-HuntEvents <- prep.Huntevents.data()
-FCMStress <- prep.FCMStress.data()
-Groups <- get.Herds(Movement, enclosures)
-
-# What to do with NA's? here: just drop the lines. Drop any duplicate entries.
-HuntEventsreduced <- distinct(HuntEvents[!is.na(HuntEvents$t_), 3:5])
-HuntEvents_NoTime <- distinct(HuntEvents[is.na(HuntEvents$t_), 1:4])
-HuntEvents_NoTime <- HuntEvents_NoTime %>% select(-Zeit)
-HuntEvents_NoTime$Datum <- as.Date(HuntEvents_NoTime$Datum, format = "%d/%m/%Y")
-
-# ReproductionSuccess gets joined to Movement
-# logical idicator "pregnant" is set to TRUE if collar time lies within pregnancy interval
-# then joined by groups
-Movement %>%
-  left_join(ReproductionSuccess, by = c("Sender.ID")) %>%
-  mutate(pregnant = if_else(t_ %within% pregnant, TRUE, FALSE)) %>%
-  left_join(Groups, by = c("Sender.ID", "t_"), relationship = "many-to-many")
-
-StressData <- CalcSenderPosDist(Movement, HuntEvents)
-
-# save as RDS
-# saveRDS(Movement, "data/Movement.RDS")
-# saveRDS(FCMStress, "data/FCMStress.RDS")
-# saveRDS(HuntEvents, "data/Hunts.RDS")
-# saveRDS(HuntEventsreduced, "data/HuntsReduced.RDS")
+Datafusion <- function(Movement.data, Pregnancy.data, Stress.data, Groups.data) {
+  #
+  full.data <- Movement.data %>%
+    left_join(Pregnancy.data, by = c("Sender.ID")) %>%
+    mutate(pregnant = if_else(t_ %within% pregnant, TRUE, FALSE)) %>%
+    left_join(Groups.data,
+              by = c("Sender.ID", "t_", "x_", "y_"),
+              relationship = "many-to-many") %>%
+    mutate(t_low =t_ - dminutes(30), 
+           t_high = t_ + dminutes(30))
+  #
+  full.data <- Stress.data %>% left_join(full.data,
+                           by = join_by(
+                             "Sender.ID",
+                             between(x = HuntEventTime, y_lower = t_low, y_upper = t_high))
+                           ) %>%
+    select(-c(x_, y_, t_, t_low, t_high)) %>%
+    distinct()
+  #
+  return(full.data)
+}

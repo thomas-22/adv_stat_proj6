@@ -4,7 +4,7 @@ prep.Movement.data <- function() {
            t_ = parse_date_time(t_, orders = "%d/%m/%Y %h:%M"))
 }
 
-prep.Huntevents.data <- function() {
+prep.HuntEvents.data <- function() {
   read.csv(path.Huntevents, header = TRUE, sep = ",")[2:5] %>%
   mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
            parse_date_time(orders = "%d/%m/%Y %h:%M:%s"))

@@ -1,14 +1,12 @@
-CalcSenderPosDist <- function(Movement, HuntEvents) {
-  MovementDT <- as.data.table(Movement)
+CalcSenderPosDist <- function(Movement.data, HuntEvents.data) {
+  MovementDT <- as.data.table(Movement.data)
   setkey(MovementDT, Sender.ID, t_)
-  HuntEventsDT <- distinct(HuntEvents[!is.na(HuntEvents$t_), 3:5]) %>%
+  HuntEventsDT <- distinct(HuntEvents.data[!is.na(HuntEvents.data$t_), 3:5]) %>%
     as.data.table()
-  # 
-  StressEvents <- rbindlist(lapply(1:nrow(HuntEventsDT), interpolate)) %>%
-    as.data.frame() %>%
-    na.omit()
   # Calculate the distances and assign StressorID
-  StressEvents <- StressEvents %>%
+  StressEvents <- rbindlist(lapply(1:nrow(HuntEventsDT), function(i) interpolate(i, HuntEventsDT, MovementDT))) %>%
+    as.data.frame() %>%
+    na.omit() %>%
     rowwise() %>%
     mutate(
       Distance = st_distance(
@@ -22,7 +20,7 @@ CalcSenderPosDist <- function(Movement, HuntEvents) {
 }
 
                  
-interpolate <- function(i) {
+interpolate <- function(i, HuntEventsDT, MovementDT) {
   hunt_time <- HuntEventsDT$t_[i]
   hunt_x <- HuntEventsDT$X[i]
   hunt_y <- HuntEventsDT$Y[i]

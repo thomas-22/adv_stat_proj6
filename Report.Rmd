@@ -1,0 +1,52 @@
+---
+title: "Report"
+author: "Group"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+source("source_all.R")
+```
+
+
+```{r}
+Pregnancy <- prep.Pregnancy.data()
+Movement <- prep.Movement.data()
+HuntEvents <- prep.HuntEvents.data()
+FCMStress <- prep.FCMStress.data()
+
+# save as RDS
+saveRDS(Pregnancy, "data/Pregnancy.RDS")
+saveRDS(Movement, "data/Movement.RDS")
+saveRDS(HuntEvents, "data/HuntEvents.RDS")
+saveRDS(FCMStress, "data/FCMStress.RDS")
+```
+
+```{r}
+Groups <- get.Herds(Movement, enclosures)
+Stress <- CalcSenderPosDist(Movement, HuntEvents)
+# save as RDS
+saveRDS(Groups, "data/Groups.RDS")
+saveRDS(Stress, "data/Stress.RDS")
+```
+
+
+```{r}
+data.intermediate <- Datafusion(Movement, Pregnancy, Stress, Groups)
+data.full <- Assign_FCMData(FCMStress,
+                            data.intermediate,
+                            gut.retention.threshold = c(9, 29),
+                            distance.threshold = 5000,
+                            ignore.filters = FALSE)
+```
+
+
+```{r}
+
+```
+
