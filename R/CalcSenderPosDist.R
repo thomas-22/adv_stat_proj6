@@ -1,21 +1,34 @@
-library(data.table)
-library(sf)
+CalcSenderPosDist <- function(Movement, HuntEvents) {
+  MovementDT <- as.data.table(Movement)
+  setkey(MovementDT, Sender.ID, t_)
+  HuntEventsDT <- distinct(HuntEvents[!is.na(HuntEvents$t_), 3:5]) %>%
+    as.data.table()
+  # 
+  StressEvents <- rbindlist(lapply(1:nrow(HuntEventsDT), interpolate)) %>%
+    as.data.frame() %>%
+    na.omit()
+  # Calculate the distances and assign StressorID
+  StressEvents <- StressEvents %>%
+    rowwise() %>%
+    mutate(
+      Distance = st_distance(
+        st_sfc(st_point(c(HuntEventX, HuntEventY)), crs = 32633),
+        st_sfc(st_point(c(InterpolatedX, InterpolatedY)), crs = 32633)
+      ) %>% as.numeric()
+    ) %>% 
+    ungroup() %>%
+    mutate(StressorID = row_number())
+  return(StressEvents)
+}
 
-#getwd()
-source("./R/Datafusion.R")
-
-MovementDT <- as.data.table(Movement)
-setkey(MovementDT, Sender.ID, t_)
-HuntEventsDT <- as.data.table(HuntEventsreduced)
-
-interpolated_positions <- rbindlist(lapply(1:nrow(HuntEventsDT), function(i) {
+                 
+interpolate <- function(i) {
   hunt_time <- HuntEventsDT$t_[i]
   hunt_x <- HuntEventsDT$X[i]
   hunt_y <- HuntEventsDT$Y[i]
   
   # Filter rows only for Sender.IDs with timestamps around the hunting event
-  relevant_data <- MovementDT[
-    , .SD[t_ <= hunt_time | t_ >= hunt_time], by = Sender.ID]
+  relevant_data <- MovementDT[, .SD[t_ <= hunt_time | t_ >= hunt_time], by = Sender.ID]
   
   # Sort relevant_data by time to ensure accuracy
   setorder(relevant_data, t_)
@@ -41,28 +54,5 @@ interpolated_positions <- rbindlist(lapply(1:nrow(HuntEventsDT), function(i) {
                                      as.numeric(difftime(t__after, t__before, units = "secs"))) * (y__after - y__before)
     )
   ]
-  
-  interpolated
-}))
-
-
-# Convert the result back to a data.frame
-interpolated_positions <- as.data.frame(interpolated_positions)
-
-#Kick out rows with NAs
-StressEvents <- na.omit(interpolated_positions)
-
-# Calculate the distances and assign StressorID
-StressEvents <- StressEvents %>%
-  rowwise() %>%
-  mutate(
-    Distance = st_distance(
-      st_sfc(st_point(c(HuntEventX, HuntEventY)), crs = 32633),
-      st_sfc(st_point(c(InterpolatedX, InterpolatedY)), crs = 32633)
-    )
-  ) %>%
-  ungroup() %>%
-  mutate(StressorID = row_number())
-StressEvents$Distance <- as.numeric(StressEvents$Distance)
-
-View(StressEvents)
+  return(interpolated)
+}
