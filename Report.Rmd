@@ -9,12 +9,12 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r source_all}
 source("source_all.R")
 ```
 
 
-```{r}
+```{r read data}
 Pregnancy <- prep.Pregnancy.data()
 Movement <- prep.Movement.data()
 HuntEvents <- prep.HuntEvents.data()
@@ -27,7 +27,7 @@ FCMStress <- prep.FCMStress.data()
 # saveRDS(FCMStress, "Data/intermediate/FCMStress.RDS")
 ```
 
-```{r}
+```{r augment data}
 Groups <- get.Herds(Movement, enclosures)
 Stress <- CalcSenderPosDist(Movement, HuntEvents)
 # # save as RDS
@@ -36,8 +36,7 @@ Stress <- CalcSenderPosDist(Movement, HuntEvents)
 ```
 
 
-```{r}
-debugonce(Datafusion)
+```{r finalize data}
 data.intermediate <- Datafusion(Movement, Pregnancy, Stress, Groups, timediff = 2*60)
 data.full <- Assign_FCMData(FCMStress,
                             data.intermediate,
