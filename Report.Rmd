@@ -37,11 +37,12 @@ saveRDS(Stress, "Data/intermediate/Stress.RDS")
 
 
 ```{r}
-data.intermediate <- Datafusion(Movement, Pregnancy, Stress, Groups)
+debugonce(Datafusion)
+data.intermediate <- Datafusion(Movement, Pregnancy, Stress, Groups, timediff = 2*60)
 data.full <- Assign_FCMData(FCMStress,
                             data.intermediate,
-                            gut.retention.threshold = c(9, 29),
-                            distance.threshold = 5000,
+                            gut.retention.threshold = c(5, 35),
+                            distance.threshold = 10000,
                             ignore.filters = FALSE)
 ```
 
