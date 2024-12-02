@@ -20,19 +20,19 @@ Movement <- prep.Movement.data()
 HuntEvents <- prep.HuntEvents.data()
 FCMStress <- prep.FCMStress.data()
 
-# save as RDS
-saveRDS(Pregnancy, "Data/intermediate/Pregnancy.RDS")
-saveRDS(Movement, "Data/intermediate/Movement.RDS")
-saveRDS(HuntEvents, "Data/intermediate/HuntEvents.RDS")
-saveRDS(FCMStress, "Data/intermediate/FCMStress.RDS")
+# # save as RDS
+# saveRDS(Pregnancy, "Data/intermediate/Pregnancy.RDS")
+# saveRDS(Movement, "Data/intermediate/Movement.RDS")
+# saveRDS(HuntEvents, "Data/intermediate/HuntEvents.RDS")
+# saveRDS(FCMStress, "Data/intermediate/FCMStress.RDS")
 ```
 
 ```{r}
 Groups <- get.Herds(Movement, enclosures)
 Stress <- CalcSenderPosDist(Movement, HuntEvents)
-# save as RDS
-saveRDS(Groups, "Data/intermediate/Groups.RDS")
-saveRDS(Stress, "Data/intermediate/Stress.RDS")
+# # save as RDS
+# saveRDS(Groups, "Data/intermediate/Groups.RDS")
+# saveRDS(Stress, "Data/intermediate/Stress.RDS")
 ```
 
 
