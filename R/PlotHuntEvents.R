@@ -27,6 +27,59 @@ ggsave(
   width = 6, height = 4, dpi = 300
 )
 
+p_hunt_fcm_locations_same_scale <- ggplot() +
+  geom_point(
+    data = HuntEventsreduced,
+    mapping = aes(x = X / 1000, y = Y / 1000, color = "Hunting event"),
+    alpha = 0.5, size = 0.5
+  ) +
+  geom_point(
+    data = FCMStress,
+    mapping = aes(x = X / 1000, y = Y / 1000, color = "FCM sample"),
+    alpha = 0.5, size = 0.5
+  ) +
+  theme_light() +
+  scale_color_manual(
+    values = c("Hunting event" = "brown1", "FCM sample" = "skyblue")
+  ) +
+  coord_fixed(ratio = 1) +
+  labs(
+    x = "X [km]", y = "Y [km]", color = "",
+    title = "Locations of hunting events\nand FCM samples"
+  )
+ggsave(
+  "Figures/hunt_fcm_locations_same_scale.png",
+  p_hunt_fcm_locations_same_scale,
+  width = 3, height = 4, dpi = 300
+)
+
+# remove outliers and make aspect ratio 1
+p_hunt_fcm_locations_cropped <- ggplot() +
+  geom_point(
+    data = HuntEventsreduced,
+    mapping = aes(x = X / 1000, y = Y / 1000, color = "Hunting event"),
+    alpha = 0.5, size = 0.5
+  ) +
+  geom_point(
+    data = FCMStress,
+    mapping = aes(x = X / 1000, y = Y / 1000, color = "FCM sample"),
+    alpha = 0.5, size = 0.5
+  ) +
+  theme_light() +
+  scale_color_manual(
+    values = c("Hunting event" = "brown1", "FCM sample" = "skyblue")
+  ) +
+  labs(
+    x = "X [km]", y = "Y [km]", color = "",
+    title = "Locations of hunting events and FCM samples\n(cropped)"
+  ) +
+  coord_fixed(ratio = 1, xlim = c(365, 400), ylim = c(5410, 5445))
+ggsave(
+  "Figures/hunt_fcm_locations_cropped.png",
+  p_hunt_fcm_locations_cropped,
+  width = 6, height = 4, dpi = 300
+)
+
 # # hunting events with vs. without time
 # ggplot() +
 #   geom_point(
