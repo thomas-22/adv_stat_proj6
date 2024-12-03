@@ -39,5 +39,5 @@ get.Herds <- function(Movement.data, enclosures) {
   Movement.data <- na.omit(Movement.data)
   Position <- Movement.data %>% select(x_, y_)
   km.out <- kmeans(Position, centers = enclosures)
-  cbind(Movement.data, group = km.out$cluster)
+  cbind(Movement.data, group = as.factor(km.out$cluster))
 }

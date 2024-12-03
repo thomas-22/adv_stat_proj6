@@ -8,6 +8,8 @@ library(data.table)
 library(sf)
 library(plotly)
 library(checkmate)
+library(lme4)
+library(mgcv)
 
 # paths
 path.FCMStress <- "Data/raw/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
@@ -23,6 +25,6 @@ enclosures <- rbind(c(x_ = 382443.5, y_ = 5421950),
       c(x_ = 378099.6, y_ = 5431399), 
       c(x_ = 375115.9, y_ = 5435760))
 
-
+theme_set(theme_light())
 
 

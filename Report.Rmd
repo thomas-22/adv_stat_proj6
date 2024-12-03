@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r source_all}
+```{r source_all, echo=FALSE}
 source("source_all.R")
 ```
 
@@ -43,10 +43,56 @@ data.full <- Assign_FCMData(FCMStress,
                             gut.retention.threshold = c(5, 35),
                             distance.threshold = 10000,
                             ignore.filters = FALSE)
+
+model.data <- data.full %>% select(Sender.ID, Distance, pregnant, group, TimeDiff, ng_g) %>%
+  mutate(TimeDiff = scale(as.numeric(TimeDiff), center = FALSE)[,1],
+         Distance = scale(Distance, center = FALSE)[,1])
+```
+
+```{r visualize data}
+head(model.data)
+
+model.data %>%
+  ggplot()+
+  geom_bar(aes(x = forcats::fct_reorder(Sender.ID, as.numeric(group)), fill = group)) +
+  guides(x = guide_axis(angle = 60)) +   
+  labs(y="observations", x="Deer", title = "Number of observations per deer and herd") 
+
+model.data %>%
+  ggplot() +
+  geom_mosaic(aes(x = product(group, pregnant), fill = group)) +   
+  labs(y="Herd", x="Pregnant?", title = "Herds and pregnant deer in the model data") +
+  guides(fill = "none")
 ```
 
 
-```{r}
 
+```{r initial modelling}
+simple.model <- lm(ng_g ~., data = model.data)
+
+random.intercept.model <- lmer(ng_g ~ TimeDiff + Distance + (1 | group/Sender.ID) + (1 | pregnant), data = model.data)
+
+random.slope.model <- lmer(ng_g ~ (TimeDiff + Distance | Sender.ID) + 
+                             #(TimeDiff + Distance | pregnant) +
+                             (1 | pregnant), 
+                           data = model.data)
+```
+
+
+```{r diagnosis of initial modelling}
+model.data.augmented <- model.data %>%
+  mutate(simple.model = predict(simple.model, model.data),
+         random.intercept.model = predict(random.intercept.model, model.data),
+         random.slope.model = predict(random.slope.model, model.data),
+         Sample_ID = data.full$Sample_ID) %>%
+  pivot_longer(c(simple.model, random.intercept.model, random.slope.model),
+               values_to = ".fit",
+               names_to = "model")
+
+ggplot(model.data.augmented, aes(color = model)) +
+  stat_qq_line(aes(sample = ng_g), color = "black") + 
+  stat_qq(aes(sample = .fit), alpha = .7, size = 1) + 
+  theme_light() +
+  labs(y = "FCM level", title = "QQ-Plots of different model fits")
 ```
 
