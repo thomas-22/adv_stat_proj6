@@ -100,11 +100,10 @@ ggsave(
 # when were hunting events recorded?
 p_hunt_per_week <- HuntEvents %>%
   mutate(
-    Timestamp = round_date(dmy(Datum), unit = "week")
+    Timestamp = round_date(dmy(Datum), unit = "week", week_start = "Monday")
   ) %>%
-  ggplot() +
+  ggplot(aes(x = Timestamp, fill = !is.na(t_))) +
   geom_bar(
-    aes(x = Timestamp, fill = !is.na(t_)),
     color = "black",
     linewidth = 0.1, just = 1, width = 7
   ) +
@@ -114,26 +113,72 @@ p_hunt_per_week <- HuntEvents %>%
       "2021-01-01", "2021-04-01", "2021-07-01", "2021-10-01",
       "2022-01-01", "2022-04-01", "2022-07-01", "2022-10-01",
       "2023-01-01", "2023-04-01"
-    ))
+    )),
+    limits = ymd(c("2020-03-01", "2023-05-01"))
   ) +
   scale_fill_brewer(
-    palette = "Set2", name = "Timestamp available",
+    palette = "Set2", name = "Time recorded",
     labels = c("No", "Yes")
   ) +
   labs(
-    x = "Date", y = "Count", color = "",
+    x = "Date", y = "Frequency", color = "",
     title = "Hunting events per week"
   ) +
-  theme_light() +
+  theme_minimal() +
   theme(
-    axis.text.x = element_text(angle = 30, hjust = 1),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
     legend.position = "bottom"
   )
 ggsave(
   "Figures/hunt_per_week.png", p_hunt_per_week,
-  width = 6, height = 4, dpi = 300
+  width = 6, height = 4, dpi = 300, bg = "white"
 )
 
+# FCM samples per week for comparison
+p_fcm_per_week <- FCMStress %>%
+  mutate(
+    Timestamp = round_date(as_date(Collar_t_), unit = "week", week_start = "Monday")
+  ) %>%
+  ggplot(aes(x = Timestamp)) +
+  geom_bar(
+    color = "black", fill = "lightblue",
+    linewidth = 0.1, just = 1, width = 7
+  ) +
+  scale_x_date(
+    breaks = ymd(c(
+      "2020-04-01", "2020-07-01", "2020-10-01",
+      "2021-01-01", "2021-04-01", "2021-07-01", "2021-10-01",
+      "2022-01-01", "2022-04-01", "2022-07-01", "2022-10-01",
+      "2023-01-01", "2023-04-01"
+    )),
+    limits = ymd(c("2020-03-01", "2023-05-01"))
+  ) +
+  labs(
+    title = "FCM samples per week",
+    x = "Date",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size =  10))
+ggsave(
+  "Figures/fcm_per_week.png", p_fcm_per_week,
+  width = 6, height = 4, dpi = 300, bg = "white"
+)
+
+# previous two plots combined
+p_fcm_hunt_per_week_combined <- (p_fcm_per_week + theme(
+  axis.text.x =  element_blank(),
+  axis.title.x = element_blank()
+)) / (p_hunt_per_week +
+  theme(
+    axis.text.x = element_text(size = 9, hjust = 1, angle = 30),
+    axis.title.x = element_blank()
+  )) +
+  plot_layout(axis_titles = "collect_y")
+ggsave(
+  "Figures/fcm_hunt_per_week_combined.png", p_fcm_hunt_per_week_combined,
+  width = 8, height = 6, dpi = 300, bg = "white"
+)
 
 # at what time of day did hunting events occur?
 p_hunt_per_hour <- HuntEventsreduced %>%
