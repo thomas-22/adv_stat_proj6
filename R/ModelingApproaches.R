@@ -46,7 +46,10 @@ ggplot(data.frame(Actual = y_test, Predicted = y_pred), aes(x = Actual, y = Pred
   geom_abline(slope = 1, intercept = 0, color = "red") +
   labs(title = "Predicted vs Actual ng_g, Before Tuning", x = "Actual", y = "Predicted") +
   theme_light() +
-  coord_fixed(ratio = 1)
+  coord_fixed(ratio = 1) +
+  annotate("text", x = 500, y = Inf, hjust = 1, vjust = 2.5,
+           label = paste("RMSE:", round(rmse[1], 2)),
+           color = "black", size = 3.5)
 
 # Perform Cross-validation to tune the model
 cv_results <- xgb.cv(
@@ -82,9 +85,13 @@ ggplot(data.frame(Actual = y_test, Predicted = y_pred), aes(x = Actual, y = Pred
   geom_abline(slope = 1, intercept = 0, color = "red") +
   labs(title = "Predicted vs Actual ng_g, After Tuning", x = "Actual", y = "Predicted") +
   theme_light() +
-  coord_fixed(ratio = 1)
+  coord_fixed(ratio = 1) +
+  annotate("text", x = 500, y = Inf, hjust = 1, vjust = 2.5,
+           label = paste("RMSE:", round(rmse[2], 2)),
+           color = "black", size = 3.5)
 
 rmse_results
+
 
 
 
