@@ -9,9 +9,9 @@ library(ggtext)
 #source("./R/CalcSenderPosDist.R")
 #source("./R/CalcAvgDistance_ForMissingTimes.R")
 
-ignore_distance_filter <- TRUE
+ignore_distance_filter <- FALSE
 
-distance_threshold <- 50000 #in Meters
+distance_threshold <- 10000 #in Meters
 
 gut_retention_time_lower <- 0 #in Hours
 gut_retention_time_upper <- 100 #in Hours
@@ -75,7 +75,7 @@ for (i in 1:nrow(FCMStress)) {
 
 #test <- rbind(FCMData_Assigned, fcms_assigned_to_huntevents_notime)
 
-if (ignoreall_filters == FALSE) {
+if (ignore_distance_filter == FALSE) {
   interesting_data <- FCMData_Assigned %>%
     filter(Distance <= distance_threshold)
 } else {
@@ -151,11 +151,18 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
 
 #Some magic
 fcm_specific$Impact_Factor <- fcm_specific$StressorID
+
 for (i in 1:nrow(fcm_specific)) {
-  fcm_specific[i,]$Impact_Factor <- ((1/fcm_specific[i,]$Distance^2)*
-                                       (1/(abs(diff(c(as.numeric(fcm_specific[i,]$TimeDiff), gut_retention_mean))))^0.5))*
-    10000000
+  timediff_accepted <- 0
+  
+  if (as.numeric(fcm_specific[i,]$TimeDiff) > gut_retention_time_lower &&
+      as.numeric(fcm_specific[i,]$TimeDiff) < gut_retention_time_upper) {
+    timediff_accepted <- 1
+  }
+  
+  fcm_specific[i,]$Impact_Factor <- ((1/fcm_specific[i,]$Distance^2)*timediff_accepted)*10000000
 }
+
 fcm_specific_impacted <- subset(fcm_specific, Impact_Factor > 0.1)
 
 lm1 <- lm(ng_g ~ Impact_Factor, data=fcm_specific_impacted)
@@ -164,11 +171,11 @@ summary(lm1)
 ggplot(fcm_specific_impacted, aes(x = Impact_Factor, y = ng_g)) +
   geom_point(color = "blue") +
   scale_x_log10() +
-  geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
+  geom_smooth( color = "blue", linewidth = 0.5, se = FALSE) + 
   geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
   geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
   labs(
-    title = "Plot of ng_g vs\nImpact Factor(1/distance^2 * 1/Absolute Difference to 19 Hrs)",
+    title = "Plot of ng_g vs\nImpact Factor(1/distance^2, TimeDiff within Gut Retention Boundaries)",
     x = "Impact Factor",
     y = "ng_g"
   ) +
@@ -261,6 +268,7 @@ ggplot(FCMStress, aes(x = Collar_t_)) +
   ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10))
+
 
 
 
