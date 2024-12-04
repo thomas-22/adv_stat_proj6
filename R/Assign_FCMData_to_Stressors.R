@@ -2,16 +2,19 @@ library(dplyr)
 library(ggplot2)
 #install.packages("plotly")
 library(plotly)
+library(MASS)  # For fitting distributions
+#install.packages("ggtext")
+library(ggtext)
 
 #source("./R/CalcSenderPosDist.R")
 #source("./R/CalcAvgDistance_ForMissingTimes.R")
 
-ignoreall_filters <- TRUE
+ignore_distance_filter <- TRUE
 
 distance_threshold <- 50000 #in Meters
 
-gut_retention_time_lower <- 9 #in Hours
-gut_retention_time_upper <- 29 #in Hours
+gut_retention_time_lower <- 0 #in Hours
+gut_retention_time_upper <- 100 #in Hours
 gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
 
 # Create an empty data frame to store results
@@ -89,7 +92,7 @@ for (i in 1:nrow(unique_sample_ids)) {
   rows_with_id <- interesting_data %>%
     filter(Sample_ID == current_id)
   new_entry <- rows_with_id %>%
-    filter(Distance == min(Distance))
+    filter(Distance == min(Distance)) #Use the Stressor Event that was closest
   new_entry <- new_entry %>%
     arrange(TimeDiff) %>%
     slice_head(n = 1)
@@ -172,18 +175,92 @@ ggplot(fcm_specific_impacted, aes(x = Impact_Factor, y = ng_g)) +
   theme_minimal() +
   theme(plot.margin = margin(5, 50, 5, 5))
 
-#3D Plot:
-# plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g, 
-#         type = "scatter3d", mode = "markers", 
-#         marker = list(size = 5, color = 'blue', 
-#                       line = list(color = 'black', width = 2))) %>%
-#   layout(title = "3D Plot with Black Outline",
-#          scene = list(
-#            xaxis = list(title = 'Distance'),
-#            yaxis = list(title = 'TimeDiff'),
-#            zaxis = list(title = 'ng_g')
-#          ))
+##3D Plot:
+plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g,
+        type = "scatter3d", mode = "markers",
+        marker = list(size = 5, color = 'blue',
+                      line = list(color = 'black', width = 2))) %>%
+  layout(title = "3D Plot with Black Outline",
+         scene = list(
+           xaxis = list(title = 'Distance'),
+           yaxis = list(title = 'TimeDiff'),
+           zaxis = list(title = 'ng_g')
+         ))
 
+hist(as.numeric(fcm_specific$TimeDiff), breaks = 120)
+
+###############################################################
+#Discussion about Log-Normal vs Gamme Fit for $ng_g
+###############################################################
+data1 <- FCMStress %>%
+  filter(ng_g > 0)
+
+data <- data1$ng_g
+
+### Fit Log-Normal Distribution ###
+lognorm_fit <- fitdistr(data, "lognormal")
+meanlog <- lognorm_fit$estimate["meanlog"]
+sdlog <- lognorm_fit$estimate["sdlog"]
+
+### Fit Gamma Distribution ###
+gamma_fit <- fitdistr(data, "gamma")
+shape <- gamma_fit$estimate["shape"]
+rate <- gamma_fit$estimate["rate"]
+
+### Plot Histogram ###
+hist_data <- hist(data, breaks = 100, probability = TRUE, 
+                  main = "Histogram with Log-Normal and Gamma Fits", 
+                  xlab = "FCMStress$ng_g", col = "lightblue", border = "black")
+
+# Overlay Log-Normal Fit
+curve(dlnorm(x, meanlog = meanlog, sdlog = sdlog), col = "red", lwd = 2, add = TRUE)
+
+# Overlay Gamma Fit
+curve(dgamma(x, shape = shape, rate = rate), col = "blue", lwd = 2, add = TRUE)
+
+### Calculate MSE for Log-Normal ###
+bin_midpoints <- hist_data$mids
+observed_probs <- hist_data$density
+lognorm_probs <- dlnorm(bin_midpoints, meanlog = meanlog, sdlog = sdlog)
+lognorm_mse <- mean((observed_probs - lognorm_probs)^2)
+
+### Calculate MSE for Gamma ###
+gamma_probs <- dgamma(bin_midpoints, shape = shape, rate = rate)
+gamma_mse <- mean((observed_probs - gamma_probs)^2)
+
+# Print MSE values
+cat("Mean Squared Error (MSE) for Log-Normal Fit:", lognorm_mse, "\n")
+cat("Mean Squared Error (MSE) for Gamma Fit:", gamma_mse, "\n")
+
+# Add legend to the plot
+legend("topright", legend = c("Data Histogram", "Log-Normal Fit", "Gamma Fit"), 
+       col = c("lightblue", "red", "blue"), lty = c(NA, 1, 1), lwd = c(NA, 2, 2), pch = c(15, NA, NA))
+
+# Add MSE values to the plot
+text(x = max(hist_data$breaks) * 0.5, 
+     y = max(hist_data$density) * 0.4, 
+     labels = paste("MSE Log-Normal: ", round(lognorm_mse, 10)), 
+     col = "red", adj = 0)
+
+text(x = max(hist_data$breaks) * 0.5, 
+     y = max(hist_data$density) * 0.3, 
+     labels = paste("MSE Gamma: ", round(gamma_mse, 10)), 
+     col = "blue", adj = 0)
+###############################################################
+
+ggplot(FCMStress, aes(x = Collar_t_)) +
+  geom_histogram(binwidth = 604800, fill = "lightblue", color = "black") + # Binwidth = 1 Week
+  scale_x_datetime(
+    date_labels = "%Y-%m-%d",
+    date_breaks = "60 days"
+  ) + 
+  labs(
+    title = "Histogram of Collar_t_",
+    x = "Timestamp",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10))
 
 
 
