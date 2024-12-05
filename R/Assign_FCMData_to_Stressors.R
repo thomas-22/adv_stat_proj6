@@ -6,15 +6,15 @@ library(MASS)  # For fitting distributions
 #install.packages("ggtext")
 library(ggtext)
 
-#source("./R/CalcSenderPosDist.R")
+source("./R/CalcSenderPosDist.R")
 #source("./R/CalcAvgDistance_ForMissingTimes.R")
 
 ignore_distance_filter <- FALSE
 
-distance_threshold <- 10000 #in Meters
+distance_threshold <- 100000 #in Meters
 
 gut_retention_time_lower <- 0 #in Hours
-gut_retention_time_upper <- 100 #in Hours
+gut_retention_time_upper <- 1000000 #in Hours
 gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
 
 # Create an empty data frame to store results
