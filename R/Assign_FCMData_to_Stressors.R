@@ -6,15 +6,20 @@ library(MASS)  # For fitting distributions
 #install.packages("ggtext")
 library(ggtext)
 
-source("./R/CalcSenderPosDist.R")
+#source("./R/CalcSenderPosDist.R")
 #source("./R/CalcAvgDistance_ForMissingTimes.R")
+
+
+transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0.5) {
+  dlnorm(TimeDiff, meanlog = meanlog, sdlog = sdlog)
+}
 
 ignore_distance_filter <- FALSE
 
-distance_threshold <- 100000 #in Meters
+distance_threshold <- 10000 #in Meters
 
 gut_retention_time_lower <- 0 #in Hours
-gut_retention_time_upper <- 1000000 #in Hours
+gut_retention_time_upper <- 1000 #in Hours
 gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
 
 # Create an empty data frame to store results
@@ -84,6 +89,25 @@ if (ignore_distance_filter == FALSE) {
 
 unique_sample_ids <- interesting_data %>%
   distinct(Sample_ID)
+
+#Get rid of duplicate entries and choose which one to keep:
+data_cleanedup <- interesting_data
+data_cleanedup$TimeDiff <- as.numeric(data_cleanedup$TimeDiff)
+
+
+# Define a scoring function:
+data_cleanedup$Score <- (10000000000/data_cleanedup$Distance^2) * transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(20), sdlog = 0.7)
+
+data_cleanedup <- data_cleanedup %>%
+  group_by(Sample_ID) %>%
+  mutate(
+    RowsDiscarded = n() - 1  # Total rows for each Sample_ID minus 1 (kept row)
+  ) %>%
+  slice_max(Score, n = 1) %>%
+  ungroup()
+
+# cor(data_cleanedup$RowsDiscarded, data_cleanedup$ng_g)
+
 
 fcm_specific <- data.frame()
 
