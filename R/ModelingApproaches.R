@@ -251,6 +251,10 @@ final_model <- xgboost(
 )
 
 
+y_test_final_onfullmodel <- predict(final_model, X_test)
+rmse_test_final_onfullmodel <- sqrt(sum(((y_test_final_onfullmodel - y_test)^2)/length(y_test)))
+
+
 
 # # Save results
 # write.csv(log_results, "hyperparameter_tuning_log.csv", row.names = FALSE)
@@ -277,7 +281,14 @@ ggplot(data.frame(Actual = y_test, Predicted = y_pred), aes(x = Actual, y = Pred
            color = "black", size = 3.5)
 
 
-
+# Get Gamma Eval (For comparison)
+gamma_fit_eval <- evaluate_gamma_fit(
+  modeling_data = modeling_data,
+  test_data = test_data,
+  target_column = "ng_g",
+  num_iterations = 10000
+)
+gamma_fit_rmse <- mean(gamma_fit_eval$rmse_values)
 
 
 
@@ -296,6 +307,7 @@ combinations <- expand.grid(TimeDiff = time_diff, Distance = distance)
 combinations <- as.matrix(combinations)
 
 visual_y_pred <- predict(final_model, combinations)
+
 
 visual_final_model <- as.data.frame(cbind(combinations, ng_g = visual_y_pred))
 
@@ -329,7 +341,7 @@ fig <- fig %>%
 #Add title and labels
 fig <- fig %>%
   layout(
-    title = "XGBoost Model Prediction + Actual Data (black)",  # Set the title text
+    title = "XGBoost Model (Trained on Full Data) Prediction + Actual Data (black)",  # Set the title text
     titlefont = list(
       size = 20,                # Title font size
       color = "black",           # Title font color
@@ -350,12 +362,13 @@ fig <- fig %>%
           "Objective: ", final_model$params$objective, "\n",
           "Evaluation Metric: ", final_model$params$eval_metric, "\n",
           "Max Depth: ", final_model$params$max_depth, "\n",
-          "Learning Rate (Eta): ", final_model$params$eta, "\n",
-          "Gamma: ", final_model$params$gamma, "\n",
-          "Subsample: ", final_model$params$subsample, "\n",
-          "Colsample By Tree: ", final_model$params$colsample_bytree, "\n",
-          "Min Child Weight: ", final_model$params$min_child_weight, "\n",
-          "RMSE (Model): "
+          "Learning Rate (Eta): ", round(final_model$params$eta, 3), "\n",
+          "Gamma: ", round(final_model$params$gamma, 3), "\n",
+          "Subsample: ", round(final_model$params$subsample, 3), "\n",
+          "Colsample By Tree: ", round(final_model$params$colsample_bytree, 3), "\n",
+          "Min Child Weight: ", round(final_model$params$min_child_weight, 3), "\n",
+          "Test-RMSE (Model): ", round(rmse_test_final_onfullmodel, 3), "\n",
+          "Test-RMSE (Gamma Fit & Random Sampling): ", round(gamma_fit_rmse, 3)
         ),
         showarrow = FALSE,  # No arrow pointing to the plot
         font = list(
@@ -372,5 +385,50 @@ fig <- fig %>%
 
 # Display the plot
 fig
+
+evaluate_gamma_fit <- function(modeling_data, test_data, target_column, num_iterations = 10000) {
+  # Fit a gamma distribution to the target column
+  fit_gamma <- fitdist(modeling_data[[target_column]], "gamma")
+  
+  # Extract the parameters of the fitted gamma distribution
+  shape_param <- fit_gamma$estimate["shape"]
+  rate_param <- fit_gamma$estimate["rate"]
+  
+  # Define a function to calculate RMSE
+  calculate_rmse <- function(actual, predicted) {
+    sqrt(mean((actual - predicted)^2))
+  }
+  
+  # Initialize a vector to store RMSE values for num_iterations
+  rmse_values <- numeric(num_iterations)
+  
+  # Length of the test data
+  test_length <- nrow(test_data)
+  
+  # Actual values from test_data
+  actual_values <- test_data[[target_column]]
+  
+  # Perform the sampling and RMSE calculation
+  set.seed(42)  # For reproducibility
+  for (i in seq_len(num_iterations)) {
+    # Sample predictions from the gamma distribution
+    random_predictions <- rgamma(test_length, shape = shape_param, rate = rate_param)
+    
+    # Calculate RMSE for the current iteration
+    rmse_values[i] <- calculate_rmse(actual_values, random_predictions)
+  }
+  
+  # Calculate the mean RMSE across all iterations
+  mean_rmse <- mean(rmse_values)
+  
+  # Return the results as a list
+  list(
+    fit_parameters = list(shape = shape_param, rate = rate_param),
+    mean_rmse = mean_rmse,
+    rmse_values = rmse_values
+  )
+}
+
+
 
 

@@ -107,6 +107,8 @@ data_cleanedup <- data_cleanedup %>%
   ungroup()
 
 # cor(data_cleanedup$RowsDiscarded, data_cleanedup$ng_g)
+# cor(data_cleanedup$Distance, data_cleanedup$ng_g)
+# cor(data_cleanedup$TimeDiff, data_cleanedup$ng_g)
 
 
 fcm_specific <- data.frame()
