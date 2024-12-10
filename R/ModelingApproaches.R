@@ -87,7 +87,7 @@ while (!tuning_converge) {
       colsample_bytree = pmax(0.5, pmin(1, rnorm(5, mean = 1, sd = 0.05))), # Clipped to [0.5, 1]
       min_child_weight = pmax(0.1, rnorm(5, mean = 4.798780, sd = 0.2)) # Min >= 0.1
     )
-  } else else {
+  } else {
     # Search around best_params (normal distribution)
     param_grid <-  expand.grid(
       max_depth = round(rnorm(5, mean = best_params$max_depth, sd = 1)),
