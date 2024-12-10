@@ -124,7 +124,7 @@ while (!tuning_converge) {
   if (initialize_tuning) {
     # Random sampling for initial search (Values from previous runs of the code)
     param_grid <-  expand.grid(
-      max_depth = round(rnorm(5, mean = 5, sd = 1)),
+      max_depth = seq(max(4, best_params$max_depth - 1), min(6, best_params$max_depth + 1)),
       eta = pmax(0.01, rnorm(5, mean = 0.1734111, sd = 0.02)), # Learning rate >= 0.01
       gamma = pmax(0, rnorm(5, mean = 5.907800, sd = 0.05)), # Gamma >= 0
       subsample = pmax(0.5, pmin(1, rnorm(5, mean = 0.6074106, sd = 0.05))), # Clipped to [0.5, 1]
