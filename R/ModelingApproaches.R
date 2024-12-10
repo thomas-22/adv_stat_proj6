@@ -296,6 +296,34 @@ final_model <- xgboost(
 )
 
 
+# Permutated Performance for Niko
+sampled_yfull <- sample(y_full)
+
+fm_permutated_result_cv <- xgb.cv(
+  params = best_params,
+  data = X_full,
+  label = sampled_yfull,
+  nrounds = possible_good_model1$best_iteration,
+  verbose = 1,
+  nfold = 5,
+  early_stopping_rounds = dynamic_early_stopping_FM
+)
+
+fm_permutate_result <- xgboost(
+  params = best_params,
+  data = X_full,
+  label = sampled_yfull,
+  nrounds = fm_permutated_result_cv$best_iteration,
+  verbose = 1
+)
+
+
+fm_trainedon_permute_data_test_rmse <- sqrt(sum(((predict(fm_permutate_result, X_test) - y_test)^2)/length(y_test)))
+
+
+
+
+
 y_test_final_onfullmodel <- predict(final_model, X_test)
 rmse_test_final_onfullmodel <- sqrt(sum(((y_test_final_onfullmodel - y_test)^2)/length(y_test)))
 
@@ -477,6 +505,9 @@ mean_rmse_test_final_onfullmodel_randomsample
 
 mean_rmse_full_final_onfullmodel_randomsample
 # RMSE once we permutate the predicted values of the final model and randomly reassign to the FULL set.
+
+fm_trainedon_permute_data_test_rmse
+# RMSE once we permutate the input values of the final model and then predict the actual values. (Niko)
 #################################
 
 
