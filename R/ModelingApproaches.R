@@ -8,6 +8,8 @@ library(fitdistrplus)
 library(plotly)
 library(reshape2)
 
+#source("./R/Assign_FCMData_to_Stressors.R")
+
 # Prepare the data
 modeling_data <- data_cleanedup %>%
   filter(ng_g > 0)
@@ -48,8 +50,8 @@ best_iteration <- 0
 best_rmse <- Inf
 
 # Split the data
-rmse_converge_tolerance <- 0.01 # Convergence based on relative improvement
-ratio <- 0.7
+rmse_converge_tolerance <- 0.1
+ratio <- 0.75
 
 split <- sample.split(modeling_data$ng_g, SplitRatio = ratio)
 train_data <- subset(modeling_data, split == TRUE)
@@ -62,25 +64,38 @@ y_train <- train_data$ng_g
 X_test <- data.matrix(test_data[, c("TimeDiff", "Distance")])
 y_test <- test_data$ng_g
 
+X_full <- data.matrix(modeling_data[, c("TimeDiff", "Distance")])
+y_full <- modeling_data$ng_g
+
+# Early stopping rounds in grid:
+observations_per_fold <- floor(nrow(X_train) / 5) #5 fold CV
+dynamic_early_stopping <- max(5, min(30, observations_per_fold / 10))
+
+# Early stopping rounds in final model (best per iteration):
+observations_per_fold_FM <- floor(nrow(X_test) / 5)  # 5-fold CV
+dynamic_early_stopping_FM <- max(5, min(30, observations_per_fold / 10))
+
 while (!tuning_converge) {
   # Define hyperparameter grid
   if (initialize_tuning) {
-    param_grid <- expand.grid(
-      max_depth = c(5,6,7),
-      eta = c(0.16, 0.17, 0.18, 0.19),
-      gamma = c(5.9, 5.95, 6, 6.05, 6.1),
-      subsample = c(0.55, 0.6, 0.65),
-      colsample_bytree = c(1),
-      min_child_weight = c(4.65, 4.7, 4.75, 4.8, 4.85, 5)
+    # Random sampling for initial search (Values from previous runs of the code)
+    param_grid <-  expand.grid(
+      max_depth = round(rnorm(5, mean = 5, sd = 1)),
+      eta = pmax(0.01, rnorm(5, mean = 0.1734111, sd = 0.02)), # Learning rate >= 0.01
+      gamma = pmax(0, rnorm(5, mean = 5.907800, sd = 0.05)), # Gamma >= 0
+      subsample = pmax(0.5, pmin(1, rnorm(5, mean = 0.6074106, sd = 0.05))), # Clipped to [0.5, 1]
+      colsample_bytree = pmax(0.5, pmin(1, rnorm(5, mean = 1, sd = 0.05))), # Clipped to [0.5, 1]
+      min_child_weight = pmax(0.1, rnorm(5, mean = 4.798780, sd = 0.2)) # Min >= 0.1
     )
-  } else {
-    param_grid <- expand.grid(
-      max_depth = seq(max(2, best_params$max_depth - 1), best_params$max_depth + 1),
-      eta = pmax(0.01, c(best_params$eta - 0.01, best_params$eta, best_params$eta + 0.01)),
-      gamma = pmax(0, c(best_params$gamma - 0.05, best_params$gamma, best_params$gamma + 0.05)),
-      subsample = pmax(0.5, pmin(1, c(best_params$subsample - 0.01, best_params$subsample, best_params$subsample + 0.01))),
-      colsample_bytree = pmax(0.5, pmin(1, c(best_params$colsample_bytree - 0.01, best_params$colsample_bytree, best_params$colsample_bytree + 0.01))),
-      min_child_weight = pmax(0.1, c(best_params$min_child_weight - 0.01, best_params$min_child_weight, best_params$min_child_weight + 0.01))
+  } else else {
+    # Search around best_params (normal distribution)
+    param_grid <-  expand.grid(
+      max_depth = round(rnorm(5, mean = best_params$max_depth, sd = 1)),
+      eta = pmax(0.01, rnorm(5, mean = best_params$eta, sd = 0.02)), # Learning rate >= 0.01
+      gamma = pmax(0, rnorm(5, mean = best_params$gamma, sd = 0.05)), # Gamma >= 0
+      subsample = pmax(0.5, pmin(1, rnorm(5, mean = best_params$subsample, sd = 0.05))), # Clipped to [0.5, 1]
+      colsample_bytree = pmax(0.5, pmin(1, rnorm(5, mean = best_params$colsample_bytree, sd = 0.05))), # Clipped to [0.5, 1]
+      min_child_weight = pmax(0.1, rnorm(5, mean = best_params$min_child_weight, sd = 0.2)) # Min >= 0.1
     )
   }
   
@@ -90,7 +105,7 @@ while (!tuning_converge) {
   # Total combinations in grid
   total_combinations <- nrow(param_grid)
   
-  # Perform grid search
+  # Perform search
   for (i in seq_len(total_combinations)) {
     params <- list(
       objective = "reg:squarederror",
@@ -103,7 +118,7 @@ while (!tuning_converge) {
       min_child_weight = param_grid$min_child_weight[i]
     )
     
-    cat(sprintf("Trying combination %d of %d: max_depth=%d, eta=%.2f, gamma=%.1f, subsample=%.2f, colsample_bytree=%.2f, min_child_weight=%.1f, Tuning Iterations=%d\n",
+    cat(sprintf("Trying combination %d of %d: max_depth=%d, eta=%.3f, gamma=%.2f, subsample=%.2f, colsample_bytree=%.2f, min_child_weight=%.2f, Tuning Iterations=%d\n",
                 i, total_combinations,
                 param_grid$max_depth[i],
                 param_grid$eta[i],
@@ -113,19 +128,18 @@ while (!tuning_converge) {
                 param_grid$min_child_weight[i],
                 tuning_iterations))
     
-    # Perform cross-validation
     cv_results <- xgb.cv(
       params = params,
       data = X_train,
       label = y_train,
       nrounds = 2000,
-      nfold = 10,
+      nfold = 5,
       verbose = 0,
-      early_stopping_rounds = 30
+      early_stopping_rounds = dynamic_early_stopping
     )
     
     # Get metrics
-    mean_rmse <- min(cv_results$evaluation_log$test_rmse_mean)
+    mean_rmse <- cv_results$evaluation_log$test_rmse_mean[cv_results$best_iteration]
     best_iter <- cv_results$best_iteration
     
     # Update best parameters for this iteration
@@ -149,34 +163,41 @@ while (!tuning_converge) {
     ))
   }
   
-  # Train the final model using the best parameters from this iteration
-  final_model <- xgboost(
+
+  
+  cv_final_model <- xgb.cv(
     params = best_params,
-    data = X_train,
-    label = y_train,
-    nrounds = best_iteration,
-    verbose = 1
+    data = X_test,
+    label = y_test,
+    nrounds = 2000,
+    nfold = 5,
+    verbose = 0,
+    early_stopping_rounds = dynamic_early_stopping_FM
   )
   
+  # Get metrics for final Model using the test data instead of training Data
+  mean_rmse_FM <- mean(cv_final_model$evaluation_log$test_rmse_mean)
+  best_iter_FM <- cv_final_model$best_iteration
   
   # Make predictions
-  y_pred <- predict(final_model, X_test)
-  test_rmse[tuning_iterations] <- sqrt(mean((y_test - y_pred)^2))
+  # y_pred <- predict(final_model, X_test)
+  
+  test_rmse[tuning_iterations] <- mean_rmse_FM
   
   new_param_entry <- data.frame(
-                                      max_depth = param_grid$max_depth[i],
-                                      eta = param_grid$eta[i],
-                                      gamma = param_grid$gamma[i],
-                                      subsample = param_grid$subsample[i],
-                                      colsample_bytree = param_grid$colsample_bytree[i],
-                                      min_child_weight = param_grid$min_child_weight[i],
-                                      test_rmse = test_rmse[tuning_iterations]
+    max_depth = best_params$max_depth,
+    eta = best_params$eta,
+    gamma = best_params$gamma,
+    subsample = best_params$subsample,
+    colsample_bytree = best_params$colsample_bytree,
+    min_child_weight = best_params$min_child_weight,
+    test_rmse = test_rmse[tuning_iterations]
   )
   best_param_collection <- rbind(best_param_collection, new_param_entry)
   
-  cat(sprintf("Test RMSE: %.4f\n", test_rmse))
+  cat(sprintf("Test RMSE: %.4f\n", test_rmse[tuning_iterations]))
   
-  #Check convergence
+  # Check convergence
   if (tuning_iterations >= max_iterations) {
     tuning_converge <- TRUE
   } else if (abs(test_rmse[tuning_iterations] - best_rmse) < rmse_converge_tolerance && tuning_iterations > 0) {
@@ -190,13 +211,52 @@ while (!tuning_converge) {
   
   tuning_iterations <- tuning_iterations + 1
   initialize_tuning <- FALSE
+  
+  
+  #Change params to the best currently available ones again:
+  current_best_param_config <- log_results[which.min(log_results$rmse), ]
+  best_params$max_depth <-        current_best_param_config$max_depth
+  best_params$eta <-              current_best_param_config$eta
+  best_params$gamma <-            current_best_param_config$gamma
+  best_params$subsample <-        current_best_param_config$subsample
+  best_params$colsample_bytree <- current_best_param_config$colsample_bytree
+  best_params$min_child_weight <- current_best_param_config$min_child_weight
 }
 
-# Save results
-write.csv(log_results, "hyperparameter_tuning_log.csv", row.names = FALSE)
-write.csv(log_results, "hyperparameter_tuning_log_bestmodels.csv", row.names = FALSE)
+#Final Eval
+possible_good_model1 <- log_results[which.min(log_results$rmse), ]
+best_params$max_depth <-        possible_good_model1$max_depth
+best_params$eta <-              possible_good_model1$eta
+best_params$gamma <-            possible_good_model1$gamma
+best_params$subsample <-        possible_good_model1$subsample
+best_params$colsample_bytree <- possible_good_model1$colsample_bytree
+best_params$min_child_weight <- possible_good_model1$min_child_weight
 
-saveRDS(final_model, "final_xgboost_model.rds")
+final_model_cv <- xgb.cv(
+  params = best_params,
+  data = X_full,
+  label = y_full,
+  nrounds = 1000,
+  verbose = 1,
+  nfold = 10,
+  early_stopping_rounds = 5
+)
+
+final_model <- xgboost(
+  params = best_params,
+  data = X_full,
+  label = y_full,
+  nrounds = final_model_cv$best_iteration,
+  verbose = 1
+)
+
+
+
+# # Save results
+# write.csv(log_results, "hyperparameter_tuning_log.csv", row.names = FALSE)
+# write.csv(log_results, "hyperparameter_tuning_log_bestmodels.csv", row.names = FALSE)
+# 
+# saveRDS(final_model, "final_xgboost_model.rds")
 
 
 #final_model <- readRDS("final_xgboost_model.rds", refhook = NULL)
