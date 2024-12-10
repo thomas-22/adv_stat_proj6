@@ -8,6 +8,49 @@ library(fitdistrplus)
 library(plotly)
 library(reshape2)
 
+evaluate_gamma_fit <- function(modeling_data, test_data, target_column, num_iterations = 10000) {
+  # Fit a gamma distribution to the target column
+  fit_gamma <- fitdist(modeling_data[[target_column]], "gamma")
+  
+  # Extract the parameters of the fitted gamma distribution
+  shape_param <- fit_gamma$estimate["shape"]
+  rate_param <- fit_gamma$estimate["rate"]
+  
+  # Define a function to calculate RMSE
+  calculate_rmse <- function(actual, predicted) {
+    sqrt(mean((actual - predicted)^2))
+  }
+  
+  # Initialize a vector to store RMSE values for num_iterations
+  rmse_values <- numeric(num_iterations)
+  
+  # Length of the test data
+  test_length <- nrow(test_data)
+  
+  # Actual values from test_data
+  actual_values <- test_data[[target_column]]
+  
+  # Perform the sampling and RMSE calculation
+  set.seed(42)  # For reproducibility
+  for (i in seq_len(num_iterations)) {
+    # Sample predictions from the gamma distribution
+    random_predictions <- rgamma(test_length, shape = shape_param, rate = rate_param)
+    
+    # Calculate RMSE for the current iteration
+    rmse_values[i] <- calculate_rmse(actual_values, random_predictions)
+  }
+  
+  # Calculate the mean RMSE across all iterations
+  mean_rmse <- mean(rmse_values)
+  
+  # Return the results as a list
+  list(
+    fit_parameters = list(shape = shape_param, rate = rate_param),
+    mean_rmse = mean_rmse,
+    rmse_values = rmse_values
+  )
+}
+
 #source("./R/Assign_FCMData_to_Stressors.R")
 
 # Prepare the data
@@ -39,7 +82,7 @@ best_param_collection <- data.frame(
   colsample_bytree = numeric(),
   min_child_weight = numeric(),
   test_rmse = numeric(),
-  best_iter_incv = integer(),
+  best_iter_incv = integer()
 )
 
 tuning_iterations <- 1
@@ -238,10 +281,10 @@ final_model_cv <- xgb.cv(
   params = best_params,
   data = X_full,
   label = y_full,
-  nrounds = 1000,
+  nrounds = possible_good_model1$best_iteration,
   verbose = 1,
-  nfold = 10,
-  early_stopping_rounds = 5
+  nfold = 5,
+  early_stopping_rounds = dynamic_early_stopping_FM
 )
 
 final_model <- xgboost(
@@ -255,6 +298,23 @@ final_model <- xgboost(
 
 y_test_final_onfullmodel <- predict(final_model, X_test)
 rmse_test_final_onfullmodel <- sqrt(sum(((y_test_final_onfullmodel - y_test)^2)/length(y_test)))
+
+num_samples <- 1000
+rmse_test_final_onfullmodel_randomsample <- numeric(num_samples)
+for (i in 1:num_samples) {
+  rmse_test_final_onfullmodel_randomsample[i] <- sqrt(sum(((sample(y_test_final_onfullmodel) - y_test)^2) / length(y_test)))
+}
+
+# Compute the mean RMSE for random sampling from model
+mean_rmse_test_final_onfullmodel_randomsample <- mean(rmse_test_final_onfullmodel_randomsample)
+
+#Full RMSE for Model:
+
+rmse_full_final_onfullmodel_randomsample <- numeric(num_samples)
+for (i in 1:num_samples) {
+  rmse_full_final_onfullmodel_randomsample[i] <- sqrt(sum(((sample(predict(final_model, X_full)) - y_full)^2) / length(y_full)))
+}
+mean_rmse_full_final_onfullmodel_randomsample <- mean(rmse_full_final_onfullmodel_randomsample)
 
 
 
@@ -284,14 +344,22 @@ ggplot(data.frame(Actual = y_test, Predicted = y_pred), aes(x = Actual, y = Pred
 
 
 # Get Gamma Eval (For comparison)
-gamma_fit_eval <- evaluate_gamma_fit(
+gamma_fit_eval_full <- evaluate_gamma_fit(
+  modeling_data = modeling_data,
+  test_data = modeling_data,
+  target_column = "ng_g",
+  num_iterations = 10000
+)
+
+gamma_fit_eval_train <- evaluate_gamma_fit(
   modeling_data = modeling_data,
   test_data = test_data,
   target_column = "ng_g",
   num_iterations = 10000
 )
-gamma_fit_rmse <- mean(gamma_fit_eval$rmse_values)
 
+gamma_fit_rmse_full <- mean(gamma_fit_eval_full$rmse_values)
+gamma_fit_rmse_train <- mean(gamma_fit_eval_train$rmse_values)
 
 
 
@@ -388,48 +456,36 @@ fig <- fig %>%
 # Display the plot
 fig
 
-evaluate_gamma_fit <- function(modeling_data, test_data, target_column, num_iterations = 10000) {
-  # Fit a gamma distribution to the target column
-  fit_gamma <- fitdist(modeling_data[[target_column]], "gamma")
-  
-  # Extract the parameters of the fitted gamma distribution
-  shape_param <- fit_gamma$estimate["shape"]
-  rate_param <- fit_gamma$estimate["rate"]
-  
-  # Define a function to calculate RMSE
-  calculate_rmse <- function(actual, predicted) {
-    sqrt(mean((actual - predicted)^2))
-  }
-  
-  # Initialize a vector to store RMSE values for num_iterations
-  rmse_values <- numeric(num_iterations)
-  
-  # Length of the test data
-  test_length <- nrow(test_data)
-  
-  # Actual values from test_data
-  actual_values <- test_data[[target_column]]
-  
-  # Perform the sampling and RMSE calculation
-  set.seed(42)  # For reproducibility
-  for (i in seq_len(num_iterations)) {
-    # Sample predictions from the gamma distribution
-    random_predictions <- rgamma(test_length, shape = shape_param, rate = rate_param)
-    
-    # Calculate RMSE for the current iteration
-    rmse_values[i] <- calculate_rmse(actual_values, random_predictions)
-  }
-  
-  # Calculate the mean RMSE across all iterations
-  mean_rmse <- mean(rmse_values)
-  
-  # Return the results as a list
-  list(
-    fit_parameters = list(shape = shape_param, rate = rate_param),
-    mean_rmse = mean_rmse,
-    rmse_values = rmse_values
-  )
-}
+#################################
+#EXPLANATION OF ALL THE RMSES:
+
+rmse_test_final_onfullmodel
+# RMSE for the final model (trained on full dataset) from the differences between test set and predicted values for test set.
+
+gamma_fit_rmse_full
+# RMSE for gamma fit. This is the RMSE we get if we fit an unconditional gamma fit
+# (best gamma chosen via fitdistrplus) to ng_g of the full dataset. Gamma fit isn't optimal,
+# but represents a baseline to compare other models to.
+
+gamma_fit_rmse_train
+# RMSE for gamma fit. This is the RMSE we get if we fit an unconditional gamma fit
+# (best gamma chosen via fitdistrplus) to ng_g of the train dataset. Gamma fit isn't optimal,
+# but represents a baseline to compare other models to.
+
+mean_rmse_test_final_onfullmodel_randomsample
+# RMSE once we permutate the predicted values of the final model and randomly reassign to the TEST set.
+
+mean_rmse_full_final_onfullmodel_randomsample
+# RMSE once we permutate the predicted values of the final model and randomly reassign to the FULL set.
+#################################
+
+
+
+
+
+
+
+
 
 
 
