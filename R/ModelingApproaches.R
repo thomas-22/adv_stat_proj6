@@ -38,7 +38,8 @@ best_param_collection <- data.frame(
   subsample = numeric(),
   colsample_bytree = numeric(),
   min_child_weight = numeric(),
-  test_rmse = numeric()
+  test_rmse = numeric(),
+  best_iter_incv = integer(),
 )
 
 tuning_iterations <- 1
@@ -176,7 +177,7 @@ while (!tuning_converge) {
   )
   
   # Get metrics for final Model using the test data instead of training Data
-  mean_rmse_FM <- mean(cv_final_model$evaluation_log$test_rmse_mean)
+  rmse_FM <-cv_final_model$evaluation_log$test_rmse_mean[cv_final_model$best_iteration]
   best_iter_FM <- cv_final_model$best_iteration
   
   # Make predictions
@@ -191,7 +192,8 @@ while (!tuning_converge) {
     subsample = best_params$subsample,
     colsample_bytree = best_params$colsample_bytree,
     min_child_weight = best_params$min_child_weight,
-    test_rmse = test_rmse[tuning_iterations]
+    test_rmse = test_rmse[tuning_iterations],
+    best_iter_incv = best_iter_FM
   )
   best_param_collection <- rbind(best_param_collection, new_param_entry)
   
