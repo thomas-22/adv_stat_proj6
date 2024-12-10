@@ -69,6 +69,10 @@ model.data %>%
 
 ```{r initial modelling}
 simple.model <- lm(ng_g ~., data = model.data)
+summary(simple.model)
+
+mod <- lm(ng_g ~ TimeDiff * I(1/Distance), data = model.data)
+summary(mod)
 
 random.intercept.model <- lmer(ng_g ~ TimeDiff + Distance + (1 | group/Sender.ID) + (1 | pregnant), data = model.data)
 
@@ -82,17 +86,38 @@ random.slope.model <- lmer(ng_g ~ (TimeDiff + Distance | Sender.ID) +
 ```{r diagnosis of initial modelling}
 model.data.augmented <- model.data %>%
   mutate(simple.model = predict(simple.model, model.data),
+         even.simpler.model = predict(mod, model.data),
          random.intercept.model = predict(random.intercept.model, model.data),
          random.slope.model = predict(random.slope.model, model.data),
          Sample_ID = data.full$Sample_ID) %>%
-  pivot_longer(c(simple.model, random.intercept.model, random.slope.model),
+  pivot_longer(c(even.simpler.model, simple.model, random.intercept.model, random.slope.model),
                values_to = ".fit",
-               names_to = "model")
+               names_to = "model") %>%
+  mutate(.resid = ng_g - .fit)
+
+RMSEs <- model.data.augmented %>%
+  group_by(model) %>%
+  summarise(RMSE = sqrt(mean(.resid^2)))
 
 ggplot(model.data.augmented, aes(color = model)) +
-  stat_qq_line(aes(sample = ng_g), color = "black") + 
-  stat_qq(aes(sample = .fit), alpha = .7, size = 1) + 
+  stat_qq_line(aes(sample = .resid), color = "black") + 
+  stat_qq(aes(sample = .resid), alpha = .7, size = 1) + 
   theme_light() +
-  labs(y = "FCM level", title = "QQ-Plots of different model fits")
+  labs(y = "Residuals", x = "theoretical Quantiles", title = "QQ-Plots of different model fits") +
+  ggrepel::geom_label_repel(data = RMSEs, aes(label = sprintf("RMSE: %.2f", RMSE), x = 2, y = -150), direction = "y", force = .5) 
+
+ggplot(model.data.augmented, aes(color = model)) +
+  geom_point(aes(x = .fit, y = .resid)) +
+  geom_hline(yintercept = 0, color = "black") +
+  labs(y = "Residuals",x = "fitted values", title = "Residuals vs fitted values") +
+  facet_wrap(~model, nrow = 3) +
+  guides(color = "none")
+
+
+ggplot(model.data.augmented, aes(color = model)) +
+  geom_point(aes(x = ng_g, y = .fit), alpha = .5, size = 1) +
+  geom_smooth(aes(x = ng_g, y = .fit), method = "lm", se = FALSE) +
+  geom_abline(slope = 1) +
+  labs(x = "actual", y = "predicted")
 ```
 
