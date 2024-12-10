@@ -1,4 +1,5 @@
 Datafusion <- function(Movement.data, Pregnancy.data, Stress.data, Groups.data, timediff = 60) {
+  # check inputs
   assertCount(timediff, positive = TRUE)
   full.data <- Movement.data %>%
     left_join(Pregnancy.data, by = c("Sender.ID")) %>%

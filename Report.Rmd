@@ -40,6 +40,7 @@ Stress <- CalcSenderPosDist(Movement, HuntEvents)
 data.intermediate <- Datafusion(Movement, Pregnancy, Stress, Groups, timediff = 2*60)
 data.full <- Assign_FCMData(FCMStress,
                             data.intermediate,
+                            # Stress is getting called here as well!
                             gut.retention.threshold = c(5, 35),
                             distance.threshold = 10000,
                             ignore.filters = FALSE)
@@ -80,6 +81,8 @@ random.slope.model <- lmer(ng_g ~ (TimeDiff + Distance | Sender.ID) +
                              #(TimeDiff + Distance | pregnant) +
                              (1 | pregnant), 
                            data = model.data)
+
+summary(random.intercept.model)
 ```
 
 

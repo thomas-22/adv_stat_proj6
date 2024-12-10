@@ -1,13 +1,20 @@
+# add doc strings
+
 prep.Movement.data <- function() {
   read.csv(path.Movement, header = TRUE, sep = ";")[,2:5] %>%
     mutate(Sender.ID = factor(Sender.ID),
            t_ = parse_date_time(t_, orders = "%d/%m/%Y %h:%M"))
+  # add distance traveled here
 }
 
 prep.HuntEvents.data <- function() {
   read.csv(path.Huntevents, header = TRUE, sep = ",")[2:5] %>%
   mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
-           parse_date_time(orders = "%d/%m/%Y %h:%M:%s"))
+           parse_date_time(orders = "%d/%m/%Y %h:%M:%s"),
+         Date = parse_date_time(Datum, orders = "%d/%m/%Y")) %>%
+    select(-Zeit, -Datum) %>%
+    distinct() %>%
+    mutate(Hunt.ID = as.factor(row_number()))
 }
 
 prep.FCMStress.data <- function() {
@@ -16,9 +23,8 @@ prep.FCMStress.data <- function() {
              parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
            Waypoint_t_ = stringr::str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
              parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
-           Sender.ID = as.factor(Sender.ID),
-           Sex = as.factor(Sex)) %>%
-    select(-Collar_day, -Collar_time, -Waypoint_day, -Waypoint_time)
+           Sender.ID = as.factor(Sender.ID)) %>%
+    select(-Collar_day, -Collar_time, -Waypoint_day, -Waypoint_time, -Sex, -Comment, -Waypoint.number)
 }
 
 prep.Pregnancy.data <- function() {
@@ -41,3 +47,4 @@ get.Herds <- function(Movement.data, enclosures) {
   km.out <- kmeans(Position, centers = enclosures)
   cbind(Movement.data, group = as.factor(km.out$cluster))
 }
+
