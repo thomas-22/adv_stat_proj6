@@ -14,12 +14,12 @@ transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0
   dlnorm(TimeDiff, meanlog = meanlog, sdlog = sdlog)
 }
 
-ignore_distance_filter <- FALSE
+ignore_distance_filter <- TRUE
 
-distance_threshold <- 10000 #in Meters
+distance_threshold <- 100000 #in Meters
 
 gut_retention_time_lower <- 0 #in Hours
-gut_retention_time_upper <- 1000 #in Hours
+gut_retention_time_upper <- 100000 #in Hours
 gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
 
 # Create an empty data frame to store results
@@ -87,14 +87,12 @@ if (ignore_distance_filter == FALSE) {
   interesting_data <- FCMData_Assigned
 }
 
-unique_sample_ids <- interesting_data %>%
-  distinct(Sample_ID)
 
-#Get rid of duplicate entries and choose which one to keep:
+
 data_cleanedup <- interesting_data
 data_cleanedup$TimeDiff <- as.numeric(data_cleanedup$TimeDiff)
 
-
+#Get rid of duplicate entries and choose which one to keep:
 # Define a scoring function:
 data_cleanedup$Score <- (10000000000/data_cleanedup$Distance^2) * transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(20), sdlog = 0.7)
 
@@ -106,57 +104,47 @@ data_cleanedup <- data_cleanedup %>%
   slice_max(Score, n = 1) %>%
   ungroup()
 
+unique_sample_ids <- data_cleanedup %>%
+  distinct(Sample_ID)
+
 # cor(data_cleanedup$RowsDiscarded, data_cleanedup$ng_g)
 # cor(data_cleanedup$Distance, data_cleanedup$ng_g)
 # cor(data_cleanedup$TimeDiff, data_cleanedup$ng_g)
 
-
-fcm_specific <- data.frame()
-
-for (i in 1:nrow(unique_sample_ids)) {
-  current_id <- unique_sample_ids$Sample_ID[i]
-  rows_with_id <- interesting_data %>%
-    filter(Sample_ID == current_id)
-  new_entry <- rows_with_id %>%
-    filter(Distance == min(Distance)) #Use the Stressor Event that was closest
-  new_entry <- new_entry %>%
-    arrange(TimeDiff) %>%
-    slice_head(n = 1)
-  fcm_specific <- rbind(fcm_specific, new_entry)
-}
 
 usiv <- unique_sample_ids$Sample_ID
 
 fcm_reference <- FCMStress %>%
   filter(!(Sample_ID %in% usiv))
 
-t_test_fcm <- t.test(fcm_specific$ng_g, fcm_reference$ng_g)
+t_test_fcm <- t.test(data_cleanedup$ng_g, fcm_reference$ng_g)
 
 print(t_test_fcm)
 
 
-specific_mean <- mean(fcm_specific$ng_g, na.rm = TRUE)
-specific_n <- sum(!is.na(fcm_specific$ng_g))
+specific_mean <- mean(data_cleanedup$ng_g, na.rm = TRUE)
+specific_n <- sum(!is.na(data_cleanedup$ng_g))
 
 reference_mean <- mean(fcm_reference$ng_g, na.rm = TRUE)
 reference_n <- sum(!is.na(fcm_reference$ng_g))
 
-lm1 <- lm(fcm_specific$ng_g ~ fcm_specific$Distance)
+lm1 <- lm(data_cleanedup$ng_g ~ data_cleanedup$Distance)
 lm1$coefficients[2]
 
-ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
+ggplot(data_cleanedup, aes(x = Distance, y = ng_g)) +
   geom_point(color = "blue") +
   geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
   geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
   geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
+  scale_x_log10() +
   labs(
     title = "Plot of ng_g vs Distance (with reference mean)",
     x = "Distance",
     y = "ng_g"
   ) +
-  # Add annotations for fcm_specific
+  # Add annotations for data_cleanedup
   annotate("text", x = Inf, y = Inf, hjust = 1, vjust = 1,
-           label = paste("fcm_specific (blue):",
+           label = paste("data_cleanedup (blue):",
                          "\nn =", specific_n,
                          "\nmean =", round(specific_mean, 2)),
            color = "blue", size = 3.5) +
@@ -175,41 +163,10 @@ ggplot(fcm_specific, aes(x = Distance, y = ng_g)) +
   theme_minimal() +
   theme(plot.margin = margin(5, 50, 5, 5))
 
-#Some magic
-fcm_specific$Impact_Factor <- fcm_specific$StressorID
 
-for (i in 1:nrow(fcm_specific)) {
-  timediff_accepted <- 0
-  
-  if (as.numeric(fcm_specific[i,]$TimeDiff) > gut_retention_time_lower &&
-      as.numeric(fcm_specific[i,]$TimeDiff) < gut_retention_time_upper) {
-    timediff_accepted <- 1
-  }
-  
-  fcm_specific[i,]$Impact_Factor <- ((1/fcm_specific[i,]$Distance^2)*timediff_accepted)*10000000
-}
-
-fcm_specific_impacted <- subset(fcm_specific, Impact_Factor > 0.1)
-
-lm1 <- lm(ng_g ~ Impact_Factor, data=fcm_specific_impacted)
-summary(lm1)
-
-ggplot(fcm_specific_impacted, aes(x = Impact_Factor, y = ng_g)) +
-  geom_point(color = "blue") +
-  scale_x_log10() +
-  geom_smooth( color = "blue", linewidth = 0.5, se = FALSE) + 
-  geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
-  geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
-  labs(
-    title = "Plot of ng_g vs\nImpact Factor(1/distance^2, TimeDiff within Gut Retention Boundaries)",
-    x = "Impact Factor",
-    y = "ng_g"
-  ) +
-  theme_minimal() +
-  theme(plot.margin = margin(5, 50, 5, 5))
 
 ##3D Plot:
-plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g,
+plot_ly(data_cleanedup, x = ~Distance, y = ~TimeDiff, z = ~ng_g,
         type = "scatter3d", mode = "markers",
         marker = list(size = 5, color = 'blue',
                       line = list(color = 'black', width = 2))) %>%
@@ -220,7 +177,7 @@ plot_ly(fcm_specific, x = ~Distance, y = ~TimeDiff, z = ~ng_g,
            zaxis = list(title = 'ng_g')
          ))
 
-hist(as.numeric(fcm_specific$TimeDiff), breaks = 120)
+hist(as.numeric(data_cleanedup$TimeDiff), breaks = 120)
 
 ###############################################################
 #Discussion about Log-Normal vs Gamme Fit for $ng_g

@@ -13,36 +13,49 @@ interpolated_positions <- rbindlist(lapply(1:nrow(HuntEventsDT), function(i) {
   hunt_x <- HuntEventsDT$X[i]
   hunt_y <- HuntEventsDT$Y[i]
   
-  # Filter rows only for Sender.IDs with timestamps around the hunting event
+  # Filter rows for the same Sender.IDs with timestamps around the hunting event
   relevant_data <- MovementDT[
     , .SD[t_ <= hunt_time | t_ >= hunt_time], by = Sender.ID]
   
   # Sort relevant_data by time to ensure accuracy
   setorder(relevant_data, t_)
   
-  # Calculate the closest rows before and after the event per Sender.ID
-  before_event <- relevant_data[, .SD[t_ <= hunt_time][.N], by = Sender.ID]
-  after_event <- relevant_data[, .SD[t_ >= hunt_time][1], by = Sender.ID]
-  
-  # Merge before and after events, renaming columns appropriately
-  merged_events <- merge(before_event, after_event, by = "Sender.ID", suffixes = c("_before", "_after"))
-  
-  # Perform interpolation
-  interpolated <- merged_events[
-    !is.na(t__before) & !is.na(t__after), 
-    .(
+  # Handle exact match cases explicitly
+  exact_match <- relevant_data[t_ == hunt_time]
+  if (nrow(exact_match) > 0) {
+    exact_match <- exact_match[, .(
       Sender.ID,
       HuntEventTime = hunt_time,
       HuntEventX = hunt_x,
       HuntEventY = hunt_y,
-      InterpolatedX = x__before + (as.numeric(difftime(hunt_time, t__before, units = "secs")) / 
-                                     as.numeric(difftime(t__after, t__before, units = "secs"))) * (x__after - x__before),
-      InterpolatedY = y__before + (as.numeric(difftime(hunt_time, t__before, units = "secs")) / 
-                                     as.numeric(difftime(t__after, t__before, units = "secs"))) * (y__after - y__before)
-    )
-  ]
+      InterpolatedX = x_,
+      InterpolatedY = y_
+    )]
+  } else {
+    # Calculate closest rows before and after the event per Sender.ID
+    before_event <- relevant_data[, .SD[t_ < hunt_time][.N], by = Sender.ID]
+    after_event <- relevant_data[, .SD[t_ > hunt_time][1], by = Sender.ID]
+    
+    # Merge before and after events
+    merged_events <- merge(before_event, after_event, by = "Sender.ID", suffixes = c("_before", "_after"))
+    
+    # Perform interpolation
+    exact_match <- merged_events[
+      !is.na(t__before) & !is.na(t__after),
+      .(
+        Sender.ID,
+        HuntEventTime = hunt_time,
+        HuntEventX = hunt_x,
+        HuntEventY = hunt_y,
+        InterpolatedX = x__before + (as.numeric(difftime(hunt_time, t__before, units = "secs")) /
+                                       as.numeric(difftime(t__after, t__before, units = "secs"))) * (x__after - x__before),
+        InterpolatedY = y__before + (as.numeric(difftime(hunt_time, t__before, units = "secs")) /
+                                       as.numeric(difftime(t__after, t__before, units = "secs"))) * (y__after - y__before)
+      )
+    ]
+  }
   
-  interpolated
+  exact_match
 }))
 
 
@@ -65,4 +78,4 @@ StressEvents <- StressEvents %>%
   mutate(StressorID = row_number())
 StressEvents$Distance <- as.numeric(StressEvents$Distance)
 
-View(StressEvents)
+#View(StressEvents)
