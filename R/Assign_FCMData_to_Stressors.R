@@ -1,4 +1,6 @@
 ########### assign FCM data ##############
+
+### rewrite using joins
 Assign_FCMData <- function(FCMStress.data, 
                            data.full,
                            gut.retention.threshold = c(9, 29),
@@ -30,7 +32,7 @@ Assign_FCMData <- function(FCMStress.data,
     hair_id <- sample_row$HairID
     ng_g <- sample_row$ng_g
     #
-    matching_events <- Stress %>%
+    matching_events <- Stress %>% ##### look up stress
       mutate(Sender.ID = as.character(Sender.ID)) %>%
       filter(
         Sender.ID == as.character(sender_id) &

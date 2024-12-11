@@ -1,3 +1,5 @@
+#### add save option
+
 plot_herds <- function() {
   ### visualize the positions of the groups
   p <- get.Herds(Movement, enclosures) %>%
