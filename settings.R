@@ -13,7 +13,7 @@ library(mgcv)
 
 # paths
 path.FCMStress <- "Data/raw/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
-path.Huntevents <- "Data/raw/Hunt Events - CRS= ETRS UTM 33N.csv"
+path.Huntevents <- "Data/raw/Hunting Events_LMU.csv"
 path.Movement <- "Data/raw/Movement - CRS=ETRS UTM 33N.csv"
 path.Pregancy <- "Data/raw/Reproduction Success Results.xlsx"
 
