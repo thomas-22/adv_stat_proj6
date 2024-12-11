@@ -33,7 +33,7 @@ prep.HuntEvents.data <- function() {
     select(-Laengengrad_wgs, -Breitengrad_wgs) %>%
     sf::st_as_sf(coords = c("lon", "lat"), crs = 4326, na.fail = FALSE, remove = FALSE) %>%
     # project into UTM 33N
-    sf::st_transform(crs = 32633) %>%
+    sf::st_transform(crs = 25833) %>%
     # get x, y coordinates
     mutate(
       X = sf::st_coordinates(.)[, 1],
