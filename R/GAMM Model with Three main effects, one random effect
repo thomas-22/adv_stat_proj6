@@ -1,0 +1,248 @@
+library(dplyr)
+library(lubridate)
+library(geosphere)
+library(sf)
+
+HuntsReduced <- as.data.frame(HuntsReduced)
+
+# Formatting the date and time
+FCMStress$Collar_t_ <- ymd_hms(FCMStress$Collar_t_)
+Movement$t_ <- ymd_hms(Movement$t_)
+HuntsReduced$t_ <- ymd_hms(HuntsReduced$t_)
+
+# Make sure it's listed as the correct data type
+FCMStress$Sender.ID <- as.character(FCMStress$Sender.ID)
+Movement$Sender.ID <- as.character(Movement$Sender.ID)
+
+# Make sure the data frame has X and Y coordinate columns and set their CRS to ETRS UTM 33N (EPSG 32633)
+# transform FCMStress 
+FCMStress_sf <- st_as_sf(FCMStress, coords = c("X", "Y"), crs = 32633)  # EPSG 32633 为 ETRS UTM 33N
+FCMStress_sf <- st_transform(FCMStress_sf, crs = 4326)  # EPSG 4326 为 WGS 84
+FCMStress$lon <- st_coordinates(FCMStress_sf)[, 1]
+FCMStress$lat <- st_coordinates(FCMStress_sf)[, 2]
+
+# transform Movement 
+Movement_sf <- st_as_sf(Movement, coords = c("x_", "y_"), crs = 32633)  # EPSG 32633 为 ETRS UTM 33N
+Movement_sf <- st_transform(Movement_sf, crs = 4326)  # EPSG 4326 为 WGS 84
+Movement$lon <- st_coordinates(Movement_sf)[, 1]
+Movement$lat <- st_coordinates(Movement_sf)[, 2]
+
+# transform HuntsReduced 
+HuntsReduced_sf <- st_as_sf(HuntsReduced, coords = c("X", "Y"), crs = 32633)  # EPSG 32633 为 ETRS UTM 33N
+HuntsReduced_sf <- st_transform(HuntsReduced_sf, crs = 4326)  # EPSG 4326 为 WGS 84
+HuntsReduced$lon <- st_coordinates(HuntsReduced_sf)[, 1]
+HuntsReduced$lat <- st_coordinates(HuntsReduced_sf)[, 2]
+
+
+
+
+library(dplyr)
+library(geosphere)
+
+# Defining parameters
+distance_threshold <- 5000  
+
+# Initialization results table
+results_table <- data.frame(
+  Sender.ID = character(),
+  Stress_t = as.POSIXct(character()),
+  defecation_t = as.POSIXct(character()),
+  nearest_hunt_time = as.POSIXct(character()),
+  distance_to_hunt = numeric(),
+  stringsAsFactors = FALSE
+)
+
+# 
+for (i in 1:nrow(FCMStress)) {
+  fcm_row <- FCMStress[i, ]
+  
+  # 1. Hypothetical time of stressful event
+  stress_time <- fcm_row$Collar_t_ - 19 * 60 * 60  # 回溯 19 小时
+  
+  # 2. Screening of hunting events
+  valid_hunt_events <- HuntsReduced %>%
+    filter(
+      abs(difftime(stress_time, t_, units = "hours")) <= 5  # 应激事件前后5小时
+    )
+  
+  if (nrow(valid_hunt_events) == 0) next
+  
+  # 3. Filtering of movement records corresponding to Red Deer
+  movement_candidates <- Movement %>%
+    filter(Sender.ID == fcm_row$Sender.ID)  # 过滤出对应的红鹿数据
+  
+  if (nrow(movement_candidates) == 0) next
+  
+  # 4. Iterate over valid hunting events and compute distances
+  for (j in 1:nrow(valid_hunt_events)) {
+    hunt_event <- valid_hunt_events[j, ]
+    
+    if (is.na(hunt_event$lon) || is.na(hunt_event$lat)) next
+    
+    # Calculate the distance from each red deer location to the hunting event
+    distances <- movement_candidates %>%
+      filter(!is.na(x_) & !is.na(y_)) %>%  # 
+      mutate(
+        distance_to_hunt = distHaversine(
+          c(hunt_event$lon, hunt_event$lat),  # position hunt
+          cbind(lon, lat)                       # position deer
+        )
+      ) %>%
+      filter(distance_to_hunt <= distance_threshold) %>%  
+      arrange(distance_to_hunt)  # Sort by distance
+    
+    if (nrow(distances) == 0) next
+    
+    closest_distance <- distances[1, ]
+    
+    # 5. Save results to results table
+    results_table <- rbind(
+      results_table,
+      data.frame(
+        Sender.ID = fcm_row$Sender.ID,
+        Stress_t = stress_time,
+        defecation_t = fcm_row$Collar_t_,
+        nearest_hunt_time = hunt_event$t_,
+        distance_to_hunt = closest_distance$distance_to_hunt,
+        stringsAsFactors = FALSE
+      )
+    )
+    
+    break
+  }
+}
+
+results_table <- results_table %>%
+  dplyr::mutate(time_to_hunt = defecation_t - nearest_hunt_time)
+results_table[,"time_to_hunt"] <- as.numeric(results_table[,"time_to_hunt"] )
+
+FCMStress <- FCMStress %>%
+  dplyr::mutate(between_time =as.numeric(Waypoint_t_ - Collar_t_))
+
+library(mgcv)
+
+FCMStress_gamm <- FCMStress %>%
+  left_join(
+    results_table %>% 
+      dplyr::select(Sender.ID, distance_to_hunt, time_to_hunt),
+    by = c("Sender.ID" = "Sender.ID")
+  ) 
+
+
+FCMStress_gamm <- FCMStress_gamm %>%
+  filter(!is.na(ng_g) & !is.na(distance_to_hunt) & !is.na(Sender.ID) & !is.na(time_to_hunt) & !is.na(between_time)) %>%
+  dplyr::select(ng_g, distance_to_hunt, time_to_hunt, Sender.ID, between_time) %>%
+  dplyr::filter(between_time > 0 & between_time <15)
+
+FCMStress_gamm <- FCMStress_gamm %>%
+  mutate(
+    time_to_hunt_scaled = scale(time_to_hunt),
+    distance_to_hunt_scaled = scale(distance_to_hunt)
+  ) 
+
+#The prior is the gamma distribution of the gamm
+gamm_model_pori_gamma <- gamm(
+   ng_g ~ s(distance_to_hunt) + s(time_to_hunt) + s(between_time),
+  random = list(Sender.ID = ~1),
+  data = FCMStress_gamm,
+  family = Gamma(link = "log")
+)
+
+# View Results
+summary(gamm_model_pori_gamma$gam)
+summary(gamm_model_pori_gamma$lme)
+
+residuals <- residuals(gamm_model_pori_gamma$gam)
+fitted_values <- fitted(gamm_model_pori_gamma$gam)
+
+# Residual Diagnostic Chart
+residual_plot <- ggplot(data = data.frame(residuals, fitted_values), aes(x = fitted_values, y = residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Residuals vs Fitted Values", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+# normality test
+qq_plot <- ggplot(data = data.frame(residuals), aes(sample = residuals)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  labs(title = "Q-Q Plot of Residuals") +
+  theme_minimal()
+
+
+residual_plot + qq_plot
+
+#rmse
+predicted_values <- predict(gamm_model_pori_gamma$gam, newdata = FCMStress_gamm)
+actual_values <- FCMStress_gamm$ng_g
+rmse <- sqrt(mean((predicted_values - actual_values)^2))
+print(paste("RMSE:", rmse))
+
+#The prior is a gamm model for the family of normal distributions
+gamm_model_pori_normal <- gamm(
+  ng_g ~ s(distance_to_hunt) + s(time_to_hunt) + s(between_time),
+  random = list(Sender.ID = ~1),
+  data = FCMStress_gamm,
+  family = gaussian()
+)
+predicted_values1 <- predict(gamm_model_pori_normal$gam, newdata = FCMStress_gamm)
+# rmse
+actual_values1 <- FCMStress_gamm$ng_g
+rmse <- sqrt(mean((predicted_values1 - actual_values1)^2))
+print(paste("RMSE:", rmse))
+
+# Visualization of data trends
+trend_plot_distance <- ggplot(FCMStress_gamm, aes(x = distance_to_hunt, y = ng_g)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_smooth(method = "gam", formula = y ~ s(x, k = 10), color = "red", se = TRUE) +
+  labs(title = "FCM Levels vs Distance to Hunt", x = "Distance to Hunt (scaled)", y = "FCM Levels (ng/g)") +
+  theme_minimal()
+
+trend_plot_distance
+
+trend_plot_time <- ggplot(FCMStress_gamm, aes(x = timediff, y = ng_g)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_smooth(method = "gam", formula = y ~ s(x, k = 10), color = "red", se = TRUE) +
+  labs(title = "FCM Levels vs Distance to Hunt", x = "Time to Hunt", y = "FCM Levels (ng/g)") +
+  theme_minimal()
+
+trend_plot_distance /
+trend_plot_time
+
+trend_plot_between <- ggplot(FCMStress_gamm, aes(x = between_time, y = ng_g)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_smooth(method = "gam", formula = y ~ s(x, k = 10), color = "red", se = TRUE) +
+  labs(title = "FCM Levels vs Distance to Hunt", x = "Time between coller and sample", y = "FCM Levels (ng/g)") +
+  theme_minimal()
+
+
+
+
+smooth_effects <- plot(gamm_model_pori_gamma$gam, pages = 1, scheme = 1, residuals = TRUE)
+# Plotting the smoothing effect
+plot(gamm_model_pori_gamma$gam, pages = 1, scheme = 2)
+
+
+# Extracting Smooth Surface Data for 3D
+grid <- expand.grid(
+  distance_to_hunt = seq(min(FCMStress_gamm$distance_to_hunt), max(FCMStress_gamm$distance_to_hunt), length.out = 50),
+  time_to_hunt = seq(min(FCMStress_gamm$time_to_hunt), max(FCMStress_gamm$ng_g), length.out = 50)
+)
+
+grid$ng_g <- predict(gamm_model$gam, newdata = grid)
+
+plot_3D_distance_time <- plot_ly(data = FCMStress_gamm, x = ~distance_to_hunt, y = ~time_to_hunt, z = ~ng_g, 
+                type = "scatter3d", mode = "markers", marker = list(size = 3, color = ~ng_g, colorscale = "Viridis")) %>%
+  add_surface(
+    x = ~grid$distance_to_hunt, y = ~grid$time_to_hunt, z = ~matrix(grid$ng_g, nrow = 50, ncol = 50),
+    opacity = 0.7, colorscale = "Viridis"
+  ) %>%
+  layout(
+    title = "3D Visualization of FCM Levels",
+    scene = list(
+      xaxis = list(title = "Distance to Hunt"),
+      yaxis = list(title = "Time to Hunt"),
+      zaxis = list(title = "FCM Level (ng/g)")
+    )
+  )
+
