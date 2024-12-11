@@ -7,14 +7,40 @@ prep.Movement.data <- function() {
   # add distance traveled here
 }
 
-prep.HuntEvents.data <- function() {
-  read.csv(path.Huntevents, header = TRUE, sep = ",")[2:5] %>%
+prep.HuntEvents.data_old <- function() {
+  read.csv(path.Huntevents_old, header = TRUE, sep = ",")[2:5] %>%
   mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
            parse_date_time(orders = "%d/%m/%Y %h:%M:%s"),
          Date = parse_date_time(Datum, orders = "%d/%m/%Y")) %>%
     select(-Zeit, -Datum) %>%
     distinct() %>%
     mutate(Hunt.ID = as.factor(row_number()))
+}
+
+prep.HuntEvents.data <- function() {
+  read.csv(path.Huntevents, header = TRUE, sep = ";") %>%
+    as_tibble() %>%
+    mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
+            parse_date_time(orders = "%d/%m/%Y %h:%M"),
+          Date = dmy(Datum)) %>%
+    distinct() %>%
+    mutate(Hunt.ID = as.factor(row_number())) %>%
+    select(-Datum, -Zeit, -X.) %>%
+    mutate(
+      lon = as.numeric(Laengengrad_wgs), # one entry is "13.NA", i.e., NA
+      lat = as.numeric(Breitengrad_wgs),
+    ) %>%
+    select(-Laengengrad_wgs, -Breitengrad_wgs) %>%
+    sf::st_as_sf(coords = c("lon", "lat"), crs = 4326, na.fail = FALSE, remove = FALSE) %>%
+    # project into UTM 33N
+    sf::st_transform(crs = 32633) %>%
+    # get x, y coordinates
+    mutate(
+      X = sf::st_coordinates(.)[, 1],
+      Y = sf::st_coordinates(.)[, 2]
+    ) %>%
+    # Drop sf related information. We only need X, Y coordinates.
+    sf::sf_drop_geometry()
 }
 
 prep.FCMStress.data <- function() {
