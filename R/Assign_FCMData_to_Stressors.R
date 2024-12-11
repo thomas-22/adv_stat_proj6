@@ -2,7 +2,6 @@ library(dplyr)
 library(ggplot2)
 #install.packages("plotly")
 library(plotly)
-library(MASS)  # For fitting distributions
 #install.packages("ggtext")
 library(ggtext)
 
@@ -14,12 +13,12 @@ transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0
   dlnorm(TimeDiff, meanlog = meanlog, sdlog = sdlog)
 }
 
-ignore_distance_filter <- TRUE
+ignore_distance_filter <- FALSE
 
 distance_threshold <- 100000 #in Meters
 
 gut_retention_time_lower <- 0 #in Hours
-gut_retention_time_upper <- 10000 #in Hours
+gut_retention_time_upper <- 1000000 #in Hours
 gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
 
 # Create an empty data frame to store results
@@ -31,7 +30,7 @@ FCMData_Assigned <- data.frame(Sender.ID = integer(),
                       Speed = numeric(),
                       Distance = numeric(),
                       ng_g = numeric(),
-                      StressorID = integer(),
+                      #StressorID = integer(),
                       stringsAsFactors = FALSE)
 cat("\n")
 
@@ -48,7 +47,7 @@ for (i in 1:nrow(FCMStress)) {
   hair_id <- sample_row$HairID
   ng_g <- sample_row$ng_g
   
-  matching_events <- StressEvents %>%
+  matching_events <- StressEvents_new %>%
     mutate(Sender.ID = as.character(Sender.ID)) %>%
     filter(
       Sender.ID == as.character(sender_id) & 
@@ -68,7 +67,7 @@ for (i in 1:nrow(FCMStress)) {
                               TimeDiff = difftime(collar_time, event_row$HuntEventTime, units = "hours"),
                               Distance = event_row$Distance,
                               ng_g = ng_g,
-                              StressorID = event_row$StressorID,
+                              #StressorID = event_row$StressorID,
                               stringsAsFactors = FALSE)
       
       FCMData_Assigned <- rbind(FCMData_Assigned, new_entry)
@@ -166,9 +165,10 @@ ggplot(data_cleanedup, aes(x = Distance, y = ng_g)) +
 
 
 ##3D Plot:
-plot_ly(data_cleanedup, x = ~Distance, y = ~TimeDiff, z = ~ng_g,
+plot_ly(FCMData_Assigned %>%
+          filter(Distance < 100000), x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
         type = "scatter3d", mode = "markers",
-        marker = list(size = 5, color = 'blue',
+        marker = list(size = 1, color = 'blue',
                       line = list(color = 'black', width = 2))) %>%
   layout(title = "3D Plot with Black Outline",
          scene = list(
@@ -188,12 +188,12 @@ data1 <- FCMStress %>%
 data <- data1$ng_g
 
 ### Fit Log-Normal Distribution ###
-lognorm_fit <- fitdistr(data, "lognormal")
+lognorm_fit <- MASS::fitdistr(data, "lognormal")
 meanlog <- lognorm_fit$estimate["meanlog"]
 sdlog <- lognorm_fit$estimate["sdlog"]
 
 ### Fit Gamma Distribution ###
-gamma_fit <- fitdistr(data, "gamma")
+gamma_fit <- MASS::fitdistr(data, "gamma")
 shape <- gamma_fit$estimate["shape"]
 rate <- gamma_fit$estimate["rate"]
 
@@ -239,7 +239,7 @@ text(x = max(hist_data$breaks) * 0.5,
 ###############################################################
 
 ggplot(FCMStress, aes(x = Collar_t_)) +
-  geom_histogram(binwidth = 604800, fill = "lightblue", color = "black") + # Binwidth = 1 Week
+  geom_histogram(binwidth = 604800, fill = "lightblue", color = "black") + # Binwidth = 1 Week = 604800 seconds
   scale_x_datetime(
     date_labels = "%Y-%m-%d",
     date_breaks = "60 days"

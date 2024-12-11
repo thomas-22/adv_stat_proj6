@@ -65,7 +65,7 @@ HuntEvents_Reduced_UTM_New <- HuntEvents_utm %>%
          Y = st_coordinates(.)[,2]) %>%
   st_drop_geometry()
 
-HuntEventsreduced <- 
+HuntEventsreduced <- HuntEvents_Reduced_UTM_New
 
 
 #NewHunts Without Time:
@@ -87,5 +87,5 @@ FCMStress <- read_delim("Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
 # save as RDS
 saveRDS(Movement, "data/Movement.RDS")
 saveRDS(FCMStress, "data/FCMStress.RDS")
-saveRDS(HuntEvents, "data/Hunts.RDS")
+# saveRDS(HuntEvents, "data/Hunts.RDS")
 saveRDS(HuntEventsreduced, "data/HuntsReduced.RDS")
