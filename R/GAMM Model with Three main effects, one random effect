@@ -57,19 +57,19 @@ for (i in 1:nrow(FCMStress)) {
   fcm_row <- FCMStress[i, ]
   
   # 1. Hypothetical time of stressful event
-  stress_time <- fcm_row$Collar_t_ - 19 * 60 * 60  # 回溯 19 小时
+  stress_time <- fcm_row$Collar_t_ - 19 * 60 * 60  # Go back 19 hours.
   
   # 2. Screening of hunting events
   valid_hunt_events <- HuntsReduced %>%
     filter(
-      abs(difftime(stress_time, t_, units = "hours")) <= 5  # 应激事件前后5小时
+      abs(difftime(stress_time, t_, units = "hours")) <= 5  # 5 hours before and after a stressful event
     )
   
   if (nrow(valid_hunt_events) == 0) next
   
   # 3. Filtering of movement records corresponding to Red Deer
   movement_candidates <- Movement %>%
-    filter(Sender.ID == fcm_row$Sender.ID)  # 过滤出对应的红鹿数据
+    filter(Sender.ID == fcm_row$Sender.ID)  
   
   if (nrow(movement_candidates) == 0) next
   
