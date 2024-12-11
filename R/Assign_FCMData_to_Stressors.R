@@ -19,7 +19,7 @@ ignore_distance_filter <- TRUE
 distance_threshold <- 100000 #in Meters
 
 gut_retention_time_lower <- 0 #in Hours
-gut_retention_time_upper <- 100000 #in Hours
+gut_retention_time_upper <- 10000 #in Hours
 gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
 
 # Create an empty data frame to store results
@@ -94,7 +94,7 @@ data_cleanedup$TimeDiff <- as.numeric(data_cleanedup$TimeDiff)
 
 #Get rid of duplicate entries and choose which one to keep:
 # Define a scoring function:
-data_cleanedup$Score <- (10000000000/data_cleanedup$Distance^2) * transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(20), sdlog = 0.7)
+data_cleanedup$Score <- (10000000000/data_cleanedup$Distance^2) * transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(32), sdlog = 0.7)
 
 data_cleanedup <- data_cleanedup %>%
   group_by(Sample_ID) %>%
