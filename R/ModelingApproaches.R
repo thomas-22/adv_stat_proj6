@@ -13,7 +13,7 @@ library(reshape2)
 # -------------------------
 # DATA PREPARATION FUNCTION
 # -------------------------
-prepare_data <- function(data, ratio = 0.75) {
+prepare_data <- function(data, covariables = c("TimeDiff", "Distance"), ratio = 0.75) {
   # Filter non-positive values if needed
   modeling_data <- data %>%
     filter(ng_g > 0)
@@ -24,13 +24,13 @@ prepare_data <- function(data, ratio = 0.75) {
   test_data <- subset(modeling_data, split == FALSE)
   
   # Create matrices for XGBoost
-  X_train <- data.matrix(train_data[, c("TimeDiff", "Distance")])
+  X_train <- data.matrix(train_data[, covariables])
   y_train <- train_data$ng_g
   
-  X_test <- data.matrix(test_data[, c("TimeDiff", "Distance")])
+  X_test <- data.matrix(test_data[, covariables])
   y_test <- test_data$ng_g
   
-  X_full <- data.matrix(modeling_data[, c("TimeDiff", "Distance")])
+  X_full <- data.matrix(modeling_data[, covariables])
   y_full <- modeling_data$ng_g
   
   list(
@@ -406,11 +406,109 @@ plot_results <- function(final_model, X_test, y_test,
   fig
 }
 
+plot_results_v2 <- function(final_model, X_test, y_test, 
+                         rmse_test_final, 
+                         gamma_fit_eval_full_mean,
+                         upper_difftime, 
+                         upper_distance, 
+                         data_cleanedup) {
+  # Prediction for plotting
+  y_pred <- predict(final_model, X_test)
+  
+  # Scatter + LM line plot
+  p <- ggplot(data.frame(Actual = y_test, Predicted = y_pred), aes(x = Actual, y = Predicted)) +
+    geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) +
+    xlim(0, 1500) +
+    ylim(0, 1500) +
+    geom_point(size = 1) +
+    geom_abline(slope = 1, intercept = 0, color = "red") +
+    labs(title = "XGBoost: Predicted vs Actual, ng_g, After Grid Search Tuning", 
+         x = "Actual", y = "Predicted") +
+    theme_light() +
+    coord_fixed(ratio = 1) +
+    annotate("text", x = 500, y = Inf, hjust = 1, vjust = 2.5,
+             label = paste("RMSE:", round(rmse_test_final, 2)),
+             color = "black", size = 3.5)
+  
+  print(p)
+  
+  # 3D surface plot
+  time_diff_t <- seq(1, upper_difftime, length.out = 1500)
+  distance_t  <- seq(1, upper_distance, length.out = 1500)
+  
+  combinations <- expand.grid(TimeDiff = time_diff_t, Distance = distance_t)
+  combos_matrix <- as.matrix(combinations)
+  visual_y_pred <- predict(final_model, combos_matrix)
+  
+  visual_final_model <- cbind(combinations, ng_g = visual_y_pred)
+  grid_data <- dcast(visual_final_model, TimeDiff_T ~ Distance_T, value.var = "ng_g")
+  
+  fig <- plot_ly(
+    data = as.data.frame(data_cleanedup),
+    x = ~TimeDiff_T,
+    y = ~Distance_T,
+    z = ~ng_g,
+    type = "scatter3d",
+    mode = "markers",
+    marker = list(size = 3, color = "black")
+  )
+  
+  fig <- fig %>%
+    add_trace(
+      z = as.matrix(grid_data[, -1]),
+      x = grid_data$TimeDiff_T,
+      y = as.numeric(colnames(grid_data)[-1]),
+      type = "surface",
+      colorscale = "Viridis",
+      opacity = 0.7
+    ) %>%
+    layout(
+      title = "XGBoost Model (Trained on transformed Full Data) Prediction + Actual Data (black)",
+      scene = list(
+        xaxis = list(title = "Time Difference, Hours, Transformed"),
+        yaxis = list(title = "Distance (m), Transformed"),
+        zaxis = list(title = "FCM Level, ng/g")
+      ),
+      annotations = list(
+        list(
+          x = 1.05,
+          y = 0.5,
+          text = paste(
+            "Model Parameters:\n\n",
+            "Objective: ", final_model$params$objective, "\n",
+            "Evaluation Metric: ", final_model$params$eval_metric, "\n",
+            "Max Depth: ", final_model$params$max_depth, "\n",
+            "Eta: ", round(final_model$params$eta, 3), "\n",
+            "Gamma: ", round(final_model$params$gamma, 3), "\n",
+            "Subsample: ", round(final_model$params$subsample, 3), "\n",
+            "Colsample By Tree: ", round(final_model$params$colsample_bytree, 3), "\n",
+            "Min Child Weight: ", round(final_model$params$min_child_weight, 3), "\n",
+            "Test-RMSE (Model): ", round(rmse_test_final, 3), "\n",
+            "Test-RMSE (Gamma Fit): ", round(gamma_fit_eval_full_mean, 3)
+          ),
+          showarrow = FALSE,
+          font = list(size = 14, color = "black", family = "Arial"),
+          align = "left",
+          xanchor = "right",
+          yanchor = "bottom"
+        )
+      )
+    )
+  
+  fig
+}
+
+
 # -------------------------
 # MAIN EXECUTION FLOW
 # -------------------------
 
-prepared_data <- prepare_data(data_cleanedup)
+# Main_Get_XGBModel <- function(data_cleanedup = data_cleanedup,
+#                               covariables = c("TimeDiff", "Distance")
+#                               ){
+#   
+# }
+prepared_data <- prepare_data(data_cleanedup, covariables = c("TimeDiff", "Distance"))
 X_train <- prepared_data$X_train
 y_train <- prepared_data$y_train
 X_test <- prepared_data$X_test
@@ -419,6 +517,7 @@ X_full <- prepared_data$X_full
 y_full <- prepared_data$y_full
 train_data <- prepared_data$train_data
 test_data <- prepared_data$test_data
+
 
 cat("Data preparation complete.\n")
 
@@ -448,7 +547,6 @@ final_model <- train_final_model(X_full, y_full, best_params, nfold = 7)
 saveRDS(final_model, "final_xgboost_model.rds")
 
 # Evaluate gamma baseline
-cat("Evaluating gamma baseline...\n")
 gamma_fit_eval_full <- evaluate_gamma_fit(train_data, train_data, "ng_g", num_iterations = 1000)
 gamma_fit_eval_train <- evaluate_gamma_fit(train_data, test_data, "ng_g", num_iterations = 1000)
 
@@ -483,3 +581,75 @@ plotly_fig <- plot_results(
 )
 
 plotly_fig
+
+
+
+################
+#########Run with transformed variables
+################
+
+data_cleanedup$TimeDiff_T <- transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(32), sdlog = 0.7)
+data_cleanedup$Distance_T <- 1/(data_cleanedup$Distance^2)
+
+prepared_data_v2 <- prepare_data(data_cleanedup, covariables = c("TimeDiff_T", "Distance_T"))
+
+# Hyperparameter tuning
+best_params_v2 <- tune_xgboost(
+  X_train = prepared_data_v2$X_train, 
+  y_train = prepared_data_v2$y_train, 
+  X_test =  prepared_data_v2$X_test, 
+  y_test =  prepared_data_v2$y_test,
+  best_params = list(
+    max_depth = 6,
+    eta = 0.1734111,
+    gamma = 5.907800,
+    subsample = 0.6074106,
+    colsample_bytree = 1,
+    min_child_weight = 4.798780
+  ),
+  initialize_tuning = FALSE,
+  max_iterations = 10,
+  rmse_converge_tolerance = 1
+)
+
+# Train final model on full data
+final_model_v2 <- train_final_model(prepared_data_v2$X_full, prepared_data_v2$y_full, best_params_v2, nfold = 7)
+
+#Save final model
+saveRDS(final_model_v2, "final_xgboost_model_transformed_X.rds")
+
+# Evaluate gamma baseline
+gamma_fit_eval_full_v2 <- evaluate_gamma_fit(prepared_data_v2$train_data, prepared_data_v2$train_data, "ng_g", num_iterations = 1000)
+gamma_fit_eval_train_v2 <- evaluate_gamma_fit(prepared_data_v2$train_data, prepared_data_v2$test_data, "ng_g", num_iterations = 1000)
+
+# Compare baselines and permutations
+comparisons_v2 <- compare_baselines(
+  final_model = final_model_v2,
+  X_test = prepared_data_v2$X_test,
+  y_test = prepared_data_v2$y_test,
+  X_full = prepared_data_v2$X_full,
+  y_full = prepared_data_v2$y_full,
+  gamma_fit_eval_full = gamma_fit_eval_full_v2,
+  gamma_fit_eval_train = gamma_fit_eval_train_v2,
+  best_params = best_params_v2
+)
+cat("Final Model RMSE on Test:", comparisons_v2$rmse_test_final, "\n")
+cat("Gamma Baseline RMSE (Full):", comparisons_v2$gamma_fit_rmse_full, "\n")
+cat("Gamma Baseline RMSE (Train):", comparisons_v2$gamma_fit_rmse_train, "\n")
+cat("RMSE After Random Permutation (Test Predictions):", comparisons_v2$mean_rmse_test_random, "\n")
+cat("RMSE After Random Permutation (Full Predictions):", comparisons_v2$mean_rmse_full_random, "\n")
+cat("RMSE After Training on Permuted Labels:", comparisons_v2$fm_trainedon_permute_data_test_rmse, "\n")
+
+# Plot results
+plotly_fig_v2 <- plot_results_v2(
+  final_model = final_model_v2,
+  X_test = prepared_data_v2$X_test,
+  y_test = prepared_data_v2$y_test,
+  rmse_test_final = comparisons_v2$rmse_test_final,
+  gamma_fit_eval_full_mean = comparisons_v2$gamma_fit_rmse_full,
+  upper_difftime = max(as.integer(data_cleanedup$TimeDiff_T)),
+  upper_distance = max(as.integer(data_cleanedup$Distance_T)),
+  data_cleanedup = data_cleanedup
+)
+plotly_fig_v2
+
