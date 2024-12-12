@@ -436,7 +436,7 @@ plot_results_v2 <- function(final_model, X_test, y_test,
   time_diff_t <- seq(1, upper_difftime, length.out = 1500)
   distance_t  <- seq(1, upper_distance, length.out = 1500)
   
-  combinations <- expand.grid(TimeDiff = time_diff_t, Distance = distance_t)
+  combinations <- expand.grid(TimeDiff_T = time_diff_t, Distance_T = distance_t)
   combos_matrix <- as.matrix(combinations)
   visual_y_pred <- predict(final_model, combos_matrix)
   
@@ -608,7 +608,7 @@ best_params_v2 <- tune_xgboost(
     min_child_weight = 4.798780
   ),
   initialize_tuning = FALSE,
-  max_iterations = 10,
+  max_iterations = 30,
   rmse_converge_tolerance = 1
 )
 
