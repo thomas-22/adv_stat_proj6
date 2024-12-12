@@ -407,11 +407,11 @@ plot_results <- function(final_model, X_test, y_test,
 }
 
 plot_results_v2 <- function(final_model, X_test, y_test, 
-                         rmse_test_final, 
-                         gamma_fit_eval_full_mean,
-                         upper_difftime, 
-                         upper_distance, 
-                         data_cleanedup) {
+                            rmse_test_final, 
+                            gamma_fit_eval_full_mean,
+                            upper_difftime, 
+                            upper_distance, 
+                            data_cleanedup) {
   # Prediction for plotting
   y_pred <- predict(final_model, X_test)
   
@@ -432,17 +432,20 @@ plot_results_v2 <- function(final_model, X_test, y_test,
   
   print(p)
   
-  # 3D surface plot
-  time_diff_t <- seq(1, upper_difftime, length.out = 1500)
-  distance_t  <- seq(1, upper_distance, length.out = 1500)
+  # Generate logarithmically spaced sequences for the grid
+  time_diff_t <- exp(seq(log(1), log(upper_difftime), length.out = 1500))
+  distance_t  <- exp(seq(log(1), log(upper_distance), length.out = 1500))
   
   combinations <- expand.grid(TimeDiff_T = time_diff_t, Distance_T = distance_t)
   combos_matrix <- as.matrix(combinations)
   visual_y_pred <- predict(final_model, combos_matrix)
   
   visual_final_model <- cbind(combinations, ng_g = visual_y_pred)
+  
+  # Reshape data for surface plotting
   grid_data <- dcast(visual_final_model, TimeDiff_T ~ Distance_T, value.var = "ng_g")
   
+  # Actual data plot
   fig <- plot_ly(
     data = as.data.frame(data_cleanedup),
     x = ~TimeDiff_T,
@@ -453,6 +456,7 @@ plot_results_v2 <- function(final_model, X_test, y_test,
     marker = list(size = 3, color = "black")
   )
   
+  # Surface plot
   fig <- fig %>%
     add_trace(
       z = as.matrix(grid_data[, -1]),
@@ -465,8 +469,8 @@ plot_results_v2 <- function(final_model, X_test, y_test,
     layout(
       title = "XGBoost Model (Trained on transformed Full Data) Prediction + Actual Data (black)",
       scene = list(
-        xaxis = list(title = "Time Difference, Hours, Transformed"),
-        yaxis = list(title = "Distance (m), Transformed"),
+        xaxis = list(title = "Time Difference, Hours, Transformed", type = "log"),
+        yaxis = list(title = "Distance (m), Transformed", type = "log"),
         zaxis = list(title = "FCM Level, ng/g")
       ),
       annotations = list(
@@ -497,6 +501,7 @@ plot_results_v2 <- function(final_model, X_test, y_test,
   
   fig
 }
+
 
 
 # -------------------------
@@ -647,8 +652,8 @@ plotly_fig_v2 <- plot_results_v2(
   y_test = prepared_data_v2$y_test,
   rmse_test_final = comparisons_v2$rmse_test_final,
   gamma_fit_eval_full_mean = comparisons_v2$gamma_fit_rmse_full,
-  upper_difftime = max(as.integer(data_cleanedup$TimeDiff_T)),
-  upper_distance = max(as.integer(data_cleanedup$Distance_T)),
+  upper_difftime = max(data_cleanedup$TimeDiff_T),
+  upper_distance = max(data_cleanedup$Distance_T),
   data_cleanedup = data_cleanedup
 )
 plotly_fig_v2
