@@ -147,6 +147,15 @@ HuntEvents %>%
   ggplot() +
   geom_bar(aes(x = HuntHour), just = 0) +
   labs(x = "Hour of day")
+
+# Wait, what is the time difference between defecation and sampling?
+# (DefecTime == Collar_t_, SampleTime == Waypoint_t_)
+FCMStress %>% filter(Sample.ID == "K178A")
+# Any other crazy mistakes like this?
+FCMStress %>%
+  mutate(SampleDelayDays = difftime(SampleTime, DefecTime, units = "days")) %>%
+  filter(SampleDelayDays > days(1))
+# Probably the researchers got the date format wrong.
 ```
 
 ### Legacy

@@ -78,8 +78,6 @@ AssignFCMData <- function(FCMStress,
 
 FilterClosestTime <- function(data_full, gut.retention.hours = 14, k = 5) {
   # Keep temporally closest hunting event, accounting for gut retention time.
-  # Count the number of additional hunting events (with or without timestamp) in
-  # the pervious k days.
   # The input `data_full` needed for this function is produced by `AssignFCMData`.
 
   data_full %>%
@@ -89,10 +87,18 @@ FilterClosestTime <- function(data_full, gut.retention.hours = 14, k = 5) {
     ) %>%
     group_by(Sender.ID, Sample.ID) %>%
     mutate(
+      # Count the number of other hunting events (with or without timestamp) in
+      # the pervious k days (including the day of defecation).
+      # This could be an indicator of intensity of hunting and hence a confounder.
       nOtherHuntEvents = sum(!is.na(Hunt.ID)) - 1,
+      # Log of number of hunting events in the previous k days, including the
+      # last hunting event, whose time diff and distance will enter the model as
+      # main covariates. This is to avoid log(0).
+      # Whether to use the log version or the raw version is your choice.
       lognHuntEvents = log(nOtherHuntEvents + 1)
     ) %>%
-    filter(HuntTime == max(HuntTime), !is.na(Distance)) %>%
+    # Only keep the last hunting event with time and distance information
+    filter(HuntTime == max(HuntTime, na.rm = TRUE), !is.na(Distance)) %>%
     ungroup()
 }
 
