@@ -198,7 +198,7 @@ trend_plot_distance
 trend_plot_time
 trend_plot_distance_gamma
 
-# extract the results of smoothing functions提取平滑函数结果
+# extract the results of smoothing functions
 plot(gamm_model_assume_gamma$gam, pages = 1, scheme = 1, residuals = TRUE)
 
 # plot the smoothing effect
