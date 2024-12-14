@@ -1,16 +1,19 @@
 ########### Assign FCM data ##############
-
-# For each FCM sample, find all hunting events prior to that
-# 
-# `daydiff.threshold`: specify a preliminary filter for hunting events that we
-# consider for each FCM sample. This threshold should be loose. We will further
-# apply filters based on distance in time and space.
-# By default, the threshold is 100 days.
-AssignFCMData <- function(FCMStress, 
+AssignFCMData <- function(FCMStress,
                           Movement,
                           HuntEvents,
                           max.datediff = 100,
                           distance.unit = "km") {
+  # For each FCM sample, find all hunting events within a certain time frame,
+  # calculate distance and time diff, and add potential confounders.
+  # 
+  # `daydiff.threshold`: specify a preliminary filter for hunting events that we
+  # consider for each FCM sample. This threshold should be loose. We will further
+  # apply filters based on distance in time and space.
+  # By default, the threshold is 100 days.
+  # Supported distance units are "km" and "m".
+
+
   # Find all combinations of deer and hunting events where the hunting event
   # happened within the specified time frame before the FCM sample was taken
   data <- FCMStress %>%
@@ -24,12 +27,13 @@ AssignFCMData <- function(FCMStress,
     ) %>%
     distinct()
   
-  # Find all deer & hunting event pairs with full time & space information
+  # Get deer & hunting event pairs with full time & space information
   deer_hunting_pairs <- data %>%
     filter(!is.na(HuntTime)) %>%
     distinct(Sender.ID, Hunt.ID) %>%
     na.omit()
-  # Approximate distance between deer and hunting event
+  
+  # Get distance between deer and hunting event
   distances <- CalcDist(deer_hunting_pairs, Movement, HuntEvents, distance.unit) %>%
     select(Sender.ID, Hunt.ID, starts_with("Distance"))
 
@@ -72,14 +76,12 @@ AssignFCMData <- function(FCMStress,
 
 ########### Filter Assigned Data ##############
 
-# Keep temporally closest hunting event,
-# while taking gut retention time into account.
-# Count the number of additional hunting events (with or without timestamp) in
-# the pervious k days.
-# You can add more filtering options, like setting an upper threshold for gut
-# retention time or do something about distance.
-# The input data needed for this function is produced by `AssignFCMData`.
 FilterClosestTime <- function(data_full, gut.retention.hours = 14, k = 5) {
+  # Keep temporally closest hunting event, accounting for gut retention time.
+  # Count the number of additional hunting events (with or without timestamp) in
+  # the pervious k days.
+  # The input `data_full` needed for this function is produced by `AssignFCMData`.
+
   data_full %>%
     filter(
       TimeDiff >= gut.retention.hours | is.na(TimeDiff),

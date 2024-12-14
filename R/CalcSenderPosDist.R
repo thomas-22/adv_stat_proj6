@@ -1,9 +1,10 @@
 # Calculuate the distances between deer and hunting events
 #
-# `sender_hunt_pairs` is a data.frame with Sender.ID and Hunt.ID as columns.
+# `deer_hunt_pairs` is a data.frame with Sender.ID and Hunt.ID as columns.
 # The function interpolates the position of the deer at the time of the hunting
 # event and calculates the Euclidean distance, the distance in X direction, and
 # the distance in Y direction.
+# Support distance units are "km" and "m".
 CalcDist <- function(deer_hunt_pairs, Movement, HuntEvents, distance.unit = "km") {
   # TBD assertions?
 

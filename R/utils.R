@@ -3,23 +3,18 @@ prep.Movement.data <- function() {
   # mutates 
   # >> Sender.ID as factor
   # >> t_ as datetime
-  # >> dist_traveled as distance traveled respective to the point before using euclidean distance
+  # >> DistanceTraveled as distance traveled respective to the point before using euclidean distance
+  # This is the response variable for our optional task.
   read.csv(path.Movement, header = TRUE, sep = ";")[,2:5] %>%
     mutate(Sender.ID = factor(Sender.ID),
            t_ = parse_date_time(t_, orders = "%d/%m/%Y %h:%M")) %>%
     group_by(Sender.ID) %>%
-    mutate(dist_traveled = sqrt((x_ - lag(x_))^2 + (y_ - lag(y_))^2)) %>%
-    mutate(dist_traveled = ifelse(is.na(dist_traveled), 0, dist_traveled)) %>%
+    mutate(DistanceTraveled = sqrt((x_ - lag(x_))^2 + (y_ - lag(y_))^2)) %>%
+    mutate(DistanceTraveled = ifelse(is.na(DistanceTraveled), 0, DistanceTraveled)) %>%
   ungroup()
 }
 
-# prep.HuntEvents.data <- function() {
-  # load HuntEvents Data located at path.Huntevents
-  # mutates:
-  # >> t_ as date time consisting of Datum & Zeit
-  # >> Date as ymd of Datum
-  # only returns unique entries
-  # adds unique Hunt.ID to each unique HuntingEvent
+# prep.HuntEvents.data_old <- function() {
 #   read.csv(path.Huntevents_old, header = TRUE, sep = ",")[2:5] %>%
 #   mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
 #            parse_date_time(orders = "%d/%m/%Y %h:%M:%s"),
@@ -30,6 +25,12 @@ prep.Movement.data <- function() {
 # }
 
 prep.HuntEvents.data <- function() {
+  # load HuntEvents Data located at path.Huntevents
+  # mutates:
+  # >> t_ as date time consisting of Datum & Zeit
+  # >> Date as ymd of Datum
+  # only returns unique entries
+  # adds unique Hunt.ID to each unique HuntingEvent
   read.csv(path.Huntevents, header = TRUE, sep = ";") %>%
     as_tibble() %>%
     mutate(HuntTime = stringr::str_c(Datum, Zeit, sep = " ") %>%
@@ -58,7 +59,7 @@ prep.HuntEvents.data <- function() {
 
 prep.FCMStress.data <- function() {
   # reads FCMStress data located at path.FCMStress
-  # only takes columns 2-14
+  # only takes columns 2-14 (first column is irrelevant row ID)
   # mutates:
   # >> Collar_t_ as Datetime consisting of Colalr_day and Collar_time
   # >> Waypoint_t in identical manner
@@ -123,7 +124,6 @@ get.Herds <- function(Movement.data, enclosures) {
 }
 
 # helper functions
-
 get_season <- function(datetimes) {
   res <- vapply(
     datetimes,

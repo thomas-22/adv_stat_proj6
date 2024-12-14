@@ -31,11 +31,13 @@ data_full <- AssignFCMData(FCMStress, Movement, HuntEvents)
 
 ### Models
 
+Here are some models I've been playing with. Of course it would better to encapsulate them in re-usable functions. --Baisu.
+
 ```{r}
 library(mgcv)
 library(ggeffects)
 
-data_closest_time <- FilterData(
+data_closest_time <- FilterClosestTime(
   data_full,
   gut.retention.hours = 10,
   k = 10
