@@ -1,3 +1,5 @@
+#RUN "Datafusion.R" FIRST
+
 # Calculuate the distances between deer and hunting events
 #
 # `sender_hunt_pairs` is a data.frame with Sender.ID and Hunt.ID as columns.

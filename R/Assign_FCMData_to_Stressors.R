@@ -1,12 +1,7 @@
 library(dplyr)
-library(ggplot2)
-#install.packages("plotly")
-library(plotly)
-#install.packages("ggtext")
-library(ggtext)
 
-#source("./R/CalcSenderPosDist.R")
-#source("./R/CalcAvgDistance_ForMissingTimes.R")
+
+#RUN "CalcSenderPosDist_new.R" FIRST
 
 
 transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0.5) {
@@ -86,6 +81,7 @@ if (ignore_distance_filter == FALSE) {
   interesting_data <- FCMData_Assigned
 }
 
+interesting_data$TimeDiff <- as.numeric(interesting_data$TimeDiff)
 
 
 data_cleanedup <- interesting_data
@@ -93,7 +89,8 @@ data_cleanedup$TimeDiff <- as.numeric(data_cleanedup$TimeDiff)
 
 #Get rid of duplicate entries and choose which one to keep:
 # Define a scoring function:
-data_cleanedup$Score <- (10000000000/data_cleanedup$Distance^2) * transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(32), sdlog = 0.7)
+data_cleanedup$Score <- (10000000000/data_cleanedup$Distance^2) *
+  transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(32), sdlog = 0.7)
 
 data_cleanedup <- data_cleanedup %>%
   group_by(Sample_ID) %>%
@@ -103,156 +100,54 @@ data_cleanedup <- data_cleanedup %>%
   slice_max(Score, n = 1) %>%
   ungroup()
 
-unique_sample_ids <- data_cleanedup %>%
-  distinct(Sample_ID)
-
-# cor(data_cleanedup$RowsDiscarded, data_cleanedup$ng_g)
-# cor(data_cleanedup$Distance, data_cleanedup$ng_g)
-# cor(data_cleanedup$TimeDiff, data_cleanedup$ng_g)
 
 
-usiv <- unique_sample_ids$Sample_ID
+data_cleanedup_min_distance <- interesting_data %>%
+  group_by(Sample_ID) %>%
+  mutate(
+    RowsDiscarded = n() - 1  # Total rows for each Sample_ID minus 1 (kept row)
+  ) %>%
+  slice_min(Distance, n = 1) %>%
+  ungroup()
 
-fcm_reference <- FCMStress %>%
-  filter(!(Sample_ID %in% usiv))
+data_cleanedup_min_timediff <- interesting_data %>%
+  group_by(Sample_ID) %>%
+  mutate(
+    RowsDiscarded = n() - 1  # Total rows for each Sample_ID minus 1 (kept row)
+  ) %>%
+  slice_min(TimeDiff, n = 1) %>%
+  ungroup()
 
-t_test_fcm <- t.test(data_cleanedup$ng_g, fcm_reference$ng_g)
+#Add both together:
+combo_min_dist_timediff <- rbind(data_cleanedup_min_distance,
+                                 data_cleanedup_min_timediff)
 
-print(t_test_fcm)
-
-
-specific_mean <- mean(data_cleanedup$ng_g, na.rm = TRUE)
-specific_n <- sum(!is.na(data_cleanedup$ng_g))
-
-reference_mean <- mean(fcm_reference$ng_g, na.rm = TRUE)
-reference_n <- sum(!is.na(fcm_reference$ng_g))
-
-lm1 <- lm(data_cleanedup$ng_g ~ data_cleanedup$Distance)
-lm1$coefficients[2]
-
-ggplot(data_cleanedup, aes(x = Distance, y = ng_g)) +
-  geom_point(color = "blue") +
-  geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) + 
-  geom_hline(yintercept = reference_mean, color = "red", linetype = "dashed") +
-  geom_hline(yintercept = specific_mean, color = "blue", linetype = "dashed") +
-  scale_x_log10() +
-  labs(
-    title = "Plot of ng_g vs Distance (with reference mean)",
-    x = "Distance",
-    y = "ng_g"
-  ) +
-  # Add annotations for data_cleanedup
-  annotate("text", x = Inf, y = Inf, hjust = 1, vjust = 1,
-           label = paste("data_cleanedup (blue):",
-                         "\nn =", specific_n,
-                         "\nmean =", round(specific_mean, 2)),
-           color = "blue", size = 3.5) +
-  annotate("text", x = Inf, y = Inf, hjust = 1, vjust = 2.33,
-           label = paste("fcm_reference (red):",
-                         "\nn =", reference_n,
-                         "\nmean =", round(reference_mean, 2)),
-           color = "red", size = 3.5) +
-  annotate("text", x = Inf, y = Inf, hjust = 1, vjust = 2.5,
-           label = paste("Gut Retention Lower Boundary (Hours):", gut_retention_time_lower, 
-                         "\nGut Retention Upper Boundary (Hours):", gut_retention_time_upper, 
-                         "\nDistance Threshhold (Meters):", distance_threshold, 
-                         "\nT_Test:", round(t_test_fcm$statistic, 2),
-                         "\nT_Test p_val:", round(t_test_fcm$p.value, 2)),
-           color = "green", size = 3.5) +
-  theme_minimal() +
-  theme(plot.margin = margin(5, 50, 5, 5))
+combo_min_dist_timediff_no_dupes <- combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ]
 
 
+#Documentation of Dataset Variants:
 
-##3D Plot:
-plot_ly(FCMData_Assigned %>%
-          filter(Distance < 100000), x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
-        type = "scatter3d", mode = "markers",
-        marker = list(size = 1, color = 'blue',
-                      line = list(color = 'black', width = 2))) %>%
-  layout(title = "3D Plot with Black Outline",
-         scene = list(
-           xaxis = list(title = 'Distance'),
-           yaxis = list(title = 'TimeDiff'),
-           zaxis = list(title = 'ng_g')
-         ))
+# 1. FCMData_Assigned: Contains all possible stressor-event assignments for each FCM sample, 
+#    based on gut retention time and sender match criteria.
 
-hist(as.numeric(data_cleanedup$TimeDiff), breaks = 120)
+# 2. interesting_data: Subset of FCMData_Assigned filtered by a specified maximum distance threshold
+#    if 'ignore_distance_filter' is set to FALSE. This removes nonsense assignments due to faulty data.
+#   USE INSTEAD OF FCMData_Assigned
 
-###############################################################
-#Discussion about Log-Normal vs Gamme Fit for $ng_g
-###############################################################
-data1 <- FCMStress %>%
-  filter(ng_g > 0)
+# 3. data_cleanedup: Deduplicated version of 'interesting_data', where the best stressor event for each 
+#    sample is selected based on a scoring function combining distance and time difference.
 
-data <- data1$ng_g
+# 4. data_cleanedup_min_distance: Deduplicated dataset retaining the stressor event with the minimum distance 
+#    for each sample.
 
-### Fit Log-Normal Distribution ###
-lognorm_fit <- MASS::fitdistr(data, "lognormal")
-meanlog <- lognorm_fit$estimate["meanlog"]
-sdlog <- lognorm_fit$estimate["sdlog"]
+# 5. data_cleanedup_min_timediff: Deduplicated dataset retaining the stressor event with the minimum time 
+#    difference for each sample.
 
-### Fit Gamma Distribution ###
-gamma_fit <- MASS::fitdistr(data, "gamma")
-shape <- gamma_fit$estimate["shape"]
-rate <- gamma_fit$estimate["rate"]
+# 6. combo_min_dist_timediff: Combined dataset containing rows from both 'data_cleanedup_min_distance' and 
+#    'data_cleanedup_min_timediff', including duplicates.
 
-### Plot Histogram ###
-hist_data <- hist(data, breaks = 100, probability = TRUE, 
-                  main = "Histogram with Log-Normal and Gamma Fits", 
-                  xlab = "FCMStress$ng_g", col = "lightblue", border = "black")
+# 7. combo_min_dist_timediff_no_dupes: Final combined dataset where duplicate entries based on 'Sample_ID' 
+#    are removed, retaining only one unique assignment per sample.
 
-# Overlay Log-Normal Fit
-curve(dlnorm(x, meanlog = meanlog, sdlog = sdlog), col = "red", lwd = 2, add = TRUE)
-
-# Overlay Gamma Fit
-curve(dgamma(x, shape = shape, rate = rate), col = "blue", lwd = 2, add = TRUE)
-
-### Calculate MSE for Log-Normal ###
-bin_midpoints <- hist_data$mids
-observed_probs <- hist_data$density
-lognorm_probs <- dlnorm(bin_midpoints, meanlog = meanlog, sdlog = sdlog)
-lognorm_mse <- mean((observed_probs - lognorm_probs)^2)
-
-### Calculate MSE for Gamma ###
-gamma_probs <- dgamma(bin_midpoints, shape = shape, rate = rate)
-gamma_mse <- mean((observed_probs - gamma_probs)^2)
-
-# Print MSE values
-cat("Mean Squared Error (MSE) for Log-Normal Fit:", lognorm_mse, "\n")
-cat("Mean Squared Error (MSE) for Gamma Fit:", gamma_mse, "\n")
-
-# Add legend to the plot
-legend("topright", legend = c("Data Histogram", "Log-Normal Fit", "Gamma Fit"), 
-       col = c("lightblue", "red", "blue"), lty = c(NA, 1, 1), lwd = c(NA, 2, 2), pch = c(15, NA, NA))
-
-# Add MSE values to the plot
-text(x = max(hist_data$breaks) * 0.5, 
-     y = max(hist_data$density) * 0.4, 
-     labels = paste("MSE Log-Normal: ", round(lognorm_mse, 10)), 
-     col = "red", adj = 0)
-
-text(x = max(hist_data$breaks) * 0.5, 
-     y = max(hist_data$density) * 0.3, 
-     labels = paste("MSE Gamma: ", round(gamma_mse, 10)), 
-     col = "blue", adj = 0)
-###############################################################
-
-ggplot(FCMStress, aes(x = Collar_t_)) +
-  geom_histogram(binwidth = 604800, fill = "lightblue", color = "black") + # Binwidth = 1 Week = 604800 seconds
-  scale_x_datetime(
-    date_labels = "%Y-%m-%d",
-    date_breaks = "60 days"
-  ) + 
-  labs(
-    title = "Histogram of Collar_t_",
-    x = "Timestamp",
-    y = "Frequency"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10))
-
-
-
-
+#FOR MODELLING USE: 3-7
 
