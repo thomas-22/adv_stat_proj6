@@ -63,11 +63,11 @@ combo_min_dist_timediff_no_dupes <- assigned_data$combo_min_dist_timediff_no_dup
 # -------------------------
 plot_ng_as_func_of_dist_timediff()
 plot_data_2d()
-plot_data_3d
+plot_data_3d()
 
-generate_hist_timediff
-plot_lognorm_gamma_univar_independent
-plot_collar_t_raw
+generate_hist_timediff()
+plot_lognorm_gamma_univar_independent()
+plot_collar_t_raw()
 
 
 # -----------------------------------
@@ -87,8 +87,12 @@ xg_boost_results <- XGBoost_run_default_pipeline(data_cleanedup,
                                                  covariables = c("TimeDiff", "Distance"),
                                                  tune = FALSE,
                                                  max_iterations = 3)
-
 xg_boost_results_transformed <- XGBoost_run_transformed_pipeline(data_cleanedup,
                                                                  tune = FALSE,
                                                                  max_iterations = 3)
+
+#3D Figure of Model
+xg_boost_results$plotly_fig
+#3D Figure of Model of transformed variables
+xg_boost_results_transformed$plotly_fig 
 
