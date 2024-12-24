@@ -70,174 +70,178 @@ plot_ng_as_func_of_dist_timediff <- function(data, chosen_var = "Distance", add_
   return(result)
 }
 
-plot_ng_as_func_of_dist_timediff(data_cleanedup,
-                                 add_to_title = "Data: Discard duplicates, keep lowest score")
-plot_ng_as_func_of_dist_timediff(data_cleanedup,
-                                 chosen_var = c("TimeDiff"),
-                                 add_to_title = "Data: Discard duplicates, keep lowest score")
+plot_data_2d <- function() {
+  plot_ng_as_func_of_dist_timediff(data_cleanedup,
+                                   add_to_title = "Data: Discard duplicates, keep lowest score")
+  plot_ng_as_func_of_dist_timediff(data_cleanedup,
+                                   chosen_var = c("TimeDiff"),
+                                   add_to_title = "Data: Discard duplicates, keep lowest score")
+  
+  plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
+                                   add_to_title = "Data: Discard duplicates, keep lowest distance")
+  
+  plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
+                                   chosen_var = c("TimeDiff"),
+                                   add_to_title = "Data: Discard duplicates, keep lowest distance")
+  
+  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
+                                   add_to_title = "Data: keep lowest distance, keep lowest timediff,\ncombine")
+  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
+                                   chosen_var = "TimeDiff",
+                                   add_to_title = "Data: keep lowest distance, keep lowest timediff,\ncombine")
+  
+  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
+                                   add_to_title = "Data: keep lowest distance, keep lowest timediff,\ndiscard duplicates")
+  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
+                                   chosen_var = "TimeDiff",
+                                   add_to_title = "Data: keep lowest distance, keep lowest timediff,\ndiscard duplicates")
+}
 
-plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
-                                 add_to_title = "Data: Discard duplicates, keep lowest distance")
-
-plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
-                                 chosen_var = c("TimeDiff"),
-                                 add_to_title = "Data: Discard duplicates, keep lowest distance")
-
-plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
-                                 add_to_title = "Data: keep lowest distance, keep lowest timediff,\ncombine")
-plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
-                                 chosen_var = "TimeDiff",
-                                 add_to_title = "Data: keep lowest distance, keep lowest timediff,\ncombine")
-
-plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
-                                 add_to_title = "Data: keep lowest distance, keep lowest timediff,\ndiscard duplicates")
-plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
-                                 chosen_var = "TimeDiff",
-                                 add_to_title = "Data: keep lowest distance, keep lowest timediff,\ndiscard duplicates")
-
-
-
-##3D Plot:
-
-#Total FCMData_Assigned (Without nonsense)
-plot_ly(interesting_data, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
-        type = "scatter3d", mode = "markers",
-        marker = list(size = 1, color = 'blue',
-                      line = list(color = 'black', width = 2))) %>%
-  layout(title = "3D Plot with Black Outline",
-         scene = list(
-           xaxis = list(title = 'Distance'),
-           yaxis = list(title = 'TimeDiff'),
-           zaxis = list(title = 'ng_g')
-         ))
-
-#Keep only min distance combo for each sample:
-plot_ly(data_cleanedup_min_distance, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
-        type = "scatter3d", mode = "markers",
-        marker = list(size = 1, color = 'blue',
-                      line = list(color = 'black', width = 2))) %>%
-  layout(title = "3D Plot with Black Outline",
-         scene = list(
-           xaxis = list(title = 'Distance'),
-           yaxis = list(title = 'TimeDiff'),
-           zaxis = list(title = 'ng_g')
-         ))
-
-#Keep only min timediff combo for each sample:
-plot_ly(data_cleanedup_min_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
-        type = "scatter3d", mode = "markers",
-        marker = list(size = 1, color = 'blue',
-                      line = list(color = 'black', width = 2))) %>%
-  layout(title = "3D Plot with Black Outline",
-         scene = list(
-           xaxis = list(title = 'Distance'),
-           yaxis = list(title = 'TimeDiff'),
-           zaxis = list(title = 'ng_g')
-         ))
-
-
-
-plot_ly(combo_min_dist_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
-        type = "scatter3d", mode = "markers",
-        marker = list(size = 1, color = 'blue',
-                      line = list(color = 'black', width = 2))) %>%
-  layout(title = "3D Plot with Black Outline",
-         scene = list(
-           xaxis = list(title = 'Distance'),
-           yaxis = list(title = 'TimeDiff'),
-           zaxis = list(title = 'ng_g')
-         ))
-
-
-#Remove all duplicates (drops some samples):
-#nrow(combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ])
-#601
-
-plot_ly(combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ], x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
-        type = "scatter3d", mode = "markers",
-        marker = list(size = 1, color = 'blue',
-                      line = list(color = 'black', width = 2))) %>%
-  layout(title = "3D Plot with Black Outline",
-         scene = list(
-           xaxis = list(title = 'Distance'),
-           yaxis = list(title = 'TimeDiff'),
-           zaxis = list(title = 'ng_g')
-         ))
-
-
+plot_data_3d <- function() {
+  #Total FCMData_Assigned (Without nonsense)
+  plot_ly(interesting_data, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+          type = "scatter3d", mode = "markers",
+          marker = list(size = 1, color = 'blue',
+                        line = list(color = 'black', width = 2))) %>%
+    layout(title = "3D Plot with Black Outline",
+           scene = list(
+             xaxis = list(title = 'Distance'),
+             yaxis = list(title = 'TimeDiff'),
+             zaxis = list(title = 'ng_g')
+           ))
+  
+  #Keep only min distance combo for each sample:
+  plot_ly(data_cleanedup_min_distance, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+          type = "scatter3d", mode = "markers",
+          marker = list(size = 1, color = 'blue',
+                        line = list(color = 'black', width = 2))) %>%
+    layout(title = "3D Plot with Black Outline",
+           scene = list(
+             xaxis = list(title = 'Distance'),
+             yaxis = list(title = 'TimeDiff'),
+             zaxis = list(title = 'ng_g')
+           ))
+  
+  #Keep only min timediff combo for each sample:
+  plot_ly(data_cleanedup_min_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+          type = "scatter3d", mode = "markers",
+          marker = list(size = 1, color = 'blue',
+                        line = list(color = 'black', width = 2))) %>%
+    layout(title = "3D Plot with Black Outline",
+           scene = list(
+             xaxis = list(title = 'Distance'),
+             yaxis = list(title = 'TimeDiff'),
+             zaxis = list(title = 'ng_g')
+           ))
+  
+  
+  
+  plot_ly(combo_min_dist_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+          type = "scatter3d", mode = "markers",
+          marker = list(size = 1, color = 'blue',
+                        line = list(color = 'black', width = 2))) %>%
+    layout(title = "3D Plot with Black Outline",
+           scene = list(
+             xaxis = list(title = 'Distance'),
+             yaxis = list(title = 'TimeDiff'),
+             zaxis = list(title = 'ng_g')
+           ))
+  
+  
+  #Remove all duplicates (drops some samples):
+  #nrow(combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ])
+  #601
+  
+  plot_ly(combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ], x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+          type = "scatter3d", mode = "markers",
+          marker = list(size = 1, color = 'blue',
+                        line = list(color = 'black', width = 2))) %>%
+    layout(title = "3D Plot with Black Outline",
+           scene = list(
+             xaxis = list(title = 'Distance'),
+             yaxis = list(title = 'TimeDiff'),
+             zaxis = list(title = 'ng_g')
+           ))
+}
 
 
-hist(as.numeric(data_cleanedup$TimeDiff), breaks = 120)
+generate_hist_timediff <- function(){
+  hist(as.numeric(data_cleanedup$TimeDiff), breaks = 120)
+}
 
-###############################################################
-#Discussion about Log-Normal vs Gamme Fit for $ng_g
-###############################################################
-data1 <- FCMStress %>%
-  filter(ng_g > 0)
+plot_lognorm_gamma_univar_independent <- function(){
+  ###############################################################
+  #Discussion about Log-Normal vs Gamma Fit for $ng_g
+  ###############################################################
+  data1 <- FCMStress %>%
+    filter(ng_g > 0)
+  
+  data <- data1$ng_g
+  
+  ### Fit Log-Normal Distribution ###
+  lognorm_fit <- MASS::fitdistr(data, "lognormal")
+  meanlog <- lognorm_fit$estimate["meanlog"]
+  sdlog <- lognorm_fit$estimate["sdlog"]
+  
+  ### Fit Gamma Distribution ###
+  gamma_fit <- MASS::fitdistr(data, "gamma")
+  shape <- gamma_fit$estimate["shape"]
+  rate <- gamma_fit$estimate["rate"]
+  
+  ### Plot Histogram ###
+  hist_data <- hist(data, breaks = 100, probability = TRUE, 
+                    main = "Histogram with Log-Normal and Gamma Fits", 
+                    xlab = "FCMStress$ng_g", col = "lightblue", border = "black")
+  
+  # Overlay Log-Normal Fit
+  curve(dlnorm(x, meanlog = meanlog, sdlog = sdlog), col = "red", lwd = 2, add = TRUE)
+  
+  # Overlay Gamma Fit
+  curve(dgamma(x, shape = shape, rate = rate), col = "blue", lwd = 2, add = TRUE)
+  
+  ### Calculate MSE for Log-Normal ###
+  bin_midpoints <- hist_data$mids
+  observed_probs <- hist_data$density
+  lognorm_probs <- dlnorm(bin_midpoints, meanlog = meanlog, sdlog = sdlog)
+  lognorm_mse <- mean((observed_probs - lognorm_probs)^2)
+  
+  ### Calculate MSE for Gamma ###
+  gamma_probs <- dgamma(bin_midpoints, shape = shape, rate = rate)
+  gamma_mse <- mean((observed_probs - gamma_probs)^2)
+  
+  # Print MSE values
+  cat("Mean Squared Error (MSE) for Log-Normal Fit:", lognorm_mse, "\n")
+  cat("Mean Squared Error (MSE) for Gamma Fit:", gamma_mse, "\n")
+  
+  # Add legend to the plot
+  legend("topright", legend = c("Data Histogram", "Log-Normal Fit", "Gamma Fit"), 
+         col = c("lightblue", "red", "blue"), lty = c(NA, 1, 1), lwd = c(NA, 2, 2), pch = c(15, NA, NA))
+  
+  # Add MSE values to the plot
+  text(x = max(hist_data$breaks) * 0.5, 
+       y = max(hist_data$density) * 0.4, 
+       labels = paste("MSE Log-Normal: ", round(lognorm_mse, 10)), 
+       col = "red", adj = 0)
+  
+  text(x = max(hist_data$breaks) * 0.5, 
+       y = max(hist_data$density) * 0.3, 
+       labels = paste("MSE Gamma: ", round(gamma_mse, 10)), 
+       col = "blue", adj = 0)
+  ###############################################################
+}
 
-data <- data1$ng_g
-
-### Fit Log-Normal Distribution ###
-lognorm_fit <- MASS::fitdistr(data, "lognormal")
-meanlog <- lognorm_fit$estimate["meanlog"]
-sdlog <- lognorm_fit$estimate["sdlog"]
-
-### Fit Gamma Distribution ###
-gamma_fit <- MASS::fitdistr(data, "gamma")
-shape <- gamma_fit$estimate["shape"]
-rate <- gamma_fit$estimate["rate"]
-
-### Plot Histogram ###
-hist_data <- hist(data, breaks = 100, probability = TRUE, 
-                  main = "Histogram with Log-Normal and Gamma Fits", 
-                  xlab = "FCMStress$ng_g", col = "lightblue", border = "black")
-
-# Overlay Log-Normal Fit
-curve(dlnorm(x, meanlog = meanlog, sdlog = sdlog), col = "red", lwd = 2, add = TRUE)
-
-# Overlay Gamma Fit
-curve(dgamma(x, shape = shape, rate = rate), col = "blue", lwd = 2, add = TRUE)
-
-### Calculate MSE for Log-Normal ###
-bin_midpoints <- hist_data$mids
-observed_probs <- hist_data$density
-lognorm_probs <- dlnorm(bin_midpoints, meanlog = meanlog, sdlog = sdlog)
-lognorm_mse <- mean((observed_probs - lognorm_probs)^2)
-
-### Calculate MSE for Gamma ###
-gamma_probs <- dgamma(bin_midpoints, shape = shape, rate = rate)
-gamma_mse <- mean((observed_probs - gamma_probs)^2)
-
-# Print MSE values
-cat("Mean Squared Error (MSE) for Log-Normal Fit:", lognorm_mse, "\n")
-cat("Mean Squared Error (MSE) for Gamma Fit:", gamma_mse, "\n")
-
-# Add legend to the plot
-legend("topright", legend = c("Data Histogram", "Log-Normal Fit", "Gamma Fit"), 
-       col = c("lightblue", "red", "blue"), lty = c(NA, 1, 1), lwd = c(NA, 2, 2), pch = c(15, NA, NA))
-
-# Add MSE values to the plot
-text(x = max(hist_data$breaks) * 0.5, 
-     y = max(hist_data$density) * 0.4, 
-     labels = paste("MSE Log-Normal: ", round(lognorm_mse, 10)), 
-     col = "red", adj = 0)
-
-text(x = max(hist_data$breaks) * 0.5, 
-     y = max(hist_data$density) * 0.3, 
-     labels = paste("MSE Gamma: ", round(gamma_mse, 10)), 
-     col = "blue", adj = 0)
-###############################################################
-
-ggplot(FCMStress, aes(x = Collar_t_)) +
-  geom_histogram(binwidth = 604800, fill = "lightblue", color = "black") + # Binwidth = 1 Week = 604800 seconds
-  scale_x_datetime(
-    date_labels = "%Y-%m-%d",
-    date_breaks = "60 days"
-  ) + 
-  labs(
-    title = "Histogram of Collar_t_",
-    x = "Timestamp",
-    y = "Frequency"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10))
+plot_collar_t_raw <- function(){
+  ggplot(FCMStress, aes(x = Collar_t_)) +
+    geom_histogram(binwidth = 604800, fill = "lightblue", color = "black") + # Binwidth = 1 Week = 604800 seconds
+    scale_x_datetime(
+      date_labels = "%Y-%m-%d",
+      date_breaks = "60 days"
+    ) + 
+    labs(
+      title = "Histogram of Collar_t_",
+      x = "Timestamp",
+      y = "Frequency"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10))
+}
