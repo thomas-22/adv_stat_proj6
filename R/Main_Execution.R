@@ -89,6 +89,6 @@ xg_boost_results <- XGBoost_run_default_pipeline(data_cleanedup,
                                                  max_iterations = 3)
 
 xg_boost_results_transformed <- XGBoost_run_transformed_pipeline(data_cleanedup,
-                                                                 tune = TRUE,
+                                                                 tune = FALSE,
                                                                  max_iterations = 3)
 
