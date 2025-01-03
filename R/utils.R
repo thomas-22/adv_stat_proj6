@@ -13,21 +13,21 @@ prep.Movement.data <- function() {
   ungroup()
 }
 
-prep.HuntEvents.data <- function() {
-  # load HuntEvents Data located at path.Huntevents
-  # mutates:
-  # >> t_ as date time consisting of Datum & Zeit
-  # >> Date as ymd of Datum
-  # only returns unique entries
-  # adds unique Hunt.ID to each unique HuntingEvent
-  read.csv(path.Huntevents_old, header = TRUE, sep = ",")[2:5] %>%
-  mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
-           parse_date_time(orders = "%d/%m/%Y %h:%M:%s"),
-         Date = parse_date_time(Datum, orders = "%d/%m/%Y")) %>%
-    select(-Zeit, -Datum) %>%
-    distinct() %>%
-    mutate(Hunt.ID = as.factor(row_number()))
-}
+# prep.HuntEvents.data <- function() {
+#   # load HuntEvents Data located at path.Huntevents
+#   # mutates:
+#   # >> t_ as date time consisting of Datum & Zeit
+#   # >> Date as ymd of Datum
+#   # only returns unique entries
+#   # adds unique Hunt.ID to each unique HuntingEvent
+#   read.csv(path.Huntevents_old, header = TRUE, sep = ",")[2:5] %>%
+#   mutate(t_ = stringr::str_c(Datum, Zeit, sep = " ") %>%
+#            parse_date_time(orders = "%d/%m/%Y %h:%M:%s"),
+#          Date = parse_date_time(Datum, orders = "%d/%m/%Y")) %>%
+#     select(-Zeit, -Datum) %>%
+#     distinct() %>%
+#     mutate(Hunt.ID = as.factor(row_number()))
+# }
 
 prep.HuntEvents.data <- function() {
   read.csv(path.Huntevents, header = TRUE, sep = ";") %>%
