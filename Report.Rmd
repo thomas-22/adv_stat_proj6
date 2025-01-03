@@ -13,12 +13,14 @@ knitr::opts_chunk$set(echo = TRUE)
 source("source_all.R")
 ```
 
-
 ```{r read data}
 Pregnancy <- prep.Pregnancy.data()
 Movement <- prep.Movement.data()
 HuntEvents <- prep.HuntEvents.data()
 FCMStress <- prep.FCMStress.data()
+
+data_full <- AssignFCMData(FCMStress, Movement, HuntEvents)
+# View(data_full)
 
 # # save as RDS
 # saveRDS(Pregnancy, "Data/intermediate/Pregnancy.RDS")
@@ -27,28 +29,138 @@ FCMStress <- prep.FCMStress.data()
 # saveRDS(FCMStress, "Data/intermediate/FCMStress.RDS")
 ```
 
-```{r augment data}
-Groups <- get.Herds(Movement, enclosures)
-Stress <- CalcSenderPosDist(Movement, HuntEvents)
-# # save as RDS
-# saveRDS(Groups, "Data/intermediate/Groups.RDS")
-# saveRDS(Stress, "Data/intermediate/Stress.RDS")
+### Models
+
+Here are some models I've been playing with. Of course it would better to encapsulate them in re-usable functions. --Baisu.
+
+```{r}
+library(mgcv)
+library(ggeffects)
+
+data_closest_time <- FilterClosestTime(
+  data_full,
+  gut.retention.hours = 10,
+  k = 10
+) %>% filter(DistanceY <= 30)
+
+# distribution of number of hunting events within previous k days
+data_closest_time %>% ggplot() +
+  geom_bar(aes(x = nOtherHuntEvents))
+
+summary(data_closest_time)
+# View(data_closest_time)
+
+lm_naive <- lm(
+  ng_g ~ Distance + TimeDiff + lognHuntEvents + SampleDelay + Season,
+  data = data_closest_time
+)
+summary(lm_naive)
+
+# Generate diagnostic plots
+par(mfrow=c(2,2))
+plot(lm_naive)
+# QQ plot shows that the distributional assumption is probably wrong
+
+# Collinearity? Not really.
+car::vif(lm_naive)
+
+
+# Go additive
+gam_gaussian <- gam(
+  ng_g ~ s(Distance, bs = "ps") + s(TimeDiff, bs = "ps") +
+    s(SampleDelay, bs = "ps") +
+    nOtherHuntEvents + Season,
+  data = data_closest_time,
+  family = gaussian()
+)
+summary(gam_gaussian)
+plot(gam_gaussian, page = 1)
+gam.check(gam_gaussian)
+
+gam_gamma <- gam(
+  ng_g ~ s(Distance, bs = "ps") + s(TimeDiff, bs = "ps") +
+    s(SampleDelay, bs = "ps") + lognHuntEvents + Season,
+  data = data_closest_time,
+  family = Gamma(link = log)
+)
+summary(gam_gamma)
+plot(gam_gamma, pages = 1)
+gam.check(gam_gamma)
+# Is this QQ plot better?
+
+# Consider distance in X,Y directions separately
+gam_gamma_xy <- gam(
+  ng_g ~ s(DistanceX, bs = "ps") + s(DistanceY, bs = "ps") + s(TimeDiff, bs = "ps") +
+    s(SampleDelay, bs = "ps") + nOtherHuntEvents + Season,
+  data = data_closest_time,
+  family = Gamma(link = log)
+)
+summary(gam_gamma_xy)
+plot(gam_gamma_xy, page = 1)
+gam.check(gam_gamma_xy)
+
+# plot FCM level against one variable with other variables held constant
+predict_response(gam_gamma_xy, terms = "DistanceX") %>% plot()
+predict_response(gam_gamma_xy, terms = "DistanceY") %>% plot()
+predict_response(gam_gamma_xy, terms = "TimeDiff") %>% plot()
+predict_response(gam_gamma_xy, terms = "SampleDelay") %>% plot()
+
+# Does gamlss help?
+gamlss_gaussian <- gam(
+  list(
+    # mean
+    ng_g ~ s(DistanceX, bs = "ps") + s(DistanceY, bs = "ps") + s(TimeDiff, bs = "ps") +
+      s(SampleDelay, bs = "ps") + nOtherHuntEvents + Season,
+    # variance
+    ~ s(DistanceX, bs = "ps") + s(DistanceY, bs = "ps") + s(TimeDiff, bs = "ps") +
+      s(SampleDelay, bs = "ps") + nOtherHuntEvents + Season
+  ),
+  data = data_closest_time,
+  family = gaulss()
+)
+summary(gamlss_gaussian)
+plot(gamlss_gaussian, pages = 1, scale = 0)
+gam.check(gamlss_gaussian)
+# But Gaussianity assumption is violated according to QQ plot
+
+# DOES NOT WORK
+# gamlss_gamma <- gam(
+#   list(
+#     # mean
+#     ng_g ~ s(DistanceX, bs = "ps") + s(DistanceY, bs = "ps") + s(TimeDiff, bs = "ps") +
+#       s(SampleDelay, bs = "ps") + nOtherHuntEvents + Season,
+#     # variance
+#     ~ nOtherHuntEvents + Season
+#   ),
+#   data = data_closest_time,
+#   family = gammals()
+# )
 ```
 
+### Notes
 
-```{r finalize data}
-data.intermediate <- Datafusion(Movement, Pregnancy, Stress, Groups, timediff = 2*60)
-data.full <- Assign_FCMData(FCMStress,
-                            data.intermediate,
-                            # Stress is getting called here as well!
-                            gut.retention.threshold = c(5, 35),
-                            distance.threshold = 10000,
-                            ignore.filters = FALSE)
+```{r}
+# Distribution of hunting events throughout the day now looks reasonable
+HuntEvents %>%
+  filter(!is.na(HuntTime)) %>%
+  mutate(HuntHour = hour(HuntTime)) %>%
+  ggplot() +
+  geom_bar(aes(x = HuntHour), just = 0) +
+  labs(x = "Hour of day")
 
-model.data <- data.full %>% select(Sender.ID, Distance, pregnant, group, TimeDiff, ng_g) %>%
-  mutate(TimeDiff = scale(as.numeric(TimeDiff), center = FALSE)[,1],
-         Distance = scale(Distance, center = FALSE)[,1])
+# Wait, what is the time difference between defecation and sampling?
+# (DefecTime == Collar_t_, SampleTime == Waypoint_t_)
+FCMStress %>% filter(Sample.ID == "K178A")
+# Any other crazy mistakes like this?
+FCMStress %>%
+  mutate(SampleDelayDays = difftime(SampleTime, DefecTime, units = "days")) %>%
+  filter(SampleDelayDays > days(1))
+# Probably the researchers got the date format wrong.
 ```
+
+### Legacy
+
+The following code blocks are from Niko. They probably no longer work. Tell me if you still need them. --Baisu.
 
 ```{r visualize data}
 head(model.data)
@@ -67,7 +179,7 @@ model.data %>%
 ```
 
 
-
+<!-- 
 ```{r initial modelling}
 simple.model <- lm(ng_g ~., data = model.data)
 summary(simple.model)
@@ -123,4 +235,4 @@ ggplot(model.data.augmented, aes(color = model)) +
   geom_abline(slope = 1) +
   labs(x = "actual", y = "predicted")
 ```
-
+-->
