@@ -49,6 +49,15 @@ interpolated_positions <- calculated_data$interpolated_positions
 # -------------------------
 # Assign_FCMData_to_Stressors
 # -------------------------
+
+#Declare Variables
+ignore_distance_filter <- FALSE
+distance_threshold <- 100000 #in Meters
+gut_retention_time_lower <- 0 #in Hours
+gut_retention_time_upper <- 1000000 #in Hours
+gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
+
+
 assigned_data <- Assign_FCMData_to_Hunts()
 
 interesting_data <- assigned_data$interesting_data
@@ -64,9 +73,16 @@ combo_min_dist_timediff_no_dupes <- assigned_data$combo_min_dist_timediff_no_dup
 
 Draw_Illustration_Map()
 
-plot_ng_as_func_of_dist_timediff()
-plot_data_2d()
-plot_data_3d()
+
+#Example Calls for one of the datasets
+plot_ng_as_func_of_dist_timediff(data_cleanedup, chosen_var = "Distance")
+plot_ng_as_func_of_dist_timediff(data_cleanedup, chosen_var = "TimeDiff")
+
+plots_2d <- plot_data_2d()
+lapply(plots_2d, print)
+
+plots_3d <- plot_data_3d()
+lapply(plots_3d, print)
 
 generate_hist_timediff()
 plot_lognorm_gamma_univar_independent()

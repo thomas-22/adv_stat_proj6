@@ -8,14 +8,6 @@ transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0
 
 Assign_FCMData_to_Hunts <- function()
 {
-  ignore_distance_filter <- FALSE
-  
-  distance_threshold <- 100000 #in Meters
-  
-  gut_retention_time_lower <- 0 #in Hours
-  gut_retention_time_upper <- 1000000 #in Hours
-  gut_retention_mean <- (gut_retention_time_lower + gut_retention_time_upper) / 2
-  
   # Create an empty data frame to store results
   FCMData_Assigned <- data.frame(Sender.ID = integer(),
                                  Sample_ID = character(),

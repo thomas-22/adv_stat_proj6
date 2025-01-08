@@ -71,39 +71,64 @@ plot_ng_as_func_of_dist_timediff <- function(data, chosen_var = "Distance", add_
 }
 
 plot_data_2d <- function() {
-  plot_ng_as_func_of_dist_timediff(data_cleanedup,
+  p1 <- plot_ng_as_func_of_dist_timediff(data_cleanedup,
                                    add_to_title = "Data: Discard duplicates, keep lowest score")
-  plot_ng_as_func_of_dist_timediff(data_cleanedup,
+  p2 <- plot_ng_as_func_of_dist_timediff(data_cleanedup,
                                    chosen_var = c("TimeDiff"),
                                    add_to_title = "Data: Discard duplicates, keep lowest score")
   
-  plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
+  p3 <- plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
                                    add_to_title = "Data: Discard duplicates, keep lowest distance")
   
-  plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
+  p4 <- plot_ng_as_func_of_dist_timediff(data_cleanedup_min_distance,
                                    chosen_var = c("TimeDiff"),
                                    add_to_title = "Data: Discard duplicates, keep lowest distance")
   
-  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
+  p5 <- plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
                                    add_to_title = "Data: keep lowest distance, keep lowest timediff,\ncombine")
-  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
+  p6 <- plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff,
                                    chosen_var = "TimeDiff",
                                    add_to_title = "Data: keep lowest distance, keep lowest timediff,\ncombine")
   
-  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
+  p7 <- plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
                                    add_to_title = "Data: keep lowest distance, keep lowest timediff,\ndiscard duplicates")
-  plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
+  p8 <- plot_ng_as_func_of_dist_timediff(combo_min_dist_timediff_no_dupes,
                                    chosen_var = "TimeDiff",
                                    add_to_title = "Data: keep lowest distance, keep lowest timediff,\ndiscard duplicates")
+  
+  return(list(
+    p1 = p1,
+    p2 = p2,
+    p3 = p3,
+    p4 = p4,
+    p5 = p5,
+    p6 = p6,
+    p7 = p7,
+    p8 = p8
+  ))
 }
 
 plot_data_3d <- function() {
+  
   #Total FCMData_Assigned (Without nonsense)
-  plot_ly(interesting_data, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+  p0 <- plot_ly(interesting_data, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+                type = "scatter3d", mode = "markers",
+                marker = list(size = 1, color = 'blue',
+                              line = list(color = 'black', width = 2))) %>%
+    layout(title = "Data: All Assignments (Without Nonsense)",
+           scene = list(
+             xaxis = list(title = 'Distance'),
+             yaxis = list(title = 'TimeDiff'),
+             zaxis = list(title = 'ng_g')
+           ))
+  
+  
+  #Data with lowest scores only
+  p1 <- plot_ly(data_cleanedup, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
           type = "scatter3d", mode = "markers",
           marker = list(size = 1, color = 'blue',
                         line = list(color = 'black', width = 2))) %>%
-    layout(title = "3D Plot with Black Outline",
+    layout(title = "Data: Discard duplicates, keep lowest score",
            scene = list(
              xaxis = list(title = 'Distance'),
              yaxis = list(title = 'TimeDiff'),
@@ -111,11 +136,11 @@ plot_data_3d <- function() {
            ))
   
   #Keep only min distance combo for each sample:
-  plot_ly(data_cleanedup_min_distance, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+  p2 <- plot_ly(data_cleanedup_min_distance, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
           type = "scatter3d", mode = "markers",
           marker = list(size = 1, color = 'blue',
                         line = list(color = 'black', width = 2))) %>%
-    layout(title = "3D Plot with Black Outline",
+    layout(title = "Data: Discard duplicates, keep lowest distance",
            scene = list(
              xaxis = list(title = 'Distance'),
              yaxis = list(title = 'TimeDiff'),
@@ -123,11 +148,11 @@ plot_data_3d <- function() {
            ))
   
   #Keep only min timediff combo for each sample:
-  plot_ly(data_cleanedup_min_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+  p3 <- plot_ly(data_cleanedup_min_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
           type = "scatter3d", mode = "markers",
           marker = list(size = 1, color = 'blue',
                         line = list(color = 'black', width = 2))) %>%
-    layout(title = "3D Plot with Black Outline",
+    layout(title = "Data: Discard duplicates, keep lowest TimeDiff",
            scene = list(
              xaxis = list(title = 'Distance'),
              yaxis = list(title = 'TimeDiff'),
@@ -136,11 +161,11 @@ plot_data_3d <- function() {
   
   
   
-  plot_ly(combo_min_dist_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+  p4 <- plot_ly(combo_min_dist_timediff, x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
           type = "scatter3d", mode = "markers",
           marker = list(size = 1, color = 'blue',
                         line = list(color = 'black', width = 2))) %>%
-    layout(title = "3D Plot with Black Outline",
+    layout(title = "Data: keep lowest distance, keep lowest timediff,\ncombine",
            scene = list(
              xaxis = list(title = 'Distance'),
              yaxis = list(title = 'TimeDiff'),
@@ -152,16 +177,25 @@ plot_data_3d <- function() {
   #nrow(combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ])
   #601
   
-  plot_ly(combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ], x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
+  p5 <- plot_ly(combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ], x = ~Distance, y = ~as.numeric(TimeDiff), z = ~ng_g,
           type = "scatter3d", mode = "markers",
           marker = list(size = 1, color = 'blue',
                         line = list(color = 'black', width = 2))) %>%
-    layout(title = "3D Plot with Black Outline",
+    layout(title = "Data: keep lowest distance, keep lowest timediff,\ndiscard duplicates",
            scene = list(
              xaxis = list(title = 'Distance'),
              yaxis = list(title = 'TimeDiff'),
              zaxis = list(title = 'ng_g')
            ))
+  
+  return(list(
+    p0 = p0,
+    p1 = p1,
+    p2 = p2,
+    p3 = p3,
+    p4 = p4,
+    p5 = p5
+  ))
 }
 
 
