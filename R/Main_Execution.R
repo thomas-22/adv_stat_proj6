@@ -61,6 +61,9 @@ combo_min_dist_timediff_no_dupes <- assigned_data$combo_min_dist_timediff_no_dup
 # -------------------------
 # Plot Data
 # -------------------------
+
+Draw_Illustration_Map()
+
 plot_ng_as_func_of_dist_timediff()
 plot_data_2d()
 plot_data_3d()
