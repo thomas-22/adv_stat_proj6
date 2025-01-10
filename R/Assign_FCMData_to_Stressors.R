@@ -7,7 +7,7 @@ transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0
 
 # For each FCM sample, find all hunting events within a certain time frame,
 # calculate distance and time diff, and add potential confounders.
-Assign_Hunts_to_FCM <- function(FCMStress, HuntEvents,
+assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
     ignore_distance_filter=FALSE,
     daydiff_threshold = 30, # days
     distance_threshold = 10, # km
@@ -42,94 +42,101 @@ Assign_Hunts_to_FCM <- function(FCMStress, HuntEvents,
   # are relevant.
   # Version 3: All hunting events with a score above some threshold are relevant?
   
-  # Find all combinations of deer and hunting events where the hunting event
-  # happened within `daydiff_threshold` before the FCM sample was taken
+  # Find all combinations of samples and hunting events, where the hunting time
+  # was before defecaion time. 100 days is arbitrary, but we won't consider
+  # a hunting event to be relevant if it happened more than 100 days before
+  # defecation.
   deer_sample_hunt <- FCMStress %>%
     mutate(
-      StressDateEarliest = as_date(DefecTime - days(daydiff_threshold)),
+      StressDateEarliest = as_date(DefecTime - days(100)),
       StressDateLatest = as_date(DefecTime),
     ) %>%
     left_join(
       HuntEvents,
       join_by(StressDateEarliest <= HuntDate, StressDateLatest >= HuntDate)
-    )
+    ) %>%
+    select(-StressDateLatest, -StressDateEarliest) %>%
+    distinct()
+  # View(deer_sample_hunt)
 
+  # Get combinations of deer and hunting events
   deer_hunt_pairs <- deer_sample_hunt %>%
-    filter(!is.na(Hunt.ID), !is.na(HuntTime), !is.na(HuntX), !is.na(HuntY)) %>%
+    filter(!is.na(Hunt.ID)) %>%
     distinct(Sender.ID, Hunt.ID)
-  # Get distance between deer and hunting event
-  distances <- CalcDist(deer_hunting_pairs, Movement, HuntEvents) %>%
-    select(Sender.ID, Hunt.ID, starts_with("Distance"))
+
+  # Get distances
+  distances <- CalcDist(deer_hunt_pairs, Movement, HuntEvents) %>%
+    select(Sender.ID, Hunt.ID, starts_with("Distance")) %>%
+    na.omit()
+  # View(distances)
 
   # Merge back
-  merged <- deer_sample_hunt %>%
-    left_join(distances, by = c("Sender.ID", "Hunt.ID")) %>%
-    mutate(TimeDiff = as.numeric(difftime(DefecTime, HuntTime, unit = "hours"))) %>%
-    # Get rid of definitely irrelevant hunting events
-    filter(TimeDiff > 0 | is.na(TimeDiff)) %>%
-    # Count relevant hunting events
+  deer_sample_hunt_distance <- deer_sample_hunt %>%
+    left_join(distances, by = c("Sender.ID", "Hunt.ID"))
+  # View(deer_sample_hunt_distance)
+
+  # Calculate time difference
+  deer_sample_hunt_distance_timediff <- deer_sample_hunt_distance %>%
     mutate(
-      relevant = (
-        !is.na(TimeDiff) & TimeDiff >= gut_retention_hours
-      ) & (
-        !is.na(Distance) & Distance <= distance_threshold
-      ),
-      relevant_include_missing = (
-        (TimeDiff >= gut_retention_hours) | is.na(TimeDiff)
-      ) & (
-        Distance <= distance_threshold | is.na(Distance)
-      )
+      TimeDiff = as.numeric(difftime(DefecTime, HuntTime, unit = "hours")),
+      TimeDiffStress = TimeDiff - gut_retention_hours,
+      DayDiff = as.numeric(difftime(DefecDate, HuntDate, unit = "days"))
     ) %>%
+    # Keep temporally relevant hunting events
+    filter(TimeDiffStress > 0 | is.na(TimeDiff), DayDiff <= daydiff_threshold)
+  # View(deer_sample_hunt_distance_timediff)
+
+  if (ignore_distance_filter) {
+    data_cleanedup <- deer_sample_hunt_distance_timediff
+  } else {
+    data_cleanedup <- deer_sample_hunt_distance_timediff %>%
+      filter(!is.na(Distance), Distance <= distance_threshold)
+  }
+
+  data_cleanedup <- data_cleanedup %>% group_by(Sender.ID, Sample.ID) %>%
     mutate(
-      NumRelevantHunts = sum(relevant),
-      NumRelevantHunts_include_missing = sum(relevant_include_missing),
-      .by = Sample.ID
+      # Count the number of other hunting events (with or without timestamp) in
+      # the pervious k days (including the day of defecation).
+      # This could be an indicator of intensity of hunting and hence a confounder.
+      NumOtherHunts = sum(!is.na(Hunt.ID)) - 1,
+      # Log of number of hunting events in the previous k days, including the
+      # last hunting event, whose time diff and distance will enter the model as
+      # main covariates. This is to avoid log(0).
+      # Whether to use the log version or the raw version is your choice.
+      logNumHunts = log(NumOtherHunts + 1)
     )
 
-  if (filter_criterion == "last") {
-    data <- merged %>%
-      group_by(Sender.ID, Sample.ID) %>%
+  # Filter by criterion
+  data <- if (filter_criterion == "last") {
+    data_cleanedup %>%
       filter(TimeDiff == min(TimeDiff, na.rm = TRUE), !is.na(Distance)) %>%
       ungroup()
-    return(data)
-  }
-  if (filter_criterion == "nearest") {
-    data <- merged %>%
+  } else if (filter_criterion == "nearest") {
+    data_cleanedup %>%
       group_by(Sender.ID, Sample.ID) %>%
       filter(Distance == min(Distance, na.rm = TRUE), !is.na(TimeDiff)) %>%
       ungroup()
-    return(data)
-  }
-  if (filter_criterion == "score") {
-    data <- merged %>%
+  } else if (filter_criterion == "score") {
+    data_cleanedup %>%
       group_by(Sender.ID, Sample.ID) %>%
       mutate(Score = (10000000000 / Distance^2) * transform_time_diff_lognormal(TimeDiff)) %>%
       filter(Score == max(Score, na.rm = TRUE)) %>%
       ungroup()
-    return(data)
+  } else {
+    stop("Invalid filter_criterion")
   }
 
-  stop("Invalid filter_criterion")
-
-  # # Get potential confounders
-  # mutate(
-  #   # time diff between defecation and sampling
-  #   SampleDelay = as.numeric(difftime(SampleTime, DefecTime, unit = "hours")),
-  #   # time of day
-  #   DefecHour = hour(DefecTime),
-  #   # hunting hour
-  #   HuntHour = hour(HuntTime),
-  #   # season
-  #   Season = get_season(DefecTime)
-  #   # TBD: pregnancy, herds, etc?
-  # ) %>%
-  # distinct(
-  #   Sample.ID, Sender.ID,
-  #   ng_g,
-  #   DefecTime,
-  #   Hunt.ID, HuntTime, HuntDate, HuntHour,
-  #   Distance, DistanceX, DistanceY,
-  #   TimeDiff, SampleDelay,
-  #   Season
-  # )
+  # Add potential confounders
+  data %>%
+    mutate(
+      # time diff between defecation and sampling
+      SampleDelay = as.numeric(difftime(SampleTime, DefecTime, unit = "hours")),
+      # time of day
+      DefecHour = hour(DefecTime),
+      # hunting hour
+      HuntHour = hour(HuntTime),
+      # season
+      Season = get_season(DefecTime)
+      # Pregnancy status is already in FCMStress
+    )
 }
