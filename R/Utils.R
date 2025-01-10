@@ -4,12 +4,12 @@ get_season <- function(datetimes) {
     function(datetime) {
       if (month(datetime) %in% c(3, 4, 5)) return("spring")
       if (month(datetime) %in% c(6, 7, 8)) return("summer")
-      if (month(datetime) %in% c(9, 10, 11)) return("autumn")
-      if (month(datetime) %in% c(12, 1, 2)) return("winter")
+      return("autumn")
+      # only one single FCM sample in winter (12-01)
     },
     character(1)
   )
-  factor(res, levels = c("spring", "summer", "autumn", "winter"))
+  factor(res, levels = c("spring", "summer", "autumn"))
 }
 
 
