@@ -41,7 +41,8 @@ run_datafusion <- function (save=FALSE) {
     left_join(ReproductionSuccess, by = "Sender.ID") %>%
     mutate(
       Pregnant = preg_year == year(DefecTime),
-      Pregnant = ifelse(is.na(Pregnant), FALSE, Pregnant)
+      Pregnant = ifelse(is.na(Pregnant), FALSE, Pregnant),
+      Pregnant = factor(Pregnant)
     ) %>%
     select(-preg_year)
 
