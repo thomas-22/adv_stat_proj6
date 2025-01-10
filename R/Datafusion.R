@@ -17,7 +17,8 @@ run_datafusion <- function (save=FALSE) {
   #-----------------------------------------------------------------------------
   
   # Read movement data
-  Movement <- read.csv("Data/Movement - CRS=ETRS UTM 33N.csv", header = TRUE, sep = ";") %>%
+  path.Movement <- "Data/Movement - CRS=ETRS UTM 33N.csv"
+  Movement <- read.csv(path.Movement, header = TRUE, sep = ";") %>%
     as_tibble() %>%
     mutate(Sender.ID = factor(Sender.ID),
            t_ = parse_date_time(t_, orders = "%d/%m/%Y %h:%M")) %>%
@@ -27,7 +28,8 @@ run_datafusion <- function (save=FALSE) {
     ungroup()
   
   # Read hunting events data
-  HuntEvents <- read.csv("Data/HuntingEvents_NEW.csv", header = TRUE, sep = ";") %>%
+  path.HuntEvents <- "Data/HuntingEvents_NEW.csv"
+  HuntEvents <- read.csv(path.HuntEvents, header = TRUE, sep = ";") %>%
     as_tibble() %>%
     mutate(HuntTime = stringr::str_c(Datum, Zeit, sep = " ") %>%
             parse_date_time(orders = "%d/%m/%Y %h:%M"),
@@ -37,7 +39,11 @@ run_datafusion <- function (save=FALSE) {
       lon = as.numeric(Laengengrad_wgs), # one entry is "13.NA", i.e., NA
       lat = as.numeric(Breitengrad_wgs),
     ) %>%
-    filter(lon != 0, lat != 0, !is.na(lon), !is.na(lat)) %>%
+    # Remove wrong entries
+    mutate(
+      lon = ifelse(lon == 0, NA, lon),
+      lat = ifelse(lat == 0, NA, lat)
+    ) %>%
     # Load coordinates
     st_as_sf(coords = c("lon", "lat"), crs = 4326, na.fail = FALSE, remove = FALSE) %>%
     # Transform to UTM (ETRS89 / UTM zone 33N - EPSG:25833)
@@ -53,13 +59,15 @@ run_datafusion <- function (save=FALSE) {
     select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
   
   # Read FCM data
-  FCMStress <- read_delim("Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv") %>%
-    as_tibble()
-    mutate(DefecTime = stringr::str_c(Collar_day, Collar_time, sep = " ") %>%
+  path.FCMStress <- "Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
+  FCMStress <- read.csv(path.FCMStress, header = TRUE, sep = ",") %>%
+    as_tibble() %>%
+    mutate(DefecTime = str_c(Collar_day, Collar_time, sep = " ") %>%
              parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
            DefecDate = as_date(DefecTime),
-           SampleTime = stringr::str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
+           SampleTime = str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
              parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
+            SampleDate = dmy(Waypoint_day),
            Sender.ID = as.factor(Sender.ID)) %>%
     rename(Sample.ID = Sample_ID,
            DefecX = X,
@@ -71,7 +79,7 @@ run_datafusion <- function (save=FALSE) {
       # info about defecation event
       DefecTime, DefecDate, DefecX, DefecY,
       # info about sample collection
-      SampleTime
+      SampleDate, SampleTime
     )
   
   # save as RDS

@@ -5,135 +5,131 @@ transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0
   dlnorm(TimeDiff, meanlog = meanlog, sdlog = sdlog)
 }
 
+# For each FCM sample, find all hunting events within a certain time frame,
+# calculate distance and time diff, and add potential confounders.
+Assign_Hunts_to_FCM <- function(FCMStress, HuntEvents,
+    ignore_distance_filter=FALSE,
+    daydiff_threshold = 30, # days
+    distance_threshold = 10, # km
+    gut_retention_hours = 14, # hours
+    # gut_retention_upper = Inf, # hours
+    filter_criterion = "last" # possible alternatives: "nearest", "score"
+  ) {
+  # Algorithm:
+  # 1. For each FCM sample, find all hunting events within `daydiff_threshold` days
+  # prior to the defecation time.
+  # These are *potentially relevant* hunting events.
+  # 2. Calculate the distances between the deer and the hunting events.
+  # Now we have a many-to-many relationship between FCM samples and hunting events.
+  # 3. Find the "last hunting event" for each FCM sample.
+  # This hunting event should be temporally as close as possible to the sample,
+  # but not closer than `gut_retention_hours`.
+  
+  #-----------------------------------------------------------------------------
+  # !!!!!!! Is any other filtering method justifiable?
+  # The main goal of our project is to analyze the effect of the last hunting
+  # event.
+  # Can you justify defining the last hunting event to be the spatially closest one?
+  #-----------------------------------------------------------------------------
 
-Assign_FCMData_to_Hunts <- function()
-{
-  # Create an empty data frame to store results
-  FCMData_Assigned <- data.frame(Sender.ID = integer(),
-                                 Sample_ID = character(),
-                                 HairID = character(),
-                                 Defec_Time = as.POSIXct(character()),
-                                 Stress_Time = as.POSIXct(character()),
-                                 Speed = numeric(),
-                                 Distance = numeric(),
-                                 ng_g = numeric(),
-                                 #StressorID = integer(),
-                                 stringsAsFactors = FALSE)
+  # If a lot of hunting events happened in a short time period (say, a week) before
+  # defecation, the effects, if exist, might accumulate.
+  # Thus, we use the number of *relevant* hunting events as a covariate.
+  #
+  # 4. Define relevant hunting events.
+  # Version 1: All hunting events within `daydiff_threshold` are relevant.
+  # Version 2: All hunting events wihtin `daydiff_threshold` and `distance_threshold`
+  # are relevant.
+  # Version 3: All hunting events with a score above some threshold are relevant?
+  
+  # Find all combinations of deer and hunting events where the hunting event
+  # happened within `daydiff_threshold` before the FCM sample was taken
+  deer_sample_hunt <- FCMStress %>%
+    mutate(
+      StressDateEarliest = as_date(DefecTime - days(daydiff_threshold)),
+      StressDateLatest = as_date(DefecTime),
+    ) %>%
+    left_join(
+      HuntEvents,
+      join_by(StressDateEarliest <= HuntDate, StressDateLatest >= HuntDate)
+    )
 
-  FCMStress_joined <- FCMStress %>%
+  deer_hunt_pairs <- deer_sample_hunt %>%
+    filter(!is.na(Hunt.ID), !is.na(HuntTime), !is.na(HuntX), !is.na(HuntY)) %>%
+    distinct(Sender.ID, Hunt.ID)
+  # Get distance between deer and hunting event
+  distances <- CalcDist(deer_hunting_pairs, Movement, HuntEvents) %>%
+    select(Sender.ID, Hunt.ID, starts_with("Distance"))
+
+  # Merge back
+  merged <- deer_sample_hunt %>%
+    left_join(distances, by = c("Sender.ID", "Hunt.ID")) %>%
+    mutate(TimeDiff = as.numeric(difftime(DefecTime, HuntTime, unit = "hours"))) %>%
+    # Get rid of definitely irrelevant hunting events
+    filter(TimeDiff > 0 | is.na(TimeDiff)) %>%
+    # Count relevant hunting events
     mutate(
-      Sender.ID = as.character(Sender.ID),
-      collar_time = Collar_t_  # rename for clarity
-    )
-  
-  StressEvents_joined <- StressEvents_new %>%
-    mutate(Sender.ID = as.character(Sender.ID))
-  
-  FCMData_Assigned <- FCMStress_joined %>%
-    inner_join(
-      StressEvents_joined,
-      by = "Sender.ID",
-      relationship = "many-to-many"
+      relevant = (
+        !is.na(TimeDiff) & TimeDiff >= gut_retention_hours
+      ) & (
+        !is.na(Distance) & Distance <= distance_threshold
+      ),
+      relevant_include_missing = (
+        (TimeDiff >= gut_retention_hours) | is.na(TimeDiff)
+      ) & (
+        Distance <= distance_threshold | is.na(Distance)
+      )
     ) %>%
     mutate(
-      TimeDiff = as.numeric(difftime(collar_time, HuntEventTime, units = "hours"))
-    ) %>%
-    filter(
-      TimeDiff >= gut_retention_time_lower,
-      TimeDiff <= gut_retention_time_upper
-    ) %>%
-    transmute(
-      Sender.ID = Sender.ID,
-      Sample_ID = Sample_ID,
-      HairID = HairID,
-      Defec_Time = collar_time,
-      Stress_Time = HuntEventTime,
-      TimeDiff = TimeDiff,
-      Distance = Distance,
-      ng_g = ng_g
+      NumRelevantHunts = sum(relevant),
+      NumRelevantHunts_include_missing = sum(relevant_include_missing),
+      .by = Sample.ID
     )
-  
-  # Filtering by distance threshold
-  if (ignore_distance_filter == FALSE) {
-    interesting_data <- FCMData_Assigned %>%
-      filter(Distance <= distance_threshold)
-  } else {
-    interesting_data <- FCMData_Assigned
+
+  if (filter_criterion == "last") {
+    data <- merged %>%
+      group_by(Sender.ID, Sample.ID) %>%
+      filter(TimeDiff == min(TimeDiff, na.rm = TRUE), !is.na(Distance)) %>%
+      ungroup()
+    return(data)
   }
-  
-  interesting_data$TimeDiff <- as.numeric(interesting_data$TimeDiff)
-  
-  data_cleanedup <- interesting_data
-  data_cleanedup$TimeDiff <- as.numeric(data_cleanedup$TimeDiff)
-  
-  # Get rid of duplicate entries and choose which one to keep:
-  # Define a scoring function:
-  data_cleanedup$Score <- (10000000000 / data_cleanedup$Distance^2) *
-    transform_time_diff_lognormal(data_cleanedup$TimeDiff, meanlog = log(32), sdlog = 0.7)
-  
-  data_cleanedup <- data_cleanedup %>%
-    group_by(Sample_ID) %>%
-    mutate(
-      RowsDiscarded = n() - 1  # Total rows for each Sample_ID minus 1 (kept row)
-    ) %>%
-    slice_max(Score, n = 1) %>%
-    ungroup()
-  
-  
-  
-  data_cleanedup_min_distance <- interesting_data %>%
-    group_by(Sample_ID) %>%
-    mutate(
-      RowsDiscarded = n() - 1  # Total rows for each Sample_ID minus 1 (kept row)
-    ) %>%
-    slice_min(Distance, n = 1) %>%
-    ungroup()
-  
-  data_cleanedup_min_timediff <- interesting_data %>%
-    group_by(Sample_ID) %>%
-    mutate(
-      RowsDiscarded = n() - 1  # Total rows for each Sample_ID minus 1 (kept row)
-    ) %>%
-    slice_min(TimeDiff, n = 1) %>%
-    ungroup()
-  
-  # Add both together:
-  combo_min_dist_timediff <- rbind(data_cleanedup_min_distance,
-                                   data_cleanedup_min_timediff)
-  combo_min_dist_timediff_no_dupes <- combo_min_dist_timediff[!duplicated(combo_min_dist_timediff$Sample_ID), ]
-  
-  return(list(
-    interesting_data = interesting_data,
-    data_cleanedup = data_cleanedup,
-    data_cleanedup_min_distance = data_cleanedup_min_distance,
-    data_cleanedup_min_timediff = data_cleanedup_min_timediff,
-    combo_min_dist_timediff = combo_min_dist_timediff,
-    combo_min_dist_timediff_no_dupes = combo_min_dist_timediff_no_dupes
-  ))
+  if (filter_criterion == "nearest") {
+    data <- merged %>%
+      group_by(Sender.ID, Sample.ID) %>%
+      filter(Distance == min(Distance, na.rm = TRUE), !is.na(TimeDiff)) %>%
+      ungroup()
+    return(data)
+  }
+  if (filter_criterion == "score") {
+    data <- merged %>%
+      group_by(Sender.ID, Sample.ID) %>%
+      mutate(Score = (10000000000 / Distance^2) * transform_time_diff_lognormal(TimeDiff)) %>%
+      filter(Score == max(Score, na.rm = TRUE)) %>%
+      ungroup()
+    return(data)
+  }
+
+  stop("Invalid filter_criterion")
+
+  # # Get potential confounders
+  # mutate(
+  #   # time diff between defecation and sampling
+  #   SampleDelay = as.numeric(difftime(SampleTime, DefecTime, unit = "hours")),
+  #   # time of day
+  #   DefecHour = hour(DefecTime),
+  #   # hunting hour
+  #   HuntHour = hour(HuntTime),
+  #   # season
+  #   Season = get_season(DefecTime)
+  #   # TBD: pregnancy, herds, etc?
+  # ) %>%
+  # distinct(
+  #   Sample.ID, Sender.ID,
+  #   ng_g,
+  #   DefecTime,
+  #   Hunt.ID, HuntTime, HuntDate, HuntHour,
+  #   Distance, DistanceX, DistanceY,
+  #   TimeDiff, SampleDelay,
+  #   Season
+  # )
 }
-
-# Documentation of Dataset Variants:
-
-# 1. FCMData_Assigned: Contains all possible stressor-event assignments for each FCM sample, 
-#    based on gut retention time and sender match criteria.
-
-# 2. interesting_data: Subset of FCMData_Assigned filtered by a specified maximum distance threshold
-#    if 'ignore_distance_filter' is set to FALSE. This removes nonsense assignments due to faulty data.
-#    USE INSTEAD OF FCMData_Assigned
-
-# 3. data_cleanedup: Deduplicated version of 'interesting_data', where the best stressor event for each 
-#    sample is selected based on a scoring function combining distance and time difference.
-
-# 4. data_cleanedup_min_distance: Deduplicated dataset retaining the stressor event with the minimum distance 
-#    for each sample.
-
-# 5. data_cleanedup_min_timediff: Deduplicated dataset retaining the stressor event with the minimum time 
-#    difference for each sample.
-
-# 6. combo_min_dist_timediff: Combined dataset containing rows from both 'data_cleanedup_min_distance' and 
-#    'data_cleanedup_min_timediff', including duplicates.
-
-# 7. combo_min_dist_timediff_no_dupes: Final combined dataset where duplicate entries based on 'Sample_ID' 
-#    are removed, retaining only one unique assignment per sample.
-
-# FOR MODELLING USE: 3-7

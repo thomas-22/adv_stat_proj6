@@ -2,6 +2,7 @@
 # MAIN EXECTUION
 # --------------------------------------
 library(readr)
+library(stringr)
 library(dplyr)
 library(sf)
 library(lubridate)
@@ -29,32 +30,41 @@ source("R/XGBoost_Model.R")
 # -----------------------------------
 # DATA PREPROCESSING
 # -----------------------------------
+
 # -------------------------
-# Datafusion
+# Data fusion
 # -------------------------
-prepared_data <- run_datafusion()
+prepared_data <- suppressWarnings(run_datafusion())
 
 Movement <- prepared_data$Movement
 FCMStress <- prepared_data$FCMStress
-HuntEventsreduced <- prepared_data$HuntEventsreduced
-HuntEvents_Reduced_UTM_New <- prepared_data$HuntEvents_Reduced_UTM_New
+HuntEvents <- prepared_data$HuntEvents
+# HuntEvents_reduced <- prepared_data$HuntEvents_reduced
 
+# Remove hunting events occurred after the last FCM sample
+# last_sample_date <- max(FCMStress$SampleDate)
+# HuntEvents <- filter(HuntEvents, HuntDate > last_sample_date)
+
+# Sanity checks
+summary(HuntEvents)
+summary(FCMStress)
+summary(Movement)
 
 # -------------------------
-# CalcSenderPosDist_new
+# Interpolate deer positions and calculate distances
 # -------------------------
-calculated_data <- CalcSender_Position_Distance()
+deer_hunt_pairs <- FCMStress %>%
+  mutate(SampleDateMinus100 = SampleDate - days(100)) %>%
+  left_join(HuntEvents, join_by(SampleDateMinus100 <= HuntDate)) %>%
+  distinct(Sender.ID, Hunt.ID)
 
-StressEvents_new <- calculated_data$StressEvents_new
-no_t_before <- calculated_data$no_t_before
-interpolated_positions <- calculated_data$interpolated_positions
-
+distances <- CalcDist(deer_hunt_pairs, Movement, HuntEvents)
+# View(distances)
 
 # -------------------------
 # Assign_FCMData_to_Stressors
 # -------------------------
 
-#Declare Variables
 ignore_distance_filter <- FALSE
 distance_threshold <- 100000 #in Meters
 gut_retention_time_lower <- 0 #in Hours
