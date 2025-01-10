@@ -1,26 +1,55 @@
 run_datafusion <- function (save=FALSE) {
-  #-----------------------------------------------------------------------------
-  # Pregnancy still needs correction!
+  # Read FCM data
+  path.FCMStress <- "Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
+  FCMStress <- read.csv(path.FCMStress, header = TRUE, sep = ",") %>%
+    as_tibble() %>%
+    mutate(DefecTime = str_c(Collar_day, Collar_time, sep = " ") %>%
+             parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
+           DefecDate = as_date(DefecTime),
+           SampleTime = str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
+             parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
+            SampleDate = dmy(Waypoint_day),
+           Sender.ID = as.factor(Sender.ID)) %>%
+    rename(Sample.ID = Sample_ID,
+           DefecX = X,
+           DefecY = Y) %>%
+    # Filter out error
+    filter(ng_g > 0) %>%
+    # If there are multiple FCM measurements from the same sample, take the mean
+    # (only affects 2 samples)
+    group_by(Sample.ID, Sender.ID) %>%
+    mutate(ng_g = mean(ng_g)) %>%
+    ungroup() %>%
+    distinct(
+      Sample.ID, Sender.ID,
+      # FCM level (our response variable)
+      ng_g,
+      # info about defecation event
+      DefecTime, DefecDate, DefecX, DefecY,
+      # info about sample collection
+      SampleDate, SampleTime
+    )
   
-  # # calculate backwards from the birth of the foal 200 days.
-  # # column pregnant is time interval
+  sender_ids = levels(FCMStress$Sender.ID)
   
-  # ReproductionSuccess <- readxl::read_excel("Data/Reproduction Success Results.xlsx") %>%
-  #   filter(!is.na(`birth date`)) %>%
-  #   mutate(birth_date = ymd(`birth date`),
-  #          Sender.ID = factor(`Collar ID`),
-  #          .keep = "unused") %>%
-  #   mutate(pregnant_since = birth_date - days(pregancy_duration)) %>%
-  #   mutate(pregnant = interval(pregnant_since, birth_date))
-  
-  # ReproductionSuccess <- ReproductionSuccess[, c("Sender.ID", "pregnant")]
-  #-----------------------------------------------------------------------------
-  
+  # Add pregnancy information
+  path.ReproductionSuccess <- "Data/Reproduction Success Results.xlsx"
+  ReproductionSuccess <- readxl::read_excel(path.ReproductionSuccess) %>%
+    mutate(Sender.ID = factor(`Collar ID`, levels = sender_ids)) %>%
+    distinct(Sender.ID, preg_year)
+  FCMStress <- FCMStress %>%
+    left_join(ReproductionSuccess, by = "Sender.ID") %>%
+    mutate(
+      Pregnant = preg_year == year(DefecTime),
+      Pregnant = ifelse(is.na(Pregnant), FALSE, Pregnant)
+    ) %>%
+    select(-preg_year)
+
   # Read movement data
   path.Movement <- "Data/Movement - CRS=ETRS UTM 33N.csv"
   Movement <- read.csv(path.Movement, header = TRUE, sep = ";") %>%
     as_tibble() %>%
-    mutate(Sender.ID = factor(Sender.ID),
+    mutate(Sender.ID = factor(Sender.ID, levels = sender_ids),
            t_ = parse_date_time(t_, orders = "%d/%m/%Y %h:%M")) %>%
     group_by(Sender.ID) %>%
     mutate(DistanceTraveled = sqrt((x_ - lag(x_))^2 + (y_ - lag(y_))^2)) %>%
@@ -57,30 +86,6 @@ run_datafusion <- function (save=FALSE) {
     distinct(HuntDate, HuntTime, HuntX, HuntY) %>%
     mutate(Hunt.ID = row_number()) %>%
     select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
-  
-  # Read FCM data
-  path.FCMStress <- "Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
-  FCMStress <- read.csv(path.FCMStress, header = TRUE, sep = ",") %>%
-    as_tibble() %>%
-    mutate(DefecTime = str_c(Collar_day, Collar_time, sep = " ") %>%
-             parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
-           DefecDate = as_date(DefecTime),
-           SampleTime = str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
-             parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
-            SampleDate = dmy(Waypoint_day),
-           Sender.ID = as.factor(Sender.ID)) %>%
-    rename(Sample.ID = Sample_ID,
-           DefecX = X,
-           DefecY = Y) %>%
-    distinct(
-      Sample.ID, Sender.ID,
-      # FCM level (our response variable)
-      ng_g,
-      # info about defecation event
-      DefecTime, DefecDate, DefecX, DefecY,
-      # info about sample collection
-      SampleDate, SampleTime
-    )
   
   # save as RDS
   if (save) {
