@@ -43,12 +43,10 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
   # Version 3: All hunting events with a score above some threshold are relevant?
   
   # Find all combinations of samples and hunting events, where the hunting time
-  # was before defecaion time. 100 days is arbitrary, but we won't consider
-  # a hunting event to be relevant if it happened more than 100 days before
-  # defecation.
+  # was within `daydiff_threshold` days before the defecation time.
   deer_sample_hunt <- FCMStress %>%
     mutate(
-      StressDateEarliest = as_date(DefecTime - days(100)),
+      StressDateEarliest = as_date(DefecTime - days(daydiff_threshold)),
       StressDateLatest = as_date(DefecTime),
     ) %>%
     left_join(
@@ -79,13 +77,13 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
   deer_sample_hunt_distance_timediff <- deer_sample_hunt_distance %>%
     mutate(
       TimeDiff = as.numeric(difftime(DefecTime, HuntTime, unit = "hours")),
-      TimeDiffStress = TimeDiff - gut_retention_hours,
-      DayDiff = as.numeric(difftime(DefecDate, HuntDate, unit = "days"))
+      TimeDiffStress = TimeDiff - gut_retention_hours
     ) %>%
     # Keep temporally relevant hunting events
-    filter(TimeDiffStress > 0 | is.na(TimeDiff), DayDiff <= daydiff_threshold)
+    filter(TimeDiffStress > 0 | is.na(TimeDiff))
   # View(deer_sample_hunt_distance_timediff)
 
+  # Remove outliers by default
   if (ignore_distance_filter) {
     data_cleanedup <- deer_sample_hunt_distance_timediff
   } else {
@@ -98,12 +96,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
       # Count the number of other hunting events (with or without timestamp) in
       # the pervious k days (including the day of defecation).
       # This could be an indicator of intensity of hunting and hence a confounder.
-      NumOtherHunts = sum(!is.na(Hunt.ID)) - 1,
-      # Log of number of hunting events in the previous k days, including the
-      # last hunting event, whose time diff and distance will enter the model as
-      # main covariates. This is to avoid log(0).
-      # Whether to use the log version or the raw version is your choice.
-      logNumHunts = log(NumOtherHunts + 1)
+      NumOtherHunts = sum(!is.na(Hunt.ID)) - 1
     )
 
   # Filter by criterion
@@ -135,6 +128,8 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
       DefecHour = hour(DefecTime),
       # hunting hour
       HuntHour = hour(HuntTime),
+      # month
+      DefecMonth = month(DefecTime),
       # season
       Season = get_season(DefecTime)
       # Pregnancy status is already in FCMStress

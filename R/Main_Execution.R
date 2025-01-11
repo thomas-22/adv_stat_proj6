@@ -4,10 +4,11 @@
 library(readr)
 library(stringr)
 library(dplyr)
+library(tidyr)
 library(sf)
 library(lubridate)
 library(readxl)
-
+library(purrr)
 
 
 # -------------------------
@@ -26,7 +27,8 @@ source("R/Plot_FinalData.R")
 #Modelling
 source("R/XGBoost_Model.R")
 
-
+# Plotting Models
+source("R/PlotModels.R")
 
 # -----------------------------------
 # DATA PREPROCESSING
@@ -51,18 +53,12 @@ summary(HuntEvents)
 summary(FCMStress)
 summary(Movement)
 
+# Remove FCM outliers -> does not affect much
+# FCMStress <- FCMStress %>% filter(ng_g < 1000)
+
 # -------------------------
 # Prepare data for modeling
 # -------------------------
-
-# # just a sanity check
-# data_least_filtered <- Assign_Hunts_to_FCM(
-#   FCMStress, HuntEvents, Movement,
-#   daydiff_threshold = 1000,
-#   gut_retention_hours = 0,
-#   distance_threshold = 100 # km
-# )
-# summary(data_least_filtered)
 
 # Variant 1:
 # For each FCM sample, find the last hunting event before defecation with
@@ -71,36 +67,19 @@ summary(Movement)
 # - a certain number of days prior to defecation and
 # - distance below a certain threshold
 # are considered *potentially relevant*.
-datasets <- list()
-
-param_grid <- rbind(
-  # Dataset 1:
-  # Gut retention time: 19 hours -- prior knowledge.
-  # -- This means the last hunting event must be at least 19 hours before the FCM sample.
-  # Daydiff: 2 days, because FCM level returns to normal after 14-36 hours.
-  # -- Here we can only be as precise as days, because some hunting events have no time information.
-  # Distance threshold only serves as outlier filter.
-  data.frame(daydiff_threshold = 2, gut_retention_hours = 19, distance_threshold = 20),
-  data.frame(daydiff_threshold = 7, gut_retention_hours = 19, distance_threshold = 20),
-  data.frame(daydiff_threshold = 14, gut_retention_hours = 19, distance_threshold = 20),
-  # Change gut rentention time to 14 hours. This affects the last hunting event.
-  data.frame(daydiff_threshold = 2, gut_retention_hours = 14, distance_threshold = 20),
-  data.frame(daydiff_threshold = 7, gut_retention_hours = 14, distance_threshold = 20),
-  data.frame(daydiff_threshold = 14, gut_retention_hours = 14, distance_threshold = 20)
+data_2_19 <- assign_hunts_to_fcm(
+  FCMStress, HuntEvents, Movement,
+  daydiff_threshold = 2, gut_retention_hours = 19, distance_threshold = 20
+)
+data_2_14 <- assign_hunts_to_fcm(
+  FCMStress, HuntEvents, Movement,
+  daydiff_threshold = 2, gut_retention_hours = 14, distance_threshold = 20
 )
 
-n_configs = nrow(param_grid)
-datasets <- lapply(seq_len(n_configs), function(i) {
-  params = param_grid[i, ]
-  assign_hunts_to_fcm(FCMStress, HuntEvents, Movement,
-    daydiff_threshold = params[["daydiff_threshold"]],
-    gut_retention_hours = params[["gut_retention_hours"]],
-    distance_threshold = params[["distance_threshold"]]
-  )
-})
-
-datasets19 = datasets[param_grid$gut_retention_hours == 19]
-datasets14 = datasets[param_grid$gut_retention_hours == 14]
+# sanity check
+datasets %>%
+  filter(daydiff_threshold == 14, gut_retention_hours == 19) %>%
+  pull(data) %>% map(summary)
 
 # Variant 2: use distance-based filtering.
 # Variant 3: use score-based filtering.
@@ -125,90 +104,158 @@ datasets14 = datasets[param_grid$gut_retention_hours == 14]
 # plot_lognorm_gamma_univar_independent()
 # plot_collar_t_raw()
 
+
+
 # -----------------------------------
 # MODELING
 # -----------------------------------
 library(mgcv)
-library(ggeffects)
-library(patchwork)
+library(gamm4)
 
-fit_gam <- function(data) {
+fit_gam <- function(data, family = gaussian()) {
   gam(
-    ng_g ~ s(TimeDiff, bs = "ps") + s(Distance, bs = "ps") + s(SampleDelay, bs = "ps") +
+    ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
       Pregnant + NumOtherHunts + Season,
     data = data,
-    family = Gamma(link = "log")
+    family = family
   )
 }
 
-
-plot_marginal_pred <- function(model, covariate, title, xlab, xmin = NULL) {
-  model_data <- model$model
-  predict_data <- ggpredict(model, terms = covariate, typical = "median") %>%
-    as_tibble()
-  if (!is.null(xmin)) {
-    predict_data <- filter(predict_data, x >= xmin)
-  }
-
-  ggplot(predict_data, aes(x = x, y = predicted)) +
-    geom_line() +
-    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-    geom_rug(data = model_data, aes(x = .data[[covariate]]), inherit.aes = FALSE) +
-    labs(title = title, y = "FCM level [ng/g]", x = xlab) +
-    ylim(50, 900) +
-    if (!is.null(xmin)) xlim(xmin, NA)
+fit_gamm <- function(data, family = gaussian()) {
+  gamm4(
+    ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
+      Pregnant + NumOtherHunts,
+    random = ~ (1 | Sender.ID) + (1 | DefecMonth),
+    data = data,
+    family = family
+  )
 }
 
-# PLOTS ARE BAD (not comparable because of range differences)
-# # Models for gut_retention_hours = 19
-# gams19 <- lapply(datasets19, fit_gam)
+fit_gamm_interact <- function(data, family = gaussian()) {
+  gamm4(
+    ng_g ~ t2(TimeDiff, Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
+      Pregnant + NumOtherHunts,
+    random = ~ (1 | Sender.ID) + (1 | DefecMonth),
+    data = data,
+    family = family
+  )
+}
 
-# plots_timediff19 <- lapply(seq_along(gams19), function(i) {
-#   plot_marginal_pred(gams[[i]],
-#     covariate = "TimeDiff",
-#     title = paste(
-#       param_grid[param_grid$gut_retention_hours == 19, ]$daydiff_threshold[[i]],
-#       "days"
-#     ),
-#     xlab = paste("Time difference [hours]"),
-#     xmin = 19
-#   )
-# })
-# plots_distance19 <- lapply(seq_along(gams19), function(i) {
-#   plot_marginal_pred(gams[[i]],
-#     covariate = "Distance",
-#     title = paste(
-#       param_grid[param_grid$gut_retention_hours == 19, ]$daydiff_threshold[[i]],
-#       "days"
-#     ),
-#     xlab = "Distance [km]"
-#   )
-# })
-# plots_sampledelay19 <- lapply(seq_along(gams19), function(i) {
-#   plot_marginal_pred(gams[[i]],
-#     covariate = "SampleDelay",
-#     title = paste(
-#       param_grid[param_grid$gut_retention_hours == 19, ]$daydiff_threshold[[i]],
-#       "days"
-#     ),
-#     xlab = "Sample delay [hours]"
-#   )
-# })
-# plots_otherhunts19 <- lapply(seq_along(gams19), function(i) {
-#   plot_marginal_pred(gams[[i]],
-#     covariate = "NumOtherHunts",
-#     title = paste(
-#       param_grid[param_grid$gut_retention_hours == 19, ]$daydiff_threshold[[i]],
-#       "days"
-#     ),
-#     xlab = "Other hunting events"
-#   )
-# })
+fig_gam_tp <- function(data, family = gaussian()) {
+  gam(
+    ng_g ~ s(TimeDiff, bs = "cr") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "cr") +
+      Pregnant + NumOtherHunts,
+    # random = list(Sender.ID = ~1, DefecMonth = ~1),
+    data = data,
+    family = family
+  )
+}
 
-# wrap_plots(
-#   c(plots_timediff19, plots_distance19, plots_sampledelay19, plots_otherhunts19),
-#   ncol = 4, byrow = FALSE
+# -------------------------
+# Try Gaussian
+
+gaussian_gam_2_19 <- fit_gam(data_2_19, family = gaussian())
+summary(gaussian_gam_2_19)
+qq.gam(gaussian_gam_2_19)
+
+plots <- list(
+  plot_predictions(gaussian_gam_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
+  plot_predictions(gaussian_gam_2_19, covariate = "Distance", xlab = "Distance [km]"),
+  plot_predictions(gaussian_gam_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
+  plot_predictions(gaussian_gam_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
+  plot_predictions(gaussian_gam_2_19, covariate = "Pregnant", xlab = "Pregnant")
+)
+wrap_plots(plots, axis_titles = "collect")
+
+gaussian_gamm_2_19 <- fit_gamm(data_2_19, family = gaussian())
+qq.gam(gaussian_gamm_2_19$gam)
+
+plots <- list(
+  plot_predictions(gaussian_gamm_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
+  plot_predictions(gaussian_gamm_2_19, covariate = "Distance", xlab = "Distance [km]"),
+  plot_predictions(gaussian_gamm_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
+  plot_predictions(gaussian_gamm_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
+  plot_predictions(gaussian_gamm_2_19, covariate = "Pregnant", xlab = "Pregnant")
+)
+wrap_plots(plots, axis_titles = "collect")
+
+# -------------------------
+
+
+#-------------------------
+# Try Gamma
+
+# 1. 19 hours gut retention, 5 days time frame to count relevant hunting events
+gamma_gam_2_19 <- fit_gam(data_2_19, family = Gamma(link = "log"))
+summary(gamma_gam_2_19)
+qq.gam(gamma_gam_2_19)
+
+plots <- list(
+  plot_predictions(gamma_gamm_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
+  plot_predictions(gamma_gamm_2_19, covariate = "Distance", xlab = "Distance [km]"),
+  plot_predictions(gamma_gamm_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
+  plot_predictions(gamma_gamm_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
+  plot_predictions(gamma_gamm_2_19, covariate = "Pregnant", xlab = "Pregnant")
+)
+wrap_plots(plots)
+
+
+gamma_gamm_2_19 <- fit_gamm(data_2_19, family = Gamma(link = "log"))
+summary(gamma_gamm_2_19$gam)
+qq.gam(gamma_gamm_2_19$gam, type = "deviance")
+summary(gamma_gamm_2_19$mer)
+
+plots <- list(
+  plot_predictions(gamma_gamm_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
+  plot_predictions(gamma_gamm_2_19, covariate = "Distance", xlab = "Distance [km]"),
+  plot_predictions(gamma_gamm_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
+  plot_predictions(gamma_gamm_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
+  plot_predictions(gamma_gamm_2_19, covariate = "Pregnant", xlab = "Pregnant")
+)
+wrap_plots(plots)
+
+
+# 2 Vary gut retention time
+gamma_gamm_2_14 <- assign_hunts_to_fcm(
+  FCMStress, HuntEvents, Movement,
+  daydiff_threshold = 2, gut_retention_hours = 14, distance_threshold = 20
+) %>%
+  fit_gamm(family = Gamma(link = "log"))
+gam.check(gamma_gamm_2_14$gam)
+summary(gamma_gamm_2_14$gam)
+summary(gamma_gamm_2_14$mer)
+
+plots <- list(
+  plot_predictions(gamma_gamm_2_14$gam, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 14),
+  plot_predictions(gamma_gamm_2_14$gam, covariate = "Distance", xlab = "Distance [km]"),
+  plot_predictions(gamma_gamm_2_14$gam, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
+  plot_predictions(gamma_gamm_2_14$gam, covariate = "NumOtherHunts", xlab = "Other hunting events")
+)
+wrap_plots(plots)
+
+
+# ## Larger distance, higher FCM levels? WHY?
+# library(car)
+# data <- assign_hunts_to_fcm(
+#   FCMStress, HuntEvents, Movement,
+#   daydiff_threshold = 2, gut_retention_hours = 19, distance_threshold = 20
 # )
+# model <- lm(ng_g ~ Distance + TimeDiff + NumOtherHunts, data = data)
+# vif(model)
+# # Collinearity is not a problem.
+
+# 3. Interaction between TimeDiff and Distance
+gamma_gamm_2_19_interact <- fit_gamm_interact(data_2_19, family = Gamma(link = "log"))
+summary(gamma_gamm_2_19_interact$gam)
+# bad plot
+vis.gam(gamma_gamm_2_19_interact$gam, view = c("Distance", "TimeDiff"), plot.type = "contour")
+
+# 4. Separate distance into 2 directions
+gamma_gam_2_19_tp <- fig_gam_tp(data_2_19, family = Gamma(link = "log"))
+summary(gamma_gam_2_19_tp)
+# bad plots
+vis.gam(gamma_gam_2_19_tp, view = c("DistanceX", "DistanceY"), plot.type = "contour")
+plot.gam(gamma_gam_2_19_tp, page = 1)
 
 
 # # -------------------------
