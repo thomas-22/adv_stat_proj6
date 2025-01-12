@@ -46,18 +46,18 @@ interpolate <- function(deer_hunt_pairs, Movement, HuntEvents, verbose = FALSE) 
     as_tibble() %>%
     # Get hunting events with the given ids
     left_join(
-      HuntEvents %>% select(Hunt.ID, HuntX, HuntY, HuntTime),
+      HuntEvents %>% dplyr::select(Hunt.ID, HuntX, HuntY, HuntTime),
       by = "Hunt.ID"
     ) %>%
     # Find the movement entry just before hunting event
     left_join(
-      Movement %>% select(Sender.ID, t_, x_, y_),
+      Movement %>% dplyr::select(Sender.ID, t_, x_, y_),
       join_by(Sender.ID, closest(HuntTime >= t_))
     ) %>%
     rename(t_before = t_, x_before = x_, y_before = y_) %>%
     # Find the movement entry just after the hunting event
     left_join(
-      Movement %>% select(Sender.ID, t_, x_, y_),
+      Movement %>% dplyr::select(Sender.ID, t_, x_, y_),
       join_by(Sender.ID, closest(HuntTime <= t_))
     ) %>%
     rename(t_after = t_, x_after = x_, y_after = y_) %>%
@@ -79,7 +79,7 @@ interpolate <- function(deer_hunt_pairs, Movement, HuntEvents, verbose = FALSE) 
   
   if (verbose) return(interpolated_positions)
   
-  select(
+  dplyr::select(
     interpolated_positions,
     Sender.ID,
     Hunt.ID, HuntTime, HuntX, HuntY,

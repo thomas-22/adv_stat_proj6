@@ -52,7 +52,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
       HuntEvents,
       join_by(StressTimeEarliest <= HuntTime, StressTimeLatest >= HuntTime)
     ) %>%
-    select(-StressTimeLatest, -StressTimeEarliest) %>%
+    dplyr::select(-StressTimeLatest, -StressTimeEarliest) %>%
     distinct()
 
   # Get combinations of deer and hunting events
@@ -62,7 +62,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
 
   # Get distances
   distances <- CalcDist(deer_hunt_pairs, Movement, HuntEvents) %>%
-    select(Sender.ID, Hunt.ID, starts_with("Distance")) %>%
+    dplyr::select(Sender.ID, Hunt.ID, starts_with("Distance")) %>%
     na.omit()
 
   # Merge back
