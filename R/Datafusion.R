@@ -86,7 +86,7 @@ run_datafusion <- function (save=FALSE) {
     st_drop_geometry() %>%
     distinct(HuntDate, HuntTime, HuntX, HuntY) %>%
     mutate(Hunt.ID = row_number()) %>%
-    select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
+    dplyr::select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
   
   # save as RDS
   if (save) {
