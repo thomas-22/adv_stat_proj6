@@ -8,11 +8,10 @@ transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0
 # For each FCM sample, find all hunting events within a certain time frame,
 # calculate distance and time diff, and add potential confounders.
 assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
-    ignore_distance_filter=FALSE,
-    daydiff_threshold = 30, # days
+    ignore_distance_filter = FALSE,
     distance_threshold = 10, # km
-    gut_retention_hours = 14, # hours
-    # gut_retention_upper = Inf, # hours
+    gut_retention_time_lower = 19, # hours
+    gut_retention_time_upper = 50, # hours
     filter_criterion = "last" # possible alternatives: "nearest", "score"
   ) {
   # Algorithm:
@@ -43,17 +42,17 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
   # Version 3: All hunting events with a score above some threshold are relevant?
   
   # Find all combinations of samples and hunting events, where the hunting time
-  # was within `daydiff_threshold` days before the defecation time.
+  # was within a meaningful time frame.
   deer_sample_hunt <- FCMStress %>%
     mutate(
-      StressDateEarliest = as_date(DefecTime - days(daydiff_threshold)),
-      StressDateLatest = as_date(DefecTime),
+      StressTimeEarliest = DefecTime - hours(gut_retention_time_upper),
+      StressTimeLatest = DefecTime - hours(gut_retention_time_lower),
     ) %>%
     left_join(
       HuntEvents,
-      join_by(StressDateEarliest <= HuntDate, StressDateLatest >= HuntDate)
+      join_by(StressTimeEarliest <= HuntTime, StressTimeLatest >= HuntTime)
     ) %>%
-    select(-StressDateLatest, -StressDateEarliest) %>%
+    select(-StressTimeLatest, -StressTimeEarliest) %>%
     distinct()
   # View(deer_sample_hunt)
 
@@ -77,21 +76,19 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
   deer_sample_hunt_distance_timediff <- deer_sample_hunt_distance %>%
     mutate(
       TimeDiff = as.numeric(difftime(DefecTime, HuntTime, unit = "hours")),
-      TimeDiffStress = TimeDiff - gut_retention_hours
-    ) %>%
-    # Keep temporally relevant hunting events
-    filter(TimeDiffStress > 0 | is.na(TimeDiff))
+      TimeDiffStress = TimeDiff - gut_retention_time_lower
+    )
   # View(deer_sample_hunt_distance_timediff)
 
-  # Remove outliers by default
+  # Remove outliers by default (ignore_distance_filter = FALSE)
   if (ignore_distance_filter) {
-    data_cleanedup <- deer_sample_hunt_distance_timediff
+    interesting_data <- deer_sample_hunt_distance_timediff
   } else {
-    data_cleanedup <- deer_sample_hunt_distance_timediff %>%
+    interesting_data <- deer_sample_hunt_distance_timediff %>%
       filter(!is.na(Distance), Distance <= distance_threshold)
   }
 
-  data_cleanedup <- data_cleanedup %>% group_by(Sender.ID, Sample.ID) %>%
+  interesting_data <- interesting_data %>% group_by(Sender.ID, Sample.ID) %>%
     mutate(
       # Count the number of other hunting events (with or without timestamp) in
       # the pervious k days (including the day of defecation).
@@ -101,16 +98,17 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
 
   # Filter by criterion
   data <- if (filter_criterion == "last") {
-    data_cleanedup %>%
+    interesting_data %>%
+      group_by(Sender.ID, Sample.ID) %>%
       filter(TimeDiff == min(TimeDiff, na.rm = TRUE), !is.na(Distance)) %>%
       ungroup()
   } else if (filter_criterion == "nearest") {
-    data_cleanedup %>%
+    interesting_data %>%
       group_by(Sender.ID, Sample.ID) %>%
       filter(Distance == min(Distance, na.rm = TRUE), !is.na(TimeDiff)) %>%
       ungroup()
   } else if (filter_criterion == "score") {
-    data_cleanedup %>%
+    interesting_data %>%
       group_by(Sender.ID, Sample.ID) %>%
       mutate(Score = (10000000000 / Distance^2) * transform_time_diff_lognormal(TimeDiff)) %>%
       filter(Score == max(Score, na.rm = TRUE)) %>%
@@ -124,14 +122,11 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
     mutate(
       # time diff between defecation and sampling
       SampleDelay = as.numeric(difftime(SampleTime, DefecTime, unit = "hours")),
-      # time of day
+      # others (not necessarily used)
+      DefecDay = as.numeric(floor_date(DefecTime, "day") - floor_date(DefecTime, "year")),
       DefecHour = hour(DefecTime),
-      # hunting hour
       HuntHour = hour(HuntTime),
-      # month
       DefecMonth = month(DefecTime),
-      # season
-      Season = get_season(DefecTime)
       # Pregnancy status is already in FCMStress
     )
 }
