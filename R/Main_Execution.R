@@ -12,7 +12,6 @@ library(purrr)
 library(ggplot2)
 library(ggeffects)
 library(patchwork)
-library(grid)
 
 # -------------------------
 # Overview & Source Everything
@@ -45,11 +44,6 @@ prepared_data <- suppressWarnings(run_datafusion())
 Movement <- prepared_data$Movement
 FCMStress <- prepared_data$FCMStress
 HuntEvents <- prepared_data$HuntEvents
-# HuntEvents_reduced <- prepared_data$HuntEvents_reduced
-
-# Remove hunting events occurred after the last FCM sample
-# last_sample_date <- max(FCMStress$SampleDate)
-# HuntEvents <- filter(HuntEvents, HuntDate > last_sample_date)
 
 # Sanity checks
 summary(HuntEvents)

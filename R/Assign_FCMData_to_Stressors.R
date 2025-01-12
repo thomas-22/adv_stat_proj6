@@ -54,7 +54,6 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
     ) %>%
     select(-StressTimeLatest, -StressTimeEarliest) %>%
     distinct()
-  # View(deer_sample_hunt)
 
   # Get combinations of deer and hunting events
   deer_hunt_pairs <- deer_sample_hunt %>%
@@ -65,12 +64,10 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
   distances <- CalcDist(deer_hunt_pairs, Movement, HuntEvents) %>%
     select(Sender.ID, Hunt.ID, starts_with("Distance")) %>%
     na.omit()
-  # View(distances)
 
   # Merge back
   deer_sample_hunt_distance <- deer_sample_hunt %>%
     left_join(distances, by = c("Sender.ID", "Hunt.ID"))
-  # View(deer_sample_hunt_distance)
 
   # Calculate time difference
   deer_sample_hunt_distance_timediff <- deer_sample_hunt_distance %>%
@@ -78,7 +75,6 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
       TimeDiff = as.numeric(difftime(DefecTime, HuntTime, unit = "hours")),
       TimeDiffStress = TimeDiff - gut_retention_time_lower
     )
-  # View(deer_sample_hunt_distance_timediff)
 
   # Remove outliers by default (ignore_distance_filter = FALSE)
   if (ignore_distance_filter) {
@@ -90,8 +86,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
 
   interesting_data <- interesting_data %>% group_by(Sender.ID, Sample.ID) %>%
     mutate(
-      # Count the number of other hunting events (with or without timestamp) in
-      # the pervious k days (including the day of defecation).
+      # Count the number of other hunting events.
       # This could be an indicator of intensity of hunting and hence a confounder.
       NumOtherHunts = sum(!is.na(Hunt.ID)) - 1
     )
@@ -126,7 +121,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
       DefecDay = as.numeric(floor_date(DefecTime, "day") - floor_date(DefecTime, "year")),
       DefecHour = hour(DefecTime),
       HuntHour = hour(HuntTime),
-      DefecMonth = month(DefecTime),
+      DefecMonth = month(DefecTime)
       # Pregnancy status is already in FCMStress
     )
 }
