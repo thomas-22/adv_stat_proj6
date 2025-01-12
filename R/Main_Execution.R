@@ -9,7 +9,10 @@ library(sf)
 library(lubridate)
 library(readxl)
 library(purrr)
-
+library(ggplot2)
+library(ggeffects)
+library(patchwork)
+library(grid)
 
 # -------------------------
 # Overview & Source Everything
@@ -60,29 +63,36 @@ summary(Movement)
 # Prepare data for modeling
 # -------------------------
 
-# Variant 1:
-# For each FCM sample, find the last hunting event before defecation with
-# complete time and location information.
-# All other hunting events (including missing data) within
-# - a certain number of days prior to defecation and
-# - distance below a certain threshold
-# are considered *potentially relevant*.
-data_2_19 <- assign_hunts_to_fcm(
-  FCMStress, HuntEvents, Movement,
-  daydiff_threshold = 2, gut_retention_hours = 19, distance_threshold = 20
+param_grid <- expand.grid(
+  gut_retention_time_lower = c(19, 14),
+  gut_retention_time_upper = 50,
+  distance_threshold = c(10, 20),
+  filter_criterion = c("last", "nearest")
 )
-data_2_14 <- assign_hunts_to_fcm(
-  FCMStress, HuntEvents, Movement,
-  daydiff_threshold = 2, gut_retention_hours = 14, distance_threshold = 20
-)
+View(param_grid)
 
-# sanity check
-datasets %>%
-  filter(daydiff_threshold == 14, gut_retention_hours == 19) %>%
-  pull(data) %>% map(summary)
+datasets <- param_grid %>%
+  pmap(
+    ~ assign_hunts_to_fcm(
+      FCMStress, HuntEvents, Movement,
+      gut_retention_time_lower = ..1,
+      gut_retention_time_upper = ..2,
+      distance_threshold = ..3,
+      filter_criterion = ..4
+    )
+  )
+res <- tibble(param_grid, data = datasets)
 
-# Variant 2: use distance-based filtering.
-# Variant 3: use score-based filtering.
+# sainity check
+res %>%
+  filter(gut_retention_time_lower == 19, distance_threshold == 20, filter_criterion == "last") %>%
+  pull(data) %>%
+  map(summary)
+
+res %>%
+  filter(gut_retention_time_lower == 19, distance_threshold == 10, filter_criterion == "last") %>%
+  pull(data) %>%
+  map(summary)
 
 # -------------------------
 # Plot Data
@@ -105,7 +115,6 @@ datasets %>%
 # plot_collar_t_raw()
 
 
-
 # -----------------------------------
 # MODELING
 # -----------------------------------
@@ -115,7 +124,7 @@ library(gamm4)
 fit_gam <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + Season,
+      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
     data = data,
     family = family
   )
@@ -124,8 +133,8 @@ fit_gam <- function(data, family = gaussian()) {
 fit_gamm <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts,
-    random = ~ (1 | Sender.ID) + (1 | DefecMonth),
+      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
+    random = ~ (1 | Sender.ID),
     data = data,
     family = family
   )
@@ -134,8 +143,8 @@ fit_gamm <- function(data, family = gaussian()) {
 fit_gamm_interact <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ t2(TimeDiff, Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts,
-    random = ~ (1 | Sender.ID) + (1 | DefecMonth),
+      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
+    random = ~ (1 | Sender.ID),
     data = data,
     family = family
   )
@@ -144,118 +153,171 @@ fit_gamm_interact <- function(data, family = gaussian()) {
 fig_gam_tp <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts,
+      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
     # random = list(Sender.ID = ~1, DefecMonth = ~1),
     data = data,
     family = family
   )
 }
 
-# -------------------------
-# Try Gaussian
+# Gaussian
+res <- res %>%
+  mutate(
+    gaussian_gam = map(data, fit_gam),
+    gaussian_gamm = map(data, fit_gamm)
+  )
+# Inspect some results
+m0 <- res %>%
+  filter(gut_retention_time_lower == 19, distance_threshold == 20, filter_criterion == "last") %>%
+  pull(gaussian_gam)
+m0 <- m0[[1]]
+summary(m0)
+qq.gam(m0)  # Gaussian is not suitable
 
-gaussian_gam_2_19 <- fit_gam(data_2_19, family = gaussian())
-summary(gaussian_gam_2_19)
-qq.gam(gaussian_gam_2_19)
+# Gamma (takes a while)
+res <- res %>%
+  mutate(
+    gamma_gam = map(data, fit_gam, family = Gamma(link = "log")),
+    gamma_gamm = map(data, fit_gamm, family = Gamma(link = "log"))
+  )
+# Inspect some results
+m0 <- res %>%
+  filter(gut_retention_time_lower == 19, distance_threshold == 20, filter_criterion == "last") %>%
+  pull(gamma_gam)
+m0 <- m0[[1]]
+summary(m0)
+qq.gam(m0)
 
-plots <- list(
-  plot_predictions(gaussian_gam_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
-  plot_predictions(gaussian_gam_2_19, covariate = "Distance", xlab = "Distance [km]"),
-  plot_predictions(gaussian_gam_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
-  plot_predictions(gaussian_gam_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
-  plot_predictions(gaussian_gam_2_19, covariate = "Pregnant", xlab = "Pregnant")
+# Define distance and timediff w.r.t. last hunting event
+# Plot GAMs
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "last",
+  x = "TimeDiff",
+  xlab = "Time difference [hours]"
 )
-wrap_plots(plots, axis_titles = "collect")
-
-gaussian_gamm_2_19 <- fit_gamm(data_2_19, family = gaussian())
-qq.gam(gaussian_gamm_2_19$gam)
-
-plots <- list(
-  plot_predictions(gaussian_gamm_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
-  plot_predictions(gaussian_gamm_2_19, covariate = "Distance", xlab = "Distance [km]"),
-  plot_predictions(gaussian_gamm_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
-  plot_predictions(gaussian_gamm_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
-  plot_predictions(gaussian_gamm_2_19, covariate = "Pregnant", xlab = "Pregnant")
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "last",
+  x = "Distance",
+  xlab = "Distance [km]"
 )
-wrap_plots(plots, axis_titles = "collect")
-
-# -------------------------
-
-
-#-------------------------
-# Try Gamma
-
-# 1. 19 hours gut retention, 5 days time frame to count relevant hunting events
-gamma_gam_2_19 <- fit_gam(data_2_19, family = Gamma(link = "log"))
-summary(gamma_gam_2_19)
-qq.gam(gamma_gam_2_19)
-
-plots <- list(
-  plot_predictions(gamma_gamm_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
-  plot_predictions(gamma_gamm_2_19, covariate = "Distance", xlab = "Distance [km]"),
-  plot_predictions(gamma_gamm_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
-  plot_predictions(gamma_gamm_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
-  plot_predictions(gamma_gamm_2_19, covariate = "Pregnant", xlab = "Pregnant")
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "last",
+  x = "SampleDelay",
+  xlab = "Sample delay [hours]"
 )
-wrap_plots(plots)
-
-
-gamma_gamm_2_19 <- fit_gamm(data_2_19, family = Gamma(link = "log"))
-summary(gamma_gamm_2_19$gam)
-qq.gam(gamma_gamm_2_19$gam, type = "deviance")
-summary(gamma_gamm_2_19$mer)
-
-plots <- list(
-  plot_predictions(gamma_gamm_2_19, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 19),
-  plot_predictions(gamma_gamm_2_19, covariate = "Distance", xlab = "Distance [km]"),
-  plot_predictions(gamma_gamm_2_19, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
-  plot_predictions(gamma_gamm_2_19, covariate = "NumOtherHunts", xlab = "Other hunting events"),
-  plot_predictions(gamma_gamm_2_19, covariate = "Pregnant", xlab = "Pregnant")
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "last",
+  x = "NumOtherHunts",
+  xlab = "Other hunting events"
 )
-wrap_plots(plots)
-
-
-# 2 Vary gut retention time
-gamma_gamm_2_14 <- assign_hunts_to_fcm(
-  FCMStress, HuntEvents, Movement,
-  daydiff_threshold = 2, gut_retention_hours = 14, distance_threshold = 20
-) %>%
-  fit_gamm(family = Gamma(link = "log"))
-gam.check(gamma_gamm_2_14$gam)
-summary(gamma_gamm_2_14$gam)
-summary(gamma_gamm_2_14$mer)
-
-plots <- list(
-  plot_predictions(gamma_gamm_2_14$gam, covariate = "TimeDiff", xlab = "Time difference [hours]", xmin = 14),
-  plot_predictions(gamma_gamm_2_14$gam, covariate = "Distance", xlab = "Distance [km]"),
-  plot_predictions(gamma_gamm_2_14$gam, covariate = "SampleDelay", xlab = "Sample delay [hours]"),
-  plot_predictions(gamma_gamm_2_14$gam, covariate = "NumOtherHunts", xlab = "Other hunting events")
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "last",
+  x = "DefecDay",
+  xlab = "Defecation day"
 )
-wrap_plots(plots)
+
+# Plot GAMMs
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "last",
+  x = "TimeDiff",
+  xlab = "Time difference [hours]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "last",
+  x = "Distance",
+  xlab = "Distance [km]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "last",
+  x = "SampleDelay",
+  xlab = "Sample delay [hours]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "last",
+  x = "NumOtherHunts",
+  xlab = "Other hunting events"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "last",
+  x = "DefecDay",
+  xlab = "Defecation day"
+)
 
 
-# ## Larger distance, higher FCM levels? WHY?
-# library(car)
-# data <- assign_hunts_to_fcm(
-#   FCMStress, HuntEvents, Movement,
-#   daydiff_threshold = 2, gut_retention_hours = 19, distance_threshold = 20
-# )
-# model <- lm(ng_g ~ Distance + TimeDiff + NumOtherHunts, data = data)
-# vif(model)
-# # Collinearity is not a problem.
+# Define distance and timediff w.r.t. nearest hunting event within 19~50 hours
+# Plot GAMs
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "nearest",
+  x = "TimeDiff",
+  xlab = "Time difference [hours]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "nearest",
+  x = "Distance",
+  xlab = "Distance [km]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "nearest",
+  x = "SampleDelay",
+  xlab = "Sample delay [hours]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "nearest",
+  x = "NumOtherHunts",
+  xlab = "Other Hunting Events"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gam",
+  filter_criterion = "nearest",
+  x = "DefecDay",
+  xlab = "Defecation day"
+)
 
-# 3. Interaction between TimeDiff and Distance
-gamma_gamm_2_19_interact <- fit_gamm_interact(data_2_19, family = Gamma(link = "log"))
-summary(gamma_gamm_2_19_interact$gam)
-# bad plot
-vis.gam(gamma_gamm_2_19_interact$gam, view = c("Distance", "TimeDiff"), plot.type = "contour")
-
-# 4. Separate distance into 2 directions
-gamma_gam_2_19_tp <- fig_gam_tp(data_2_19, family = Gamma(link = "log"))
-summary(gamma_gam_2_19_tp)
-# bad plots
-vis.gam(gamma_gam_2_19_tp, view = c("DistanceX", "DistanceY"), plot.type = "contour")
-plot.gam(gamma_gam_2_19_tp, page = 1)
+# Plot GAMMs
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "nearest",
+  x = "TimeDiff",
+  xlab = "Time difference [hours]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "nearest",
+  x = "Distance",
+  xlab = "Distance [km]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "nearest",
+  x = "SampleDelay",
+  xlab = "Sample delay [hours]"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "nearest",
+  x = "NumOtherHunts",
+  xlab = "Other Hunting Events"
+)
+plot_predictions_across_datasets(res,
+  model_type = "gamma_gamm",
+  filter_criterion = "nearest",
+  x = "DefecDay",
+  xlab = "Defecation day"
+)
 
 
 # # -------------------------
