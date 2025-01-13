@@ -1,0 +1,233 @@
+---
+title: "Effect of Hunting on Red Deer" 
+subtitle: "Modelling Fecal Cortisol Metabolites" 
+institute: "Dr. Nicolas Ferry - Bavarian National Forest (?) / Daniel Schlichting - StabLab" 
+author: "1, 2, 3, 4, 5" 
+date: 2025-01-31 
+date-format: DD MMM YYYY 
+lang: en 
+format:
+  revealjs:
+    embed-resources: true 
+    slide-number: c 
+    fig-align: center 
+    smaller: false 
+    footer: "Effect of Hunting on Red Deer" 
+    logo: "Resources/LMU_Logo.svg" 
+editor: visual 
+---
+
+# Agenda
+
+:::: {.fragment .fade-in fragment-index="1"}
+::: {.fragment .highlight-blue fragment-index="5"}
+1.  The Background
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="2"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+2.  The Data
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="3"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+3.  The Models
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="4"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+4.  The Wrap-up
+:::
+::::
+
+## The Goal
+
+assess red deer **stress response towards hunting activities**
+
+-- on 41 individual **collared red deer**
+
+-- within *Bavarian Forest National Park*
+
+-- using **FCMs**
+
+## The Terminology
+
+-   **FCMs**: Faecal Cortisol Metabolites - a non-invasive method to measure stress through faecal samples
+
+-   **collared deer**: red deer wearing a GPS-collar, which provides hourly location information
+
+-   **Euclidean Distance**: Also known as $L^2$ Distance. Reduces to Pythagorean Theorem for two Dimensions:
+$$d_{x,y} = ((x_1 - y_1)^2 + (x_2 - y_2)^2)^\frac{1}{2} \\ x,y \in \mathbb{R}^2 $$
+
+## The FCMs
+
+-   FCM values do not represent stress level when defecating
+-   **FCMs show the stress levels of previous hours**[^1]
+-   Reason: gut retention time
+
+[^1]: between 16-21 hours, averaging 19 hours
+
+## The Approach
+
+-   model FCM levels on spatial and temporal distance to hunting activities
+
+-   Expectation: FCM levels higher when closer in time and space
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## The Datasets {.smaller}
+
+-   **Movement**: contains the location and datetime of the 41 collared deer in the period Feb 2020 - Feb 2023. In total approx. **740 000 observations**[^2]
+
+-   **Hunting Events**: contains location and date of hunting events in the National Park - in total 1270 events, **890 of them with full timestamp**
+
+-   **FCM Stress**: contains information of **809 faecal samples**, including:\
+    -- the location of the sample\
+    -- the time of sampling\
+    -- the DNA-matched collared deer\
+    -- the time when the deer was at the location
+
+-   **Reproduction Success**: observations of **16** collared deer on:\
+    -- if they were pregnant in one year\
+    -- if they were accompanied by a calf in one year
+
+[^2]: some deer are collared somewhere within that period, for some the collar stops working (usually after 2 years)
+
+## The Fused Data
+We introduce **4 Parameters**:
+
+  - **Gut Retention Time (GRT) low**: The minimum amount of hours, a Stress Event can appear before Defecation Time
+  - **Gut Retention Time (GRT) high**: The maximimum amount of hours, a Stress Event can appear before Defecation Time
+
+  - **Distance Threshold**: The maximum spatial Distance of a Deer to a given Hunting Event to be considered
+
+  - **Proximity Criterion**: We consider either the Hunting Event closest in Space *or* in Time to be the most relevant
+
+## The Fused Data
+### Compute Temporal Distances
+<img src="Figures/graphTimes.png" alt="" width="800" />
+
+## The Fused Data
+### Interpolate Movements
+<img src="Figures/graphInterX.png" alt="" width="800" />
+
+## The Fused Data
+### Compute Spacial Distances
+<img src="Figures/graphDistances.png" alt="" width="800" />
+
+## The Fused Data
+### Add Pregnancy Data
+<img src="Figures/graphPregnant.png" alt="" width="800" />
+
+## The Fused Data
+### Identify Events
+<img src="Figures/graphEvent.png" alt="" width="800" />
+
+## The Fused Data
+### Finish Datasets
+We suggest eight different Datasets for Modelling
+```{r}
+library(dplyr)
+
+param_grid <- expand.grid(
+  gut_retention_time_lower = c(19, 14),
+  gut_retention_time_upper = 50,
+  distance_threshold = c(10, 20),
+  filter_criterion = c("last", "nearest")
+)
+
+param_grid$dataset <- seq_len(nrow(param_grid))
+param_grid <- relocate(param_grid, dataset)
+
+knitr::kable(param_grid, 
+             format = "html", 
+             align = c("r", "r", "r", "r"), 
+             col.names = c("DataSet",
+                           "GRT low",
+                           "GRT high",
+                           "Distance Threshold",
+                           "Proximity Criterion")) %>%
+  kableExtra::kable_styling(font_size = 28)
+```
+
+
+
+
+
+
+
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## Model A
+
+$$ \hat{Y} = X\beta $$
+
+## Model B
+
+$$ Y_i = X_i\beta + \epsilon_i $$
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## Conclusion
+
+-   Not enough observations after the datafusion left for robust modelling
+
+-   methods like XGBoost are prone to overfitting
+
+-   etc
+
+## Discussion
+
+-   How to define space-time-distance?
