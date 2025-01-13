@@ -39,3 +39,156 @@ digraph {
 #Save as HTML
 diagram <- DiagrammeR::grViz(dot_code)
 saveWidget(diagram, file = "./Figures/Project_Overview.html", selfcontained = TRUE)
+
+
+
+graphTimes <- grViz("
+  digraph {
+  layout = dot
+    node [shape = rectangle, color=lightblue, style=filled,fixedsize=False, fontname=Helvetica, labelType=\"html\"]
+    edge[color=grey,arrowhead=vee,minlen = 1]
+    DefecTime[label = 'Defecation Time']
+    SampleTime[label = 'Sample Time']
+    SampleDelay[label = 'Sample Delay', color = magenta]
+    HuntTime[label = 'Hunt Time']
+    TimeDiffStress[label = 'Time Diff Stress', color = magenta]
+    StressTime[label = 'temp: Stress Time', color=grey]
+    
+    DefecTime -> SampleDelay
+    SampleTime -> SampleDelay
+    DefecTime -> StressTime [label=<Gut Retention <b>low</b>>, fontname=Helvetica]
+    HuntTime -> TimeDiffStress 
+    StressTime -> TimeDiffStress
+    edge [minlen = 2]
+    rank=same {SampleTime, DefecTime, HuntTime}
+    rank=same {SampleDelay, TimeDiffStress}
+  }
+   ")
+
+svg_Times <- DiagrammeRsvg::export_svg(graphTimes)
+rsvg::rsvg_png(charToRaw(svg_Times), file = "./Figures/graphTimes.png", height = 1440)
+
+graphInterX <- grViz("
+  digraph {
+  layout = dot
+    node [shape = rectangle, color=lightblue, style=filled,fixedsize=False, fontname=Helvetica, labelType=\"html\"]
+    edge[color=grey,arrowhead=vee,minlen = 1]
+    
+    HuntTime[label = 'Hunt Time']
+    SenderTimeLow[label = 'Sender Timestamp t']
+    SenderTimeHigh[label = 'Sender Timestamp t+1']
+    SenderXLow[label = 'X Coordinate']
+    SenderXHigh[label = 'X Coordinate']
+    
+    Xinter[label = 'temp: interpolated X Coordinate', color = grey]
+    
+    SenderTimeLow -> HuntTime
+    HuntTime -> SenderTimeHigh
+
+    SenderTimeLow -> SenderXLow
+
+    SenderTimeHigh -> SenderXHigh
+    
+    SenderXLow -> Xinter
+    SenderXHigh -> Xinter
+    HuntTime -> Xinter
+    
+    edge [minlen = 2]
+    rank=same {SenderTimeLow, HuntTime, SenderTimeHigh}
+  }
+   ")
+
+svg_InterX <- DiagrammeRsvg::export_svg(graphInterX)
+rsvg::rsvg_png(charToRaw(svg_InterX), file = "./Figures/graphInterX.png", height = 1440)
+
+
+graphDistances <- grViz("
+  digraph {
+  layout = dot
+    node [shape = rectangle, color=lightblue, style=filled,fixedsize=False, fontname=Helvetica, labelType=\"html\"]
+    edge[color=grey,arrowhead=vee,minlen = 1]
+    
+    InterX[label = <temp:<br/> Interpolated X Coordinate <br/> of Deer>, color = grey]
+    InterY[label = <temp:<br/> Interpolated Y Coordinate <br/> of Deer>, color = grey]
+    HuntX[label = <X Coordinate <br/>of Hunt Event>]
+    HuntY[label = <Y Coordinate <br/>of Hunt Event>]
+    
+    Distance[label = 'Euclidean Distance', color = magenta]
+    XDist[label = 'Distance in X', color = magenta]
+    YDist[label = 'Distance in Y', color = magenta]
+    
+    InterX -> XDist
+    HuntX -> XDist
+    
+    InterY -> YDist
+    HuntY -> YDist
+    
+    XDist -> Distance
+    YDist -> Distance
+    
+    edge [minlen = 2]
+    rank=same {HuntX, HuntY}
+    rank=same {InterX, InterY}
+    
+  }
+   ")
+
+svg_Distances <- DiagrammeRsvg::export_svg(graphDistances)
+rsvg::rsvg_png(charToRaw(svg_Distances), file = "./Figures/graphDistances.png", height = 1440)
+
+
+graphPregnant <- grViz("
+  digraph {
+  layout = dot
+    node [shape = rectangle, color=lightblue, style=filled,fixedsize=False, fontname=Helvetica, labelType=\"html\"]
+    edge[color=grey,arrowhead=vee,minlen = 1]
+    
+    pregnancyYear[label = <Year of Pregnany <br/> accompanied by calf>]
+    SenderTime[label = <Sender Timestamp t>]
+    
+    Pregnant[label = <Pregnant (Y/N) <br/> at t>, color = magenta]
+    
+    pregnancyYear -> Pregnant
+    SenderTime -> Pregnant
+    
+    edge [minlen = 2]
+    rank=same {pregnancyYear, SenderTime}
+    
+  }
+   ")
+
+svg_Pregnant <- DiagrammeRsvg::export_svg(graphPregnant)
+rsvg::rsvg_png(charToRaw(svg_Pregnant), file = "./Figures/graphPregnant.png", height = 1440)
+
+graphEvent <- grViz("
+  digraph {
+  layout = dot
+    node [shape = rectangle, color=lightblue, style=filled,fixedsize=False, fontname=Helvetica, labelType=\"html\"]
+    edge[color=grey,arrowhead=vee,minlen = 1]
+    
+    Distance[label = <Euclidean Distance <br/>to Hunting Evenent>, color = magenta]
+    TimeDiffStress[label = 'Time Diff Stress', color = magenta]
+    
+    Events[label = <temp: <br/>relevant Events>, color = grey]
+    
+    Event[label = <considered Event>, color = magenta]
+    
+    NumOther[label = <Number of other <br/> potentially impactfull <br/> Hunting Events>, color = magenta]
+    
+    
+    Distance -> Events[label=<Distance Threshold>, fontname=Helvetica]
+    TimeDiffStress -> Events[label=<Gut Retention <br/>Time <b>high</b>>, fontname=Helvetica]
+    Events -> NumOther[label=<#Events - 1>, fontname=Helvetica]
+    Events -> Event[label=<Proximity Criterion>, fontname=Helvetica]
+    
+    edge [minlen = 2]
+    rank=same {Distance, TimeDiffStress}
+    rank=same{Events, NumOther}
+    
+  }
+   ")
+
+svg_Event <- DiagrammeRsvg::export_svg(graphEvent)
+rsvg::rsvg_png(charToRaw(svg_Event), file = "./Figures/graphEvent.png", height = 1440)
+
+
