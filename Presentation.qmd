@@ -8,6 +8,7 @@ date-format: DD MMM YYYY
 lang: en 
 format:
   revealjs:
+    html-math-method: mathjax
     embed-resources: true 
     slide-number: c 
     fig-align: center 
@@ -18,6 +19,7 @@ editor: visual
 ---
 
 # Agenda
+
 
 :::: {.fragment .fade-in fragment-index="1"}
 ::: {.fragment .highlight-blue fragment-index="5"}
@@ -59,8 +61,7 @@ assess red deer **stress response towards hunting activities**
 
 -   **collared deer**: red deer wearing a GPS-collar, which provides hourly location information
 
--   **Euclidean Distance**: Also known as $L^2$ Distance. Reduces to Pythagorean Theorem for two Dimensions:
-$$d_{x,y} = ((x_1 - y_1)^2 + (x_2 - y_2)^2)^\frac{1}{2} \\ x,y \in \mathbb{R}^2 $$
+-   **Euclidean Distance**: Also known as $L^2$ Distance. Reduces to Pythagorean Theorem for two Dimensions: $$d_{x,y} = ((x_1 - y_1)^2 + (x_2 - y_2)^2)^\frac{1}{2} \\ x,y \in \mathbb{R}^2 $$
 
 ## The FCMs
 
@@ -113,38 +114,53 @@ $$d_{x,y} = ((x_1 - y_1)^2 + (x_2 - y_2)^2)^\frac{1}{2} \\ x,y \in \mathbb{R}^2 
 [^2]: some deer are collared somewhere within that period, for some the collar stops working (usually after 2 years)
 
 ## The Fused Data
+
 We introduce **4 Parameters**:
 
-  - **Gut Retention Time (GRT) low**: The minimum amount of hours, a Stress Event can appear before Defecation Time
-  - **Gut Retention Time (GRT) high**: The maximimum amount of hours, a Stress Event can appear before Defecation Time
+-   **Gut Retention Time (GRT) low**: The minimum amount of hours, a Stress Event can appear before Defecation Time
 
-  - **Distance Threshold**: The maximum spatial Distance of a Deer to a given Hunting Event to be considered
+-   **Gut Retention Time (GRT) high**: The maximimum amount of hours, a Stress Event can appear before Defecation Time
 
-  - **Proximity Criterion**: We consider either the Hunting Event closest in Space *or* in Time to be the most relevant
+-   **Distance Threshold**: The maximum spatial Distance of a Deer to a given Hunting Event to be considered
+
+-   **Proximity Criterion**: We consider either the Hunting Event closest in Space *or* in Time to be the most relevant
 
 ## The Fused Data
+
 ### Compute Temporal Distances
-<img src="Figures/graphTimes.png" alt="" width="800" />
+
+<img src="Figures/graphTimes.png" width="800"/>
 
 ## The Fused Data
+
 ### Interpolate Movements
-<img src="Figures/graphInterX.png" alt="" width="800" />
+
+<img src="Figures/graphInterX.png" width="800"/>
 
 ## The Fused Data
+
 ### Compute Spacial Distances
-<img src="Figures/graphDistances.png" alt="" width="800" />
+
+<img src="Figures/graphDistances.png" width="800"/>
 
 ## The Fused Data
+
 ### Add Pregnancy Data
-<img src="Figures/graphPregnant.png" alt="" width="800" />
+
+<img src="Figures/graphPregnant.png" width="800"/>
 
 ## The Fused Data
+
 ### Identify Events
-<img src="Figures/graphEvent.png" alt="" width="800" />
+
+<img src="Figures/graphEvent.png" width="800"/>
 
 ## The Fused Data
+
 ### Finish Datasets
+
 We suggest eight different Datasets for Modelling
+
 ```{r}
 library(dplyr)
 
@@ -169,13 +185,6 @@ knitr::kable(param_grid,
   kableExtra::kable_styling(font_size = 28)
 ```
 
-
-
-
-
-
-
-
 # Agenda
 
 ::: {.fragment .semi-fade-out fragment-index="1"}
@@ -194,13 +203,379 @@ knitr::kable(param_grid,
 4.  The Wrap-up
 :::
 
-## Model A
+## A Generalized Additive Model{.smaller}
+### i) Gaussian: Identity Link
 
-$$ \hat{Y} = X\beta $$
+- $FCM_i \sim  \mathcal{N}(\mu_i, \sigma^2)$
 
-## Model B
+- Identity Link: $E(FCM_i) = \mu_i = \eta_i$
 
-$$ Y_i = X_i\beta + \epsilon_i $$
+- Linear Predictor:
+$$
+\begin{equation}
+  \begin{gathered}
+    \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\
+    \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\
+    f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i)
+  \end{gathered}
+\end{equation}
+$$
+
+## A Generalized Additive Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_Dist.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_TD.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_SD.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_OtherEvents.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_Day.png" width="800"/>
+:::
+::::
+
+
+
+## A Generalized Additive Model{.smaller}
+### ii) Gamma: Log Link
+
+- $FCM_i \sim  \mathcal{Ga}(\nu, \frac{\nu}{\mu_i})$
+
+- For better Interpretability we use the Log-Link: $E(FCM_i) = \mu_i = exp(\eta_i)$
+
+- Linear Predictor:
+$$ 
+\begin{equation}
+  \begin{gathered}
+    \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\
+    \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\
+    f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i)
+  \end{gathered}
+\end{equation}
+$$
+
+## A Generalized Additive Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_Dist.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_TD.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_SD.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_OtherEvents.png" width="800"/>
+:::
+::::
+
+## A Generalized Additive Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_Day.png" width="800"/>
+:::
+::::
+
+
+## B Generalized Additive Mixed Model{.smaller}
+### i) Gaussian: Identity Link
+
+- $FCM_{i\,j} \sim  \mathcal{N}(\mu_{i\,j}, \sigma^2)$
+
+- Identity Link: $E(FCM_{i\,j}) = \mu_{i\,j} = \eta_{i\,j}$
+
+- Linear Predictor:
+$$
+\begin{equation}
+  \begin{gathered}
+    \eta_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\
+    \beta_2\,Number\,Other\,Hunts_{i\,j} +  f_1(Time\,Diff_{i\,j}) + \\
+    f_2(Distance_{i\,j}) + f_3(Sample\,Delay_{i\,j}) + f_4(Day\,of\,Year_{i\,j})
+  \end{gathered}
+\end{equation}
+$$
+with: $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$
+
+## B Generalized Additive Mixed Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_Dist.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_TD.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_SD.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_OtherEvents.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### i) Gaussian: Identity Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_Day.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### ii) Gamma: Log Link
+
+- $FCM_{i\,j} \sim  \mathcal{Ga}(\nu, \frac{\nu}{\mu_{i\,j}})$
+
+- For better Interpretability we use the Log-Link: $E(FCM_{i\,j}) = \mu_{i\,j} = exp(\eta_{i\,j})$
+
+- Linear Predictor:
+$$ 
+\begin{equation}
+  \begin{gathered}
+    \eta_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\
+    \beta_2\,Number\,Other\,Hunts_{i\,j} +  f_1(Time\,Diff_{i\,j}) + \\
+    f_2(Distance_{i\,j}) + f_3(Sample\,Delay_{i\,j}) + f_4(Day\,of\,Year_{i\,j}) + \\
+    \gamma_j
+  \end{gathered}
+\end{equation}
+$$
+
+with: $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$
+
+## B Generalized Additive Mixed Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_Dist.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_TD.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_SD.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_OtherEvents.png" width="800"/>
+:::
+::::
+
+## B Generalized Additive Mixed Model{.smaller}
+### ii) Gamma: Log Link
+
+:::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_Day.png" width="800"/>
+:::
+::::
+
+<!-- ## B Generalized Additive Mixed Model{.smaller} -->
+<!-- ### i) Gaussian: Identity Link -->
+
+<!-- $$ -->
+<!-- \begin{equation} -->
+<!--   \begin{gathered} -->
+<!--     FCM_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\ -->
+<!--     \beta_2\,Number\,Other\,Hunts_{i\,j} +  f_1(Time\,Diff_{i\,j}) + \\ -->
+<!--     f_2(Distance_{i\,j}) + f_3(Sample\,Delay_{i\,j}) + f_4(Day\,of\,Year_{i\,j}) +\\ -->
+<!--     \gamma_j + \epsilon_{i\,j} -->
+<!--   \end{gathered} -->
+<!-- \end{equation} -->
+<!-- \\ -->
+<!-- $$ -->
+
+<!-- with: -->
+
+<!--   - $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$: Random Intercept of j-th Deer -->
+<!--   - $\epsilon_{i\,j} \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma^2)$: Random error at the i-th observation of the j-th deer -->
+
+<!-- $$ -->
+<!-- \begin{equation} -->
+<!--   \begin{gathered} -->
+<!--   a +b  -->
+<!--   \end{gathered} -->
+<!-- \end{equation} -->
+<!-- \\ -->
+<!-- $$ -->
+
+<!-- - Identity Link: $E(FCM_i) = \mu_i = \eta_i$ -->
+
+<!-- - Linear Predictor: -->
+
+
 
 # Agenda
 
@@ -224,9 +599,9 @@ $$ Y_i = X_i\beta + \epsilon_i $$
 
 -   Not enough observations after the datafusion left for robust modelling
 
--   methods like XGBoost are prone to overfitting
+-  
 
--   etc
+-   
 
 ## Discussion
 
