@@ -2,7 +2,7 @@
 title: "Effect of Hunting on Red Deer" 
 subtitle: "Modelling Fecal Cortisol Metabolites" 
 institute: "Dr. Nicolas Ferry - Bavarian National Forest (?) / Daniel Schlichting - StabLab" 
-author: "1, 2, 3, 4, 5" 
+author: "Thomas Witzani, Baisu Zhou, Ziqi Xu, Zhengchen Yuan, Nikolai German" 
 date: 2025-01-31 
 date-format: DD MMM YYYY 
 lang: en 
@@ -97,7 +97,7 @@ assess red deer **stress response towards hunting activities**
 
 ## The Datasets {.smaller}
 
--   **Movement**: contains the location and datetime of the 41 collared deer in the period Feb 2020 - Feb 2023. In total approx. **740 000 observations**[^2]
+-   **Movement**: contains the location and datetime^[hourly observations] of the 41 collared deer in the period Feb 2020 - Feb 2023. In total approx. **740 000 observations**[^2]
 
 -   **Hunting Events**: contains location and date of hunting events in the National Park - in total 1270 events, **890 of them with full timestamp**
 
@@ -127,7 +127,7 @@ We introduce **4 Parameters**:
 
 ## The Fused Data
 
-### Compute Temporal Distances
+### Extract Temporal Features
 
 <img src="Figures/graphTimes.png" width="800"/>
 
@@ -163,26 +163,19 @@ We suggest eight different Datasets for Modelling
 
 ```{r}
 library(dplyr)
+data <- readRDS("Data/Datasets.RDS")
 
-param_grid <- expand.grid(
-  gut_retention_time_lower = c(19, 14),
-  gut_retention_time_upper = 50,
-  distance_threshold = c(10, 20),
-  filter_criterion = c("last", "nearest")
-)
-
-param_grid$dataset <- seq_len(nrow(param_grid))
-param_grid <- relocate(param_grid, dataset)
-
-knitr::kable(param_grid, 
+knitr::kable(data, 
              format = "html", 
-             align = c("r", "r", "r", "r"), 
+             align = c("r", "r", "r", "r", "r", "r"), 
              col.names = c("DataSet",
                            "GRT low",
                            "GRT high",
                            "Distance Threshold",
-                           "Proximity Criterion")) %>%
-  kableExtra::kable_styling(font_size = 28)
+                           "Proximity Criterion",
+                           "Deers",
+                           "Observations")) %>%
+  kableExtra::kable_styling(font_size = 26)
 ```
 
 # Agenda
@@ -597,12 +590,20 @@ with: $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$
 
 ## Conclusion
 
--   Not enough observations after the datafusion left for robust modelling
+-   Not many observations after datafusion left for robust modelling
 
--  
+-   Trade-off between spatial and temporal distance
 
--   
+-   Sample Delay seems to be significant
+
+-   Modelling Outcomes don't show much difference
+
+-   Trade-off between Complexity and Explainability
 
 ## Discussion
 
--   How to define space-time-distance?
+-   How to minimize spatial and temporal distance at the same time?
+
+-   How to use a bigger Part of the Data?
+
+

@@ -77,6 +77,15 @@ datasets <- param_grid %>%
   )
 res <- tibble(param_grid, data = datasets)
 
+table_datasets <- tibble(param_grid, data = datasets)
+table_datasets$set <- seq_len(nrow(table_datasets))
+table_datasets <- relocate(table_datasets, set)
+table_datasets$unique_deers <- vapply(table_datasets$data, function(x) length(unique(x$Sender.ID)), numeric(1))
+table_datasets$obs <- vapply(table_datasets$data, nrow, numeric(1))
+table_datasets$data <- NULL
+saveRDS(table_datasets, "Data/Datasets.RDS")
+  
+
 # sainity check
 res %>%
   filter(gut_retention_time_lower == 19, distance_threshold == 20, filter_criterion == "last") %>%

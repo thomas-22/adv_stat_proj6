@@ -53,15 +53,17 @@ graphTimes <- grViz("
     HuntTime[label = 'Hunt Time']
     TimeDiffStress[label = 'Time Diff Stress', color = magenta]
     StressTime[label = 'temp: Stress Time', color=grey]
+    Day[label = 'Day of Year', color = magenta]
     
     DefecTime -> SampleDelay
+    DefecTime -> Day
     SampleTime -> SampleDelay
     DefecTime -> StressTime [label=<Gut Retention <b>low</b>>, fontname=Helvetica]
     HuntTime -> TimeDiffStress 
     StressTime -> TimeDiffStress
     edge [minlen = 2]
     rank=same {SampleTime, DefecTime, HuntTime}
-    rank=same {SampleDelay, TimeDiffStress}
+    rank=same {SampleDelay, TimeDiffStress, Day}
   }
    ")
 
