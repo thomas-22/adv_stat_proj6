@@ -65,9 +65,18 @@ assess red deer **stress response towards hunting activities**
 
 ## The FCMs
 
+:::: columns
+::: {.column width="50%"}
 -   FCM values do not represent stress level when defecating
--   **FCMs show the stress levels of previous hours**[^1]
+-   we expect **higher FCM levels when a Deer was stressed** sometime within the near past[^1]
 -   Reason: gut retention time
+:::
+
+::: {.column width="50%"}
+![Huber et al (2003)](Figures/FCM-levels.png)
+:::
+::::
+
 
 [^1]: between 16-21 hours, averaging 19 hours
 
