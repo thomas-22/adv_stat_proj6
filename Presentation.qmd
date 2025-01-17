@@ -1,7 +1,7 @@
 ---
 title: "Effect of Hunting on Red Deer" 
 subtitle: "Modelling Fecal Cortisol Metabolites" 
-institute: "Dr. Nicolas Ferry - Bavarian National Forest (?) / Daniel Schlichting - StabLab" 
+institute: "Dr. Nicolas Ferry - Bavarian National Forest Park / Daniel Schlichting - StabLab" 
 author: "Thomas Witzani, Baisu Zhou, Ziqi Xu, Zhengchen Yuan, Nikolai German" 
 date: 2025-01-31 
 date-format: DD MMM YYYY 
@@ -204,6 +204,53 @@ knitr::kable(data,
 ::: {.fragment .semi-fade-out fragment-index="1"}
 4.  The Wrap-up
 :::
+
+
+## The Models
+
+For Modelling, we consider seven features:
+
+  - [**Time Difference**]{.fragment fragment-index=1}
+  - [**Distance**]{.fragment fragment-index=1}
+  - [**Sample Delay**]{.fragment fragment-index=1}
+  - [Pregnant]{.fragment fragment-index=2}
+  - [Day of Year]{.fragment fragment-index=2}
+  - [Number of Other Hunts]{.fragment fragment-index=2}
+  - [Deer]{.fragment fragment-index=2}
+
+
+## The Models
+
+:::: columns
+::: {.column width="50%"}
+**Necessary**
+
+  - Time Difference
+  - Distance
+  - Sample Delay
+  
+:::
+
+::: {.column width="50%"}
+**Addidtional**
+
+  - Pregnant
+  - Day of Year
+  - Number of Other Hunts
+  - Deer
+
+:::
+::::
+
+## The Models{.smaller}
+
+|Model  |Type |Non-Parametric Effects |Linear Effects   |Random Intercept|Distribution Assumption |
+|-------|-----|-----------------------|-----------------|----------------|------------------------|
+|A        |GAM  |Time Difference, Distance, Sample Delay, Day of Year| Pregnant, Number Other Hunts| None|Gaussian    |
+|B        |GAM  |Time Difference, Distance, Sample Delay, Day of Year| Pregnant, Number Other Hunts| None|Gamma       |
+|C        |GAMM |Time Difference, Distance, Sample Delay, Day of Year| Pregnant, Number Other Hunts| Deer    |Gaussian|
+|D        |GAMM |Time Difference, Distance, Sample Delay, Day of Year| Pregnant, Number Other Hunts| Deer    |Gamma   |
+
 
 ## A Generalized Additive Model{.smaller}
 ### i) Gaussian: Identity Link
