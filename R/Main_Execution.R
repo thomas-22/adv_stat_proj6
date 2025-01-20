@@ -97,6 +97,18 @@ res %>%
   pull(data) %>%
   map(summary)
 
+res <- res %>%
+  mutate(data = map(data, ~ .x %>%
+                      mutate(DefecSeason = case_when(
+                        DefecMonth %in% c(3, 4, 5) ~ "Spring",   # Spring：3、4、5 
+                        DefecMonth %in% c(6, 7, 8) ~ "Summer",   # Summer：6、7、8 
+                        DefecMonth %in% c(9, 10, 11) ~ "Autumn", # Autumn：9、10、11 
+                        DefecMonth %in% c(12, 1, 2) ~ "Winter",  # Winter：12、1、2 
+                        TRUE ~ NA_character_
+                      ))
+  ))
+
+
 # -------------------------
 # Plot Data
 # -------------------------
@@ -127,7 +139,7 @@ library(gamm4)
 fit_gam <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
+      Pregnant + NumOtherHunts + DefecSeason,
     data = data,
     family = family
   )
@@ -136,7 +148,7 @@ fit_gam <- function(data, family = gaussian()) {
 fit_gamm <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
+      Pregnant + NumOtherHunts + DefecSeason,
     random = ~ (1 | Sender.ID),
     data = data,
     family = family
@@ -146,17 +158,17 @@ fit_gamm <- function(data, family = gaussian()) {
 fit_gamm_interact <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ t2(TimeDiff, Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
+      Pregnant + NumOtherHunts + DefecSeason,
     random = ~ (1 | Sender.ID),
     data = data,
     family = family
   )
 }
 
-fig_gam_tp <- function(data, family = gaussian()) {
+fit_gam_tp <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
+      Pregnant + NumOtherHunts + DefecSeason,
     # random = list(Sender.ID = ~1, DefecMonth = ~1),
     data = data,
     family = family
@@ -175,7 +187,7 @@ m0 <- res %>%
   pull(gaussian_gam)
 m0 <- m0[[1]]
 summary(m0)
-qq.gam(m0)  # Gaussian is not suitable
+qq.gam(m0)
 
 # Gamma (takes a while)
 res <- res %>%
@@ -184,12 +196,12 @@ res <- res %>%
     gamma_gamm = map(data, fit_gamm, family = Gamma(link = "log"))
   )
 # Inspect some results
-m0 <- res %>%
+m1 <- res %>%
   filter(gut_retention_time_lower == 19, distance_threshold == 20, filter_criterion == "last") %>%
   pull(gamma_gam)
-m0 <- m0[[1]]
-summary(m0)
-qq.gam(m0)
+m1 <- m1[[1]]
+summary(m1)
+qq.gam(m1)
 
 # Define distance and timediff w.r.t. last hunting event
 # Plot GAMs
