@@ -97,17 +97,6 @@ res %>%
   pull(data) %>%
   map(summary)
 
-res <- res %>%
-  mutate(data = map(data, ~ .x %>%
-                      mutate(DefecSeason = case_when(
-                        DefecMonth %in% c(3, 4, 5) ~ "Spring",   # Spring：3、4、5 
-                        DefecMonth %in% c(6, 7, 8) ~ "Summer",   # Summer：6、7、8 
-                        DefecMonth %in% c(9, 10, 11) ~ "Autumn", # Autumn：9、10、11 
-                        DefecMonth %in% c(12, 1, 2) ~ "Winter",  # Winter：12、1、2 
-                        TRUE ~ NA_character_
-                      ))
-  ))
-
 
 # -------------------------
 # Plot Data
@@ -139,7 +128,7 @@ library(gamm4)
 fit_gam <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + DefecSeason,
+      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
     data = data,
     family = family
   )
@@ -148,7 +137,7 @@ fit_gam <- function(data, family = gaussian()) {
 fit_gamm <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + DefecSeason,
+      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
     random = ~ (1 | Sender.ID),
     data = data,
     family = family
@@ -158,7 +147,7 @@ fit_gamm <- function(data, family = gaussian()) {
 fit_gamm_interact <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ t2(TimeDiff, Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + DefecSeason,
+      Pregnant + NumOtherHunts +s(DefecDay, bs = "cr"),
     random = ~ (1 | Sender.ID),
     data = data,
     family = family
@@ -168,7 +157,7 @@ fit_gamm_interact <- function(data, family = gaussian()) {
 fit_gam_tp <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "cr") +
-      Pregnant + NumOtherHunts + DefecSeason,
+      Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
     # random = list(Sender.ID = ~1, DefecMonth = ~1),
     data = data,
     family = family
