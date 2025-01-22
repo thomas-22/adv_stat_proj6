@@ -54,6 +54,47 @@ summary(Movement)
 # FCMStress <- FCMStress %>% filter(ng_g < 1000)
 
 # -------------------------
+# Explorative analysis
+# -------------------------
+
+# FCM levels: Please use your plot for Zwischenpraesentation
+# ggplot(FCMStress) +
+#   geom_boxplot(aes(x = Sender.ID, y = ng_g))
+
+# When the samples where taken?
+# Message: irregular sampling times.
+
+deer_order <- FCMStress %>%
+  group_by(Deer.ID) %>%
+  filter(DefecTime == max(DefecTime)) %>%
+  ungroup() %>%
+  arrange(DefecTime) %>%
+  distinct(Deer.ID) %>%
+  pull(Deer.ID)
+
+ggplot(FCMStress) +
+  geom_line(aes(x = DefecTime, y = Deer.ID)) +
+  geom_point(aes(x = DefecTime, y = Deer.ID)) +
+  labs(x = "Defecation time", y = "Deer") +
+  scale_y_discrete(limits = rev(deer_order)) +
+  theme(axis.text.y = element_blank())
+
+# -- This block is not very relvant --
+# # Sample intervals: we do need to consider correlation between samples.
+# FCMStress %>%
+#   group_by(Sender.ID) %>%
+#   arrange(DefecTime, .by_group = TRUE) %>%
+#   mutate(DefecTime_lag = lag(DefecTime, default = NA)) %>%
+#   # filter(!is.na(DefecTime_lag)) %>%
+#   mutate(interval = as.numeric(difftime(DefecTime, DefecTime_lag, units = "days"))) %>%
+#   ungroup() %>%
+#   pull(interval) %>%
+#   summary()
+# ----
+
+
+
+# -------------------------
 # Prepare data for modeling
 # -------------------------
 
@@ -63,6 +104,30 @@ param_grid <- expand.grid(
   distance_threshold = c(10, 20),
   filter_criterion = c("last", "nearest")
 )
+View(param_grid_full)
+
+# Keep those we want to present (the following is just a suggestion)
+# Justification:
+# - According to project description, we should consider the effect of the *last* hunting event.
+# - But within the time frame of 14 ~ 50 hours prior to defecation, the last hunting event
+# might be 20 km away, while the second last hunting event has a distance of 2 km. Therefore,
+# focusing on the nearest hunting event within the specified time frame is more meaningful.
+# - We might be able to find the closest hunting event both spatially and temporally.
+# One approach is the scoring function.
+
+param_grid <- list_rbind(list(
+  # last
+  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
+  data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
+  # nearest
+  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "nearest"),
+  data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "nearest"),
+  # score
+  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "score"),
+  data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "score")
+))
+
+
 View(param_grid)
 
 datasets <- param_grid %>%
@@ -80,7 +145,7 @@ res <- tibble(param_grid, data = datasets)
 table_datasets <- tibble(param_grid, data = datasets)
 table_datasets$set <- seq_len(nrow(table_datasets))
 table_datasets <- relocate(table_datasets, set)
-table_datasets$unique_deers <- vapply(table_datasets$data, function(x) length(unique(x$Sender.ID)), numeric(1))
+table_datasets$unique_deers <- vapply(table_datasets$data, function(x) length(unique(x$Deer.ID)), numeric(1))
 table_datasets$obs <- vapply(table_datasets$data, nrow, numeric(1))
 table_datasets$data <- NULL
 saveRDS(table_datasets, "Data/Datasets.RDS")
@@ -138,7 +203,7 @@ fit_gamm <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ s(TimeDiff, bs = "cr") + s(Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
       Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
-    random = ~ (1 | Sender.ID),
+    random = ~ (1 | Deer.ID),
     data = data,
     family = family
   )
@@ -148,7 +213,7 @@ fit_gamm_interact <- function(data, family = gaussian()) {
   gamm4(
     ng_g ~ t2(TimeDiff, Distance, bs = "cr") + s(SampleDelay, bs = "cr") +
       Pregnant + NumOtherHunts +s(DefecDay, bs = "cr"),
-    random = ~ (1 | Sender.ID),
+    random = ~ (1 | Deer.ID),
     data = data,
     family = family
   )
@@ -158,7 +223,7 @@ fit_gam_tp <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "cr") +
       Pregnant + NumOtherHunts + s(DefecDay, bs = "cr"),
-    # random = list(Sender.ID = ~1, DefecMonth = ~1),
+    # random = list(Deer.ID = ~1, DefecMonth = ~1),
     data = data,
     family = family
   )
