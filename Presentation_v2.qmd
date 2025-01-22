@@ -151,8 +151,8 @@ We introduce **4 parameters**:
 
 A hunting event is considered **relevant** to an FCM sample, if
 
-- the time difference ("TimeDiff") between experiencing stress (hunting) and defecation is in [GRT low, GRT high], and
-- the distance between the deer and the hunting event is $\leq$ distance threshold at the time of hunting. 
+- the time difference between experiencing stress (hunting) and defecation is between the GRT thresholds, and
+- the distance between the deer and the hunting event is $\leq$ distance threshold.
 
 ## The Most Relevant Hunting Event {.smaller}
 
@@ -179,6 +179,7 @@ The scoring function is defined as TBD.
 :::
 :::
 
+<!-- Maybe we don't need to report these steps. The audience would probably only care about which covariates we have in the end. -->
 ## The Fused Data
 
 ### Extract Temporal Features
@@ -216,20 +217,20 @@ The scoring function is defined as TBD.
 We suggest eight different Datasets for Modelling
 
 ```{r}
-# library(dplyr)
-# data <- readRDS("Data/Datasets.RDS")
+library(dplyr)
+data <- readRDS("Data/Datasets.RDS")
 
-# knitr::kable(data, 
-#              format = "html", 
-#              align = c("r", "r", "r", "r", "r", "r"), 
-#              col.names = c("DataSet",
-#                            "GRT low",
-#                            "GRT high",
-#                            "Distance Threshold",
-#                            "Proximity Criterion",
-#                            "Deers",
-#                            "Observations")) %>%
-#   kableExtra::kable_styling(font_size = 26)
+knitr::kable(data, 
+             format = "html", 
+             align = c("r", "r", "r", "r", "r", "r"), 
+             col.names = c("DataSet",
+                           "GRT low",
+                           "GRT high",
+                           "Distance Threshold",
+                           "Proximity Criterion",
+                           "Deers",
+                           "Observations")) %>%
+  kableExtra::kable_styling(font_size = 26)
 ```
 
 # Agenda
