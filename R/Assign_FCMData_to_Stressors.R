@@ -78,7 +78,8 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
 
   # Remove outliers by default (ignore_distance_filter = FALSE)
   if (ignore_distance_filter == FALSE && filter_criterion != "score") {
-    interesting_data <- deer_sample_hunt_distance_timediff
+    interesting_data <- deer_sample_hunt_distance_timediff %>%
+      filter(!is.na(Distance))
   } else {
     interesting_data <- deer_sample_hunt_distance_timediff %>%
       filter(!is.na(Distance), Distance <= distance_threshold)
