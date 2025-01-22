@@ -44,6 +44,7 @@ editor: visual
 :::
 ::::
 
+```{=html}
 <!-- ## The Goal
 
 assess red deer **stress response towards hunting activities**
@@ -62,14 +63,15 @@ assess red deer **stress response towards hunting activities**
 
 Baisu: I don't think we need to introduce the Euclidean distance.
 -   **Euclidean Distance**: Also known as $L^2$ Distance. Reduces to Pythagorean Theorem for two Dimensions: $$d_{x,y} = ((x_1 - y_1)^2 + (x_2 - y_2)^2)^\frac{1}{2} \\ x,y \in \mathbb{R}^2 $$ -->
+```
 
 ## Motivation
 
-- **Faecal Cortisol Metabolites (FCM)** are substances collected from feces of animals.
-- FCM level [ng/g] is a measure of stress level. Higher FCM level $\implies$ higher stress.
-- Stress $\Rightarrow$ secretion of certain hormones $\Rightarrow$ gut retention $\Rightarrow$ FCM.
-- Hunting activities might induce stress for red deer, even if non-lethal.
-- Goal: analyze how the distance in space and time to the (last) hunting event affects the FCM level.
+-   **Faecal Cortisol Metabolites (FCM)** are substances collected from feces of animals.
+-   FCM level \[ng/g\] is a measure of stress level. Higher FCM level $\implies$ higher stress.
+-   Stress $\Rightarrow$ secretion of certain hormones $\Rightarrow$ gut retention $\Rightarrow$ FCM.
+-   Hunting activities might induce stress for red deer, even if non-lethal.
+-   Goal: analyze how the distance in space and time to the (last) hunting event affects the FCM level.
 
 <!-- Putting "last" in parentheses, because it is mentioned in the project description, but we know only looking at the last hunting event is not good enough. (We have "nearest" and "score" as well.) -->
 
@@ -77,15 +79,14 @@ Baisu: I don't think we need to introduce the Euclidean distance.
 
 ::::: columns
 ::: {.column width="50%"}
-- FCM level does not represent stress level when defecating.
-- Gut retention time $\approx$ 19 hours.
+-   FCM level does not represent stress level when defecating.
+-   Gut retention time $\approx$ 19 hours.
 :::
 
 ::: {.column width="50%"}
 ![Huber et al (2003)](Figures/FCM-levels.png)
 :::
 :::::
-
 
 ## The Approach
 
@@ -113,10 +114,10 @@ Baisu: I don't think we need to introduce the Euclidean distance.
 
 ## The Data-Generating Process {.smaller}
 
-- A deer roams freely in the forest. Its movement is tracked by a GPS collar.
-- A hunting event happens.
-- After some time, the deer defecates. This is a **defecation event**.
-- After some time, researchers go to the defecation location and collect an FCM sample.
+-   A deer roams freely in the forest. Its movement is tracked by a GPS collar.
+-   A hunting event happens.
+-   After some time, the deer defecates. This is a **defecation event**.
+-   After some time, researchers go to the defecation location and collect an FCM sample.
 
 Note: The defecation location is not the deer's location at the time of the stress event.
 
@@ -127,14 +128,16 @@ Note: The defecation location is not the deer's location at the time of the stre
 -   **Hunting Events**: contains location and date of hunting events in the Bavarian Forest National Park - in total 1270 events, **890 of them with full timestamp**.
 
 -   **FCM Stress**: contains information of **809 faecal samples**, including
-    - the FCM level [ng/g],
-    - the time and location of sampling,
-    - to which deer the sample belongs,
-    - when defecation happened.
 
--   **Reproduction Success**: containes information about of **16** collared deer about
-    - if they were pregnant in one year,
-    - if they were accompanied by a calf in one year.
+    -   the FCM level \[ng/g\],
+    -   the time and location of sampling,
+    -   to which deer the sample belongs,
+    -   when defecation happened.
+
+-   **Reproduction Success**: contains information about of **16** collared deer about
+
+    -   if they were pregnant in one year,
+    -   if they were accompanied by a calf in one year.
 
 ## Distance Approximation via Interpolation
 
@@ -144,42 +147,46 @@ TBD: Illustration.
 
 We introduce **4 parameters**:
 
-- **Gut retention time (GRT) low** [hours],
-- **Gut retention time (GRT) high** [hours],
-- **Distance threshold** [km],
-- **Proximity criterion** ("last", "nearest", or "higest score")
+-   **Gut retention time (GRT) low** \[hours\],
+-   **Gut retention time (GRT) high** \[hours\],
+-   **Distance threshold** \[km\],
+-   **Proximity criterion** ("last", "nearest", or "highest score")
 
 A hunting event is considered **relevant** to an FCM sample, if
 
-- the time difference between experiencing stress (hunting) and defecation is between the GRT thresholds, and
-- the distance between the deer and the hunting event is $\leq$ distance threshold.
+-   the time difference between experiencing stress (hunting) and defecation is between the GRT thresholds, and
+-   the distance between the deer and the hunting event is $\leq$ distance threshold.
 
 ## The Most Relevant Hunting Event {.smaller}
 
 Among the relevant hunting events, the **most relevant** one is defined by the proximity criterion:
 
-- the closest in time ("last"),
-- the closest in space ("nearest"), or
-- the one with the "highest score."
+-   the closest in time ("last"),
+-   the closest in space ("nearest"), or
+-   the one with the "highest score."
 
 The scoring function is defined as TBD.
 
 ## Illustration {.smaller}
 
-::: {.columns}
+::::: columns
 <!-- left column -->
-::: {.column width=60%}
-![](Figures/relevant_hunts.svg){fig-align="center" width=630 height=630}
-:::
-<!-- right column -->
-::: {.column width=40%}
-- GRT lower = 14 hours
-- GRT upper = 50 hours
-- Distance threshold = 20 km
-:::
+
+::: {.column width="60%"}
+![](Figures/relevant_hunts.svg){fig-align="center" width="630" height="630"}
 :::
 
+<!-- right column -->
+
+::: {.column width="40%"}
+-   GRT lower = 14 hours
+-   GRT upper = 50 hours
+-   Distance threshold = 20 km
+:::
+:::::
+
 <!-- Maybe we don't need to report these steps. The audience would probably only care about which covariates we have in the end. -->
+
 ## The Fused Data
 
 ### Extract Temporal Features
@@ -255,13 +262,14 @@ knitr::kable(data,
 
 For Modelling, we consider the following covariates, defined for each pair of FCM sample and most relevant hunting event:
 
--   [**Time difference** [hours]]{.fragment fragment-index="1"}
--   [**Distance** [km]]{.fragment fragment-index="1"}
--   [**Sample delay** [hours]]{.fragment fragment-index="1"}
+-   [**Time difference** \[hours\]]{.fragment fragment-index="1"}
+-   [**Distance** \[km\]]{.fragment fragment-index="1"}
+-   [**Sample delay** \[hours\]]{.fragment fragment-index="1"}
 -   [Pregnant]{.fragment fragment-index="2"}
 -   [Defecation day (between 1 and 366)]{.fragment fragment-index="2"}
 -   [Number of other relevant hunting events]{.fragment fragment-index="2"}
 
+```{=html}
 <!-- ## The Models
 
 ::::: columns
@@ -282,16 +290,20 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 -   Deer
 :::
 ::::: -->
+```
 
 ## The Models {.smaller}
+
+```{=html}
 <!--
 Baisu: I'd say we only report Gamma GAMMs.
 GAMs are "worse" in that they do not account for individual differences between deer.
 Gaussian GAMMs are bad because the QQ plots show the residuals are not normally distributed.
 -->
+```
 
 | Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
-|----|----|----|----|----|----|
+|------------|------------|------------|------------|------------|------------|
 | A | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gaussian |
 | B | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gamma |
 | C | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gaussian |
@@ -564,9 +576,9 @@ $$
 
 ## i) Gamma: Log link {.smaller}
 
-- Log link for interpretability.
+-   Log link for interpretability.
 
-- Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
+-   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
 
 $$
 \begin{eqnarray}
