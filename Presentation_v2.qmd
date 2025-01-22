@@ -475,21 +475,20 @@ For Modelling, we consider the following covariates:
 
 ## B Generalized Additive Mixed Model {.smaller}
 
-### i) Gaussian: Identity Link
+### i) Gaussian: Identity Link {.smaller}
 
--   $FCM_{i\,j} \sim  \mathcal{N}(\mu_{i\,j}, \sigma^2)$
+Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
 
--   Identity Link: $E(FCM_{i\,j}) = \mu_{i\,j} = \eta_{i\,j}$
-
--   Linear Predictor: $$
-    \begin{equation}
-    \begin{gathered}
-      \eta_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\
-      \beta_2\,Number\,Other\,Hunts_{i\,j} +  f_1(Time\,Diff_{i\,j}) + \\
-      f_2(Distance_{i\,j}) + f_3(Sample\,Delay_{i\,j}) + f_4(Day\,of\,Year_{i\,j})
-    \end{gathered}
-    \end{equation}
-    $$ with: $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$
+$$
+\begin{eqnarray}
+\textup{FCM}_{ij} &\sim& \mathcal{N}\left( \mu_{ij}, \sigma^2 \right) \\
+\mu_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
+&& f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\
+&& f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
+&& \gamma_{i}, \\
+\gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2).
+\end{eqnarray}
+$$
 
 ## B Generalized Additive Mixed Model {.smaller}
 
@@ -563,22 +562,23 @@ For Modelling, we consider the following covariates:
 
 ## B Generalized Additive Mixed Model {.smaller}
 
-## i) Gamma: Log link
+## i) Gamma: Log link {.smaller}
 
--   Log link for interpretability.
+- Log link for interpretability.
 
--   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
+- Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
 
-    $$
-    \begin{eqnarray}
-    \textup{FCM}_{ij} &\sim& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \\
-    \mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}) \\
-    \eta_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
-    && f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
-    && \gamma_{i}, \\
-    \gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2).
-    \end{eqnarray}
-    $$
+$$
+\begin{eqnarray}
+\textup{FCM}_{ij} &\sim& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \\
+\mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}) \\
+\eta_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
+&& f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\
+&& f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
+&& \gamma_{i}, \\
+\gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2).
+\end{eqnarray}
+$$
 
 ## B Generalized Additive Mixed Model {.smaller}
 
