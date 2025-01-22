@@ -1,0 +1,739 @@
+---
+title: "Effect of Hunting on Red Deer" 
+subtitle: "Modelling Fecal Cortisol Metabolites" 
+institute: "Dr. Nicolas Ferry - Bavarian National Forest Park / Daniel Schlichting - StabLab" 
+author: "Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou" 
+date: 2025-01-31 
+date-format: DD MMM YYYY 
+lang: en 
+format:
+  revealjs:
+    html-math-method: mathjax
+    embed-resources: true 
+    slide-number: c 
+    fig-align: center 
+    smaller: false
+    footer: "Effect of Hunting on Red Deer" 
+    logo: "Resources/LMU_Logo.svg"
+editor: visual 
+---
+
+# Agenda
+
+:::: {.fragment .fade-in fragment-index="1"}
+::: {.fragment .highlight-blue fragment-index="5"}
+1.  The Background
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="2"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+2.  The Data
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="3"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+3.  The Models
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="4"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+4.  The Wrap-up
+:::
+::::
+
+## The Goal
+
+assess red deer **stress response towards hunting activities**
+
+-- on 41 individual **collared red deer**
+
+-- within *Bavarian Forest National Park*
+
+-- using **FCMs**
+
+<!-- ## The Terminology
+
+-   **FCMs**: Faecal Cortisol Metabolites - a non-invasive method to measure stress through faecal samples
+
+-   **collared deer**: red deer wearing a GPS-collar, which provides hourly location information
+
+-   **Euclidean Distance**: Also known as $L^2$ Distance. Reduces to Pythagorean Theorem for two Dimensions: $$d_{x,y} = ((x_1 - y_1)^2 + (x_2 - y_2)^2)^\frac{1}{2} \\ x,y \in \mathbb{R}^2 $$ -->
+
+## Motivation
+
+- **Faecal Cortisol Metabolites (FCM)** are substances collected from feces of animals.
+- FCM level [ng/g] is a measure of stress level. Higher FCM level $\implies$ higher stress.
+- Stress $\Rightarrow$ secretion of certain hormones $\Rightarrow$ gut retention $\Rightarrow$ FCM.
+- Hunting activities might induce stress for red deer, even if non-lethal.
+- Goal: analyze how the distance in space and time to the (last) hunting event affects the FCM level.
+
+<!-- Putting "last" in parentheses, because it is mentioned in the project description, but we know only looking at the last hunting event is not good enough. (We have "nearest" and "score" as well.) -->
+
+## FCM Level and Gut Retention Time
+
+::::: columns
+::: {.column width="50%"}
+- FCM level does not represent stress level when defecating.
+- Gut retention time $\approx$ 19 hours.
+:::
+
+::: {.column width="50%"}
+![Huber et al (2003)](Figures/FCM-levels.png)
+:::
+:::::
+
+
+## The Approach
+
+-   model FCM levels on spatial and temporal distance to hunting activities
+
+-   Expectation: FCM levels higher when closer in time and space
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## The Datasets {.smaller}
+
+-   **Movement**: contains the location and datetime[^2] of the 41 collared deer in the period Feb 2020 - Feb 2023. In total approx. **740 000 observations**[^3]
+
+-   **Hunting Events**: contains location and date of hunting events in the National Park - in total 1270 events, **890 of them with full timestamp**
+
+-   **FCM Stress**: contains information of **809 faecal samples**, including:\
+    -- the location of the sample\
+    -- the time of sampling\
+    -- the DNA-matched collared deer\
+    -- the time when the deer was at the location
+
+-   **Reproduction Success**: observations of **16** collared deer on:\
+    -- if they were pregnant in one year\
+    -- if they were accompanied by a calf in one year
+
+[^2]: hourly observations
+
+[^3]: some deer are collared somewhere within that period, for some the collar stops working (usually after 2 years)
+
+## The Data-Generating Process {.smaller}
+
+- A deer roams freely in the forest. Its movement is tracked by GPS collar.
+- A hunting event happens.
+- After some time, the deer defecates. This is a **defecation event**.
+- After some time, researchers go to the defecation location and collect an FCM sample. After their analysis, we know
+  - to which deer the FCM sample belongs,
+  - when (and where) the defecation event happened, and
+  - the time delay between defecation and sampling.
+
+Note: The defecation location is not the deer's location at the time of the stress event.
+
+## Distance Approximation via Interpolation
+
+TBD: Illustration.
+
+## Relevant Hunting Events {.smaller}
+
+We introduce **4 Parameters**:
+
+- **Gut Retention Time (GRT) low** [hours],
+- **Gut Retention Time (GRT) high** [hours],
+- **Distance Threshold** [km],
+- **Proximity Criterion** ("last", "nearest", or "higest score")
+
+A hunting event is considered **relevant** to an FCM sample, if
+
+- the time difference ("TimeDiff") between experiencing stress (hunting) and defecation is in [GRT low, GRT high], and
+- the distance between the deer and the hunting event is $\leq$ distance threshold at the time of hunting. 
+
+## The Most Relevant Hunting Event {.smaller}
+
+Among the relevant hunting events, the **most relevant** one is defined by the proximity criterion:
+
+- the closest in time ("last"),
+- the closest in space ("nearest"), or
+- the one with the "highest score."
+
+The scoring function is defined as TBD.
+
+## Illustration {.smaller}
+
+::: {.columns}
+<!-- left column -->
+::: {.column width=60%}
+![](Figures/relevant_hunts.svg){fig-align="center" width=630 height=630}
+:::
+<!-- right column -->
+::: {.column width=40%}
+- GRT lower = 14 hours
+- GRT upper = 50 hours
+- Distance threshold = 20 km
+:::
+:::
+
+## The Fused Data
+
+### Extract Temporal Features
+
+<img src="Figures/graphTimes.png" width="800"/>
+
+## The Fused Data
+
+### Interpolate Movements
+
+<img src="Figures/graphInterX.png" width="800"/>
+
+## The Fused Data
+
+### Compute Spacial Distances
+
+<img src="Figures/graphDistances.png" width="800"/>
+
+## The Fused Data
+
+### Add Pregnancy Data
+
+<img src="Figures/graphPregnant.png" width="800"/>
+
+## The Fused Data
+
+### Identify Events
+
+<img src="Figures/graphEvent.png" width="800"/>
+
+## The Fused Data
+
+### Finish Datasets
+
+We suggest eight different Datasets for Modelling
+
+```{r}
+# library(dplyr)
+# data <- readRDS("Data/Datasets.RDS")
+
+# knitr::kable(data, 
+#              format = "html", 
+#              align = c("r", "r", "r", "r", "r", "r"), 
+#              col.names = c("DataSet",
+#                            "GRT low",
+#                            "GRT high",
+#                            "Distance Threshold",
+#                            "Proximity Criterion",
+#                            "Deers",
+#                            "Observations")) %>%
+#   kableExtra::kable_styling(font_size = 26)
+```
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## The Models {.smaller}
+
+For Modelling, we consider the following covariates:
+
+-   [**Time difference** [hours]]{.fragment fragment-index="1"}
+-   [**Distance** [km]]{.fragment fragment-index="1"}
+-   [**Sample delay** [hours]]{.fragment fragment-index="1"}
+-   [Pregnant]{.fragment fragment-index="2"}
+-   [Defecation day (between 1 and 366)]{.fragment fragment-index="2"}
+-   [Number of other hunting events]{.fragment fragment-index="2"}
+
+<!-- ## The Models
+
+::::: columns
+::: {.column width="50%"}
+**Necessary**
+
+-   Time Difference
+-   Distance
+-   Sample Delay
+:::
+
+::: {.column width="50%"}
+**Addidtional**
+
+-   Pregnant
+-   Day of Year
+-   Number of Other Hunts
+-   Deer
+:::
+::::: -->
+
+## The Models {.smaller}
+
+| Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
+|----|----|----|----|----|----|
+| A | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gaussian |
+| B | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gamma |
+| C | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gaussian |
+| D | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gamma |
+
+## A Generalized Additive Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+-   $FCM_i \sim  \mathcal{N}(\mu_i, \sigma^2)$
+
+-   Identity Link: $E(FCM_i) = \mu_i = \eta_i$
+
+-   Linear Predictor: $$
+    \begin{equation}
+    \begin{gathered}
+      \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\
+      \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\
+      f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i)
+    \end{gathered}
+    \end{equation}
+    $$
+
+## A Generalized Additive Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_Dist.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_TD.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_SD.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_OtherEvents.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gau_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gau_N_Day.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### ii) Gamma: Log Link
+
+-   $FCM_i \sim  \mathcal{Ga}(\nu, \frac{\nu}{\mu_i})$
+
+-   For better Interpretability we use the Log-Link: $E(FCM_i) = \mu_i = exp(\eta_i)$
+
+-   Linear Predictor: $$ 
+    \begin{equation}
+    \begin{gathered}
+      \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\
+      \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\
+      f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i)
+    \end{gathered}
+    \end{equation}
+    $$
+
+## A Generalized Additive Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_Dist.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_TD.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_SD.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_OtherEvents.png" width="800"/>
+:::
+:::::
+
+## A Generalized Additive Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gam_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gam_N_Day.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+-   $FCM_{i\,j} \sim  \mathcal{N}(\mu_{i\,j}, \sigma^2)$
+
+-   Identity Link: $E(FCM_{i\,j}) = \mu_{i\,j} = \eta_{i\,j}$
+
+-   Linear Predictor: $$
+    \begin{equation}
+    \begin{gathered}
+      \eta_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\
+      \beta_2\,Number\,Other\,Hunts_{i\,j} +  f_1(Time\,Diff_{i\,j}) + \\
+      f_2(Distance_{i\,j}) + f_3(Sample\,Delay_{i\,j}) + f_4(Day\,of\,Year_{i\,j})
+    \end{gathered}
+    \end{equation}
+    $$ with: $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_Dist.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_TD.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_SD.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_OtherEvents.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### i) Gaussian: Identity Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gaum_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gaum_N_Day.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+## i) Gamma: Log link
+
+-   Log link for interpretability.
+
+-   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
+
+    $$
+    \begin{eqnarray}
+    \textup{FCM}_{ij} &\sim& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \\
+    \mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}) \\
+    \eta_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
+    && f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
+    && \gamma_{i}, \\
+    \gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2).
+    \end{eqnarray}
+    $$
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_Dist.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_Dist.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_TD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_TD.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_SD.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_SD.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_OtherEvents.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_OtherEvents.png" width="800"/>
+:::
+:::::
+
+## B Generalized Additive Mixed Model {.smaller}
+
+### ii) Gamma: Log Link
+
+::::: columns
+::: {.column width="50%"}
+<img src="Plots/p_gamm_L_Day.png" width="800"/>
+:::
+
+::: {.column width="50%"}
+<img src="Plots/p_gamm_N_Day.png" width="800"/>
+:::
+:::::
+
+<!-- ## B Generalized Additive Mixed Model{.smaller} -->
+
+<!-- ### i) Gaussian: Identity Link -->
+
+<!-- $$ -->
+
+<!-- \begin{equation} -->
+
+<!--   \begin{gathered} -->
+
+<!--     FCM_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\ -->
+
+<!--     \beta_2\,Number\,Other\,Hunts_{i\,j} +  f_1(Time\,Diff_{i\,j}) + \\ -->
+
+<!--     f_2(Distance_{i\,j}) + f_3(Sample\,Delay_{i\,j}) + f_4(Day\,of\,Year_{i\,j}) +\\ -->
+
+<!--     \gamma_j + \epsilon_{i\,j} -->
+
+<!--   \end{gathered} -->
+
+<!-- \end{equation} -->
+
+<!-- \\ -->
+
+<!-- $$ -->
+
+<!-- with: -->
+
+<!--   - $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$: Random Intercept of j-th Deer -->
+
+<!--   - $\epsilon_{i\,j} \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma^2)$: Random error at the i-th observation of the j-th deer -->
+
+<!-- $$ -->
+
+<!-- \begin{equation} -->
+
+<!--   \begin{gathered} -->
+
+<!--   a +b  -->
+
+<!--   \end{gathered} -->
+
+<!-- \end{equation} -->
+
+<!-- \\ -->
+
+<!-- $$ -->
+
+<!-- - Identity Link: $E(FCM_i) = \mu_i = \eta_i$ -->
+
+<!-- - Linear Predictor: -->
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## Conclusion
+
+-   Not many observations after datafusion left for robust modelling
+
+-   Trade-off between spatial and temporal distance
+
+-   Sample Delay seems to be significant
+
+-   Modelling Outcomes don't show much difference
+
+-   Trade-off between Complexity and Explainability
+
+## Discussion
+
+-   How to minimize spatial and temporal distance at the same time?
+
+-   How to use a bigger Part of the Data?
