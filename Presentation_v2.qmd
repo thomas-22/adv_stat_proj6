@@ -44,7 +44,7 @@ editor: visual
 :::
 ::::
 
-## The Goal
+<!-- ## The Goal
 
 assess red deer **stress response towards hunting activities**
 
@@ -54,12 +54,13 @@ assess red deer **stress response towards hunting activities**
 
 -- using **FCMs**
 
-<!-- ## The Terminology
+## The Terminology
 
 -   **FCMs**: Faecal Cortisol Metabolites - a non-invasive method to measure stress through faecal samples
 
 -   **collared deer**: red deer wearing a GPS-collar, which provides hourly location information
 
+Baisu: I don't think we need to introduce the Euclidean distance.
 -   **Euclidean Distance**: Also known as $L^2$ Distance. Reduces to Pythagorean Theorem for two Dimensions: $$d_{x,y} = ((x_1 - y_1)^2 + (x_2 - y_2)^2)^\frac{1}{2} \\ x,y \in \mathbb{R}^2 $$ -->
 
 ## Motivation
@@ -110,37 +111,30 @@ assess red deer **stress response towards hunting activities**
 4.  The Wrap-up
 :::
 
-## The Datasets {.smaller}
-
--   **Movement**: contains the location and datetime[^2] of the 41 collared deer in the period Feb 2020 - Feb 2023. In total approx. **740 000 observations**[^3]
-
--   **Hunting Events**: contains location and date of hunting events in the National Park - in total 1270 events, **890 of them with full timestamp**
-
--   **FCM Stress**: contains information of **809 faecal samples**, including:\
-    -- the location of the sample\
-    -- the time of sampling\
-    -- the DNA-matched collared deer\
-    -- the time when the deer was at the location
-
--   **Reproduction Success**: observations of **16** collared deer on:\
-    -- if they were pregnant in one year\
-    -- if they were accompanied by a calf in one year
-
-[^2]: hourly observations
-
-[^3]: some deer are collared somewhere within that period, for some the collar stops working (usually after 2 years)
-
 ## The Data-Generating Process {.smaller}
 
-- A deer roams freely in the forest. Its movement is tracked by GPS collar.
+- A deer roams freely in the forest. Its movement is tracked by a GPS collar.
 - A hunting event happens.
 - After some time, the deer defecates. This is a **defecation event**.
-- After some time, researchers go to the defecation location and collect an FCM sample. After their analysis, we know
-  - to which deer the FCM sample belongs,
-  - when (and where) the defecation event happened, and
-  - the time delay between defecation and sampling.
+- After some time, researchers go to the defecation location and collect an FCM sample.
 
 Note: The defecation location is not the deer's location at the time of the stress event.
+
+## The Datasets {.smaller}
+
+-   **Movement**: contains the location and datetime of the **41** collared deer in the period Feb 2020 - Feb 2023 in the Bavarian Forest National Park. Movement is tracked at **hourly** intervals.
+
+-   **Hunting Events**: contains location and date of hunting events in the Bavarian Forest National Park - in total 1270 events, **890 of them with full timestamp**.
+
+-   **FCM Stress**: contains information of **809 faecal samples**, including
+    - the FCM level [ng/g],
+    - the time and location of sampling,
+    - to which deer the sample belongs,
+    - when defecation happened.
+
+-   **Reproduction Success**: containes information about of **16** collared deer about
+    - if they were pregnant in one year,
+    - if they were accompanied by a calf in one year.
 
 ## Distance Approximation via Interpolation
 
@@ -148,12 +142,12 @@ TBD: Illustration.
 
 ## Relevant Hunting Events {.smaller}
 
-We introduce **4 Parameters**:
+We introduce **4 parameters**:
 
-- **Gut Retention Time (GRT) low** [hours],
-- **Gut Retention Time (GRT) high** [hours],
-- **Distance Threshold** [km],
-- **Proximity Criterion** ("last", "nearest", or "higest score")
+- **Gut retention time (GRT) low** [hours],
+- **Gut retention time (GRT) high** [hours],
+- **Distance threshold** [km],
+- **Proximity criterion** ("last", "nearest", or "higest score")
 
 A hunting event is considered **relevant** to an FCM sample, if
 
@@ -258,14 +252,14 @@ We suggest eight different Datasets for Modelling
 
 ## The Models {.smaller}
 
-For Modelling, we consider the following covariates:
+For Modelling, we consider the following covariates, defined for each pair of FCM sample and most relevant hunting event:
 
 -   [**Time difference** [hours]]{.fragment fragment-index="1"}
 -   [**Distance** [km]]{.fragment fragment-index="1"}
 -   [**Sample delay** [hours]]{.fragment fragment-index="1"}
 -   [Pregnant]{.fragment fragment-index="2"}
 -   [Defecation day (between 1 and 366)]{.fragment fragment-index="2"}
--   [Number of other hunting events]{.fragment fragment-index="2"}
+-   [Number of other relevant hunting events]{.fragment fragment-index="2"}
 
 <!-- ## The Models
 
@@ -289,6 +283,11 @@ For Modelling, we consider the following covariates:
 ::::: -->
 
 ## The Models {.smaller}
+<!--
+Baisu: I'd say we only report Gamma GAMMs.
+GAMs are "worse" in that they do not account for individual differences between deer.
+Gaussian GAMMs are bad because the QQ plots show the residuals are not normally distributed.
+-->
 
 | Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
 |----|----|----|----|----|----|
