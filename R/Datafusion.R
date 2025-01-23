@@ -45,7 +45,7 @@ run_datafusion <- function (save=FALSE) {
       Pregnant = ifelse(is.na(Pregnant), FALSE, Pregnant),
       Pregnant = factor(Pregnant)
     ) %>%
-    select(-preg_year)
+    dplyr::select(-preg_year)
 
   # Read movement data
   path.Movement <- "Data/Movement - CRS=ETRS UTM 33N.csv"
