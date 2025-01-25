@@ -10,8 +10,13 @@ library(lubridate)
 library(readxl)
 library(purrr)
 library(ggplot2)
+theme_set(theme_bw(base_size = 22))
+
 library(ggeffects)
 library(patchwork)
+library(mgcv)
+library(gamm4)
+library(gratia)
 
 # -------------------------
 # Overview & Source Everything
@@ -27,7 +32,7 @@ source("R/Assign_FCMData_to_Stressors.R")
 source("R/Plot_FinalData.R")
 
 #Modelling
-source("R/XGBoost_Model.R")
+# source("R/XGBoost_Model.R")
 
 # Plotting Models
 source("R/PlotModels.R")
@@ -39,6 +44,7 @@ source("R/PlotModels.R")
 # -------------------------
 # Data fusion
 # -------------------------
+cat("Running data fusion...\n")
 prepared_data <- suppressWarnings(run_datafusion())
 
 Movement <- prepared_data$Movement
@@ -46,9 +52,9 @@ FCMStress <- prepared_data$FCMStress
 HuntEvents <- prepared_data$HuntEvents
 
 # Sanity checks
-summary(HuntEvents)
-summary(FCMStress)
-summary(Movement)
+# summary(HuntEvents)
+# summary(FCMStress)
+# summary(Movement)
 
 # Remove FCM outliers -> does not affect much
 # FCMStress <- FCMStress %>% filter(ng_g < 1000)
@@ -64,20 +70,20 @@ summary(Movement)
 # When the samples where taken?
 # Message: irregular sampling times.
 
-deer_order <- FCMStress %>%
-  group_by(Deer.ID) %>%
-  filter(DefecTime == max(DefecTime)) %>%
-  ungroup() %>%
-  arrange(DefecTime) %>%
-  distinct(Deer.ID) %>%
-  pull(Deer.ID)
+# deer_order <- FCMStress %>%
+#   group_by(Deer.ID) %>%
+#   filter(DefecTime == max(DefecTime)) %>%
+#   ungroup() %>%
+#   arrange(DefecTime) %>%
+#   distinct(Deer.ID) %>%
+#   pull(Deer.ID)
 
-ggplot(FCMStress) +
-  geom_line(aes(x = DefecTime, y = Deer.ID)) +
-  geom_point(aes(x = DefecTime, y = Deer.ID)) +
-  labs(x = "Defecation time", y = "Deer") +
-  scale_y_discrete(limits = rev(deer_order)) +
-  theme(axis.text.y = element_blank())
+# ggplot(FCMStress) +
+#   geom_line(aes(x = DefecTime, y = Deer.ID)) +
+#   geom_point(aes(x = DefecTime, y = Deer.ID)) +
+#   labs(x = "Defecation time", y = "Deer") +
+#   scale_y_discrete(limits = rev(deer_order)) +
+#   theme(axis.text.y = element_blank())
 
 # -- This block is not very relvant --
 # # Sample intervals: we do need to consider correlation between samples.
@@ -97,38 +103,15 @@ ggplot(FCMStress) +
 # -------------------------
 # Prepare data for modeling
 # -------------------------
-
-param_grid <- expand.grid(
-  gut_retention_time_lower = c(19, 14),
-  gut_retention_time_upper = 50,
-  distance_threshold = c(10, 20),
-  filter_criterion = c("last", "nearest")
-)
-View(param_grid_full)
-
-# Keep those we want to present (the following is just a suggestion)
-# Justification:
-# - According to project description, we should consider the effect of the *last* hunting event.
-# - But within the time frame of 14 ~ 50 hours prior to defecation, the last hunting event
-# might be 20 km away, while the second last hunting event has a distance of 2 km. Therefore,
-# focusing on the nearest hunting event within the specified time frame is more meaningful.
-# - We might be able to find the closest hunting event both spatially and temporally.
-# One approach is the scoring function.
-
+cat("Preparing data for modeling...\n")
 param_grid <- list_rbind(list(
   # last
-  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
   data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
   # nearest
-  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "nearest"),
   data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "nearest"),
   # score
-  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "score"),
-  data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "score")
+  data.frame(gut_retention_time_lower = 0, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "score")
 ))
-
-
-View(param_grid)
 
 datasets <- param_grid %>%
   pmap(
@@ -174,9 +157,6 @@ saveRDS(table_datasets, "Data/Datasets.RDS")
 # -----------------------------------
 # MODELING
 # -----------------------------------
-library(mgcv)
-# library(gamm4)
-
 fit_gam <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr", k = 20) + s(Distance, bs = "cr", k = 10) +
@@ -197,402 +177,487 @@ fit_gamm <- function(data, family = gaussian()) {
   )
 }
 
-fit_gamm_interact <- function(data, family = gaussian()) {
-  gam(
-    ng_g ~ te(TimeDiff, Distance, k = 20) +
-      s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 10) +
-      Pregnant + NumOtherHunts + s(Deer.ID, bs = "re"),
-    data = data,
-    family = family
-  )
-}
+# fit_gamm_interact <- function(data, family = gaussian()) {
+#   gam(
+#     ng_g ~ te(TimeDiff, Distance, k = 20) +
+#       s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 10) +
+#       Pregnant + NumOtherHunts + s(Deer.ID, bs = "re"),
+#     data = data,
+#     family = family
+#   )
+# }
 
-fit_gam_tp <- function(data, family = gaussian()) {
-  gam(
-    ng_g ~ s(TimeDiff, bs = "ps") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "ps") +
-      Pregnant + NumOtherHunts + s(DefecDay, bs = "ps"),
-    # random = list(Deer.ID = ~1, DefecMonth = ~1),
-    data = data,
-    family = family
-  )
-}
+# fit_gam_tp <- function(data, family = gaussian()) {
+#   gam(
+#     ng_g ~ s(TimeDiff, bs = "ps") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "ps") +
+#       Pregnant + NumOtherHunts + s(DefecDay, bs = "ps"),
+#     # random = list(Deer.ID = ~1, DefecMonth = ~1),
+#     data = data,
+#     family = family
+#   )
+# }
 
-# Gaussian
-res <- res %>%
-  mutate(
-    gaussian_gam = map(data, fit_gam),
-    gaussian_gamm = map(data, fit_gamm)
-  )
+cat("Fitting models...\n")
 
-# Gamma (takes a while)
-res <- res %>%
-  mutate(
-    gamma_gam = map(data, fit_gam, family = Gamma(link = "log")),
-    gamma_gamm = map(data, fit_gamm, family = Gamma(link = "log"))
-  )
+# -------------------------
+# Last
+m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"))
+saveRDS(m_L, "Models/m_L.RDS")
 
-# Define distance and timediff w.r.t. last hunting event
-# Plot GAMs
-p_gam_L_TD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "last",
-  x = "TimeDiff",
-  xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gam_L_TD, device = "png", filename = "Plots/p_gam_L_TD.png")
+p_L_TimeDiff <- ggpredict(m_L, terms = c("TimeDiff")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "")
+# Predicted values of the FCM level for a "typical deer", i.e.,
+# the other covariates are held constant at their mean values or reference category
+# (Pregnant = FALSE).
+# (Random effect is set to that of one deer, but since it's just an intercept,
+# it is irrelevant to our interpretation of the overall shape/tendency of the curve.)
 
-p_gam_L_Dist <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "last",
-  x = "Distance",
-  xlab = "Distance [km]"
-)
-ggsave(plot = p_gam_L_Dist, device = "png", filename = "Plots/p_gam_L_Dist.png")
+p_L_Distance <- ggpredict(m_L, terms = c("Distance")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "")
 
-p_gam_L_SD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "last",
-  x = "SampleDelay",
-  xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gam_L_SD, device = "png", filename = "Plots/p_gam_L_SD.png")
+p_L_SampleDelay <- ggpredict(m_L, terms = c("SampleDelay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "")
 
-p_gam_L_OtherEvents <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "last",
-  x = "NumOtherHunts",
-  xlab = "Other hunting events"
-)
-ggsave(plot = p_gam_L_OtherEvents, device = "png", filename = "Plots/p_gam_L_OtherEvents.png")
+p_L_Day <- ggpredict(m_L, terms = c("DefecDay"), title = "") %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "")
 
-p_gam_L_Day <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "last",
-  x = "DefecDay",
-  xlab = "Defecation day"
-)
-ggsave(plot = p_gam_L_Day, device = "png", filename = "Plots/p_gam_L_Day.png")
+p_L <- p_L_TimeDiff + p_L_Distance + p_L_SampleDelay +
+  plot_layout(ncol = 3, axis_titles = "collect")
+saveRDS(p_L, "Figures/p_L.RDS")
+# -------------------------
 
-#####################
-#### Plot GAMMs ####
-#####################
-p_gamm_L_TD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "last",
-  x = "TimeDiff",
-  xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gamm_L_TD, device = "png", filename = "Plots/p_gamm_L_TD.png")
+# -------------------------
+# Nearest
+m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"))
+saveRDS(m_N, "Models/m_N.RDS")
 
+p_N_TimeDiff <- ggpredict(m_N, terms = c("TimeDiff")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "")
 
-p_gamm_L_Dist <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "last",
-  x = "Distance",
-  xlab = "Distance [km]"
-)
-ggsave(plot = p_gamm_L_Dist, device = "png", filename = "Plots/p_gamm_L_Dist.png")
+p_N_Distance <- ggpredict(m_N, terms = c("Distance")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "")
 
-p_gamm_L_SD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "last",
-  x = "SampleDelay",
-  xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gamm_L_SD, device = "png", filename = "Plots/p_gamm_L_SD.png")
+p_N_SampleDelay <- ggpredict(m_N, terms = c("SampleDelay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "")
 
-p_gamm_L_OtherEvents <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "last",
-  x = "NumOtherHunts",
-  xlab = "Other hunting events"
-)
-ggsave(plot = p_gamm_L_OtherEvents, device = "png", filename = "Plots/p_gamm_L_OtherEvents.png")
+p_N_Day <- ggpredict(m_N, terms = c("DefecDay"), title = "") %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "")
 
-p_gamm_L_Day <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "last",
-  x = "DefecDay",
-  xlab = "Defecation day"
-)
-ggsave(plot = p_gamm_L_Day, device = "png", filename = "Plots/p_gamm_L_Day.png")
+p_N <- p_N_TimeDiff + p_N_Distance + p_N_SampleDelay +
+  plot_layout(ncol = 3, axis_titles = "collect")
+saveRDS(p_L, "Figures/p_N.RDS")
+# -------------------------
 
+# -------------------------
+# Score
+m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"))
+saveRDS(m_S, "Models/m_S.RDS")
 
-# Define distance and timediff w.r.t. nearest hunting event within 19~50 hours
-# Plot GAMs
-p_gam_N_TD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "nearest",
-  x = "TimeDiff",
-  xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gam_N_TD, device = "png", filename = "Plots/p_gam_N_TD.png")
+p_S_TimeDiff <- ggpredict(m_S, terms = c("TimeDiff")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "")
 
-p_gam_N_Dist <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "nearest",
-  x = "Distance",
-  xlab = "Distance [km]"
-)
-ggsave(plot = p_gam_N_Dist, device = "png", filename = "Plots/p_gam_N_Dist.png")
+p_S_Distance <- ggpredict(m_S, terms = c("Distance")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "")
 
-p_gam_N_SD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "nearest",
-  x = "SampleDelay",
-  xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gam_N_SD, device = "png", filename = "Plots/p_gam_N_SD.png")
+p_S_SampleDelay <- ggpredict(m_S, terms = c("SampleDelay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "")
 
-p_gam_N_OtherEvents <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "nearest",
-  x = "NumOtherHunts",
-  xlab = "Other Hunting Events"
-)
-ggsave(plot = p_gam_N_OtherEvents, device = "png", filename = "Plots/p_gam_N_OtherEvents.png")
+p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "")
 
-p_gam_N_Day <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gam",
-  filter_criterion = "nearest",
-  x = "DefecDay",
-  xlab = "Defecation day"
-)
-ggsave(plot = p_gam_N_Day, device = "png", filename = "Plots/p_gam_N_Day.png")
+p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
+  plot_layout(ncol = 3, axis_titles = "collect")
+saveRDS(p_S, "Figures/p_S.RDS")
+# -------------------------
 
-# Plot GAMMs
-p_gamm_N_TD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "nearest",
-  x = "TimeDiff",
-  xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gamm_N_TD, device = "png", filename = "Plots/p_gamm_N_TD.png")
+# # Gaussian
+# res <- res %>%
+#   mutate(
+#     gaussian_gam = map(data, fit_gam),
+#     gaussian_gamm = map(data, fit_gamm)
+#   )
 
+# # Gamma (takes a while)
+# res <- res %>%
+#   mutate(
+#     gamma_gam = map(data, fit_gam, family = Gamma(link = "log")),
+#     gamma_gamm = map(data, fit_gamm, family = Gamma(link = "log"))
+#   )
 
-p_gamm_N_Dist <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "nearest",
-  x = "Distance",
-  xlab = "Distance [km]"
-)
-ggsave(plot = p_gamm_N_Dist, device = "png", filename = "Plots/p_gamm_N_Dist.png")
+# # Define distance and timediff w.r.t. last hunting event
+# # Plot GAMs
+# p_gam_L_TD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "last",
+#   x = "TimeDiff",
+#   xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gam_L_TD, device = "png", filename = "Plots/p_gam_L_TD.png")
 
-p_gamm_N_SD <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "nearest",
-  x = "SampleDelay",
-  xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gamm_N_SD, device = "png", filename = "Plots/p_gamm_N_SD.png")
+# p_gam_L_Dist <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "last",
+#   x = "Distance",
+#   xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gam_L_Dist, device = "png", filename = "Plots/p_gam_L_Dist.png")
 
-p_gamm_N_OtherEvents <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "nearest",
-  x = "NumOtherHunts",
-  xlab = "Other Hunting Events"
-)
-ggsave(plot = p_gamm_N_OtherEvents, device = "png", filename = "Plots/p_gamm_N_OtherEvents.png")
+# p_gam_L_SD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "last",
+#   x = "SampleDelay",
+#   xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gam_L_SD, device = "png", filename = "Plots/p_gam_L_SD.png")
 
-p_gamm_N_Day <- plot_predictions_across_datasets(res,
-  model_type = "gamma_gamm",
-  filter_criterion = "nearest",
-  x = "DefecDay",
-  xlab = "Defecation day"
-)
-ggsave(plot = p_gamm_N_Day, device = "png", filename = "Plots/p_gamm_N_Day.png")
+# p_gam_L_OtherEvents <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "last",
+#   x = "NumOtherHunts",
+#   xlab = "Other hunting events"
+# )
+# ggsave(plot = p_gam_L_OtherEvents, device = "png", filename = "Plots/p_gam_L_OtherEvents.png")
+
+# p_gam_L_Day <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "last",
+#   x = "DefecDay",
+#   xlab = "Defecation day"
+# )
+# ggsave(plot = p_gam_L_Day, device = "png", filename = "Plots/p_gam_L_Day.png")
+
+# #####################
+# #### Plot GAMMs ####
+# #####################
+# p_gamm_L_TD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "last",
+#   x = "TimeDiff",
+#   xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gamm_L_TD, device = "png", filename = "Plots/p_gamm_L_TD.png")
 
 
-####### Gaussian Gam/Gamm 
-p_gau_L_TD <- plot_predictions_across_datasets(res,
-                                               model_type = "gaussian_gam",
-                                               filter_criterion = "last",
-                                               x = "TimeDiff",
-                                               xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gau_L_TD, device = "png", filename = "Plots/p_gau_L_TD.png")
+# p_gamm_L_Dist <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "last",
+#   x = "Distance",
+#   xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gamm_L_Dist, device = "png", filename = "Plots/p_gamm_L_Dist.png")
 
-p_gau_L_Dist <- plot_predictions_across_datasets(res,
-                                                 model_type = "gaussian_gam",
-                                                 filter_criterion = "last",
-                                                 x = "Distance",
-                                                 xlab = "Distance [km]"
-)
-ggsave(plot = p_gau_L_Dist, device = "png", filename = "Plots/p_gau_L_Dist.png")
+# p_gamm_L_SD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "last",
+#   x = "SampleDelay",
+#   xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gamm_L_SD, device = "png", filename = "Plots/p_gamm_L_SD.png")
 
-p_gau_L_SD <- plot_predictions_across_datasets(res,
-                                               model_type = "gaussian_gam",
-                                               filter_criterion = "last",
-                                               x = "SampleDelay",
-                                               xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gau_L_SD, device = "png", filename = "Plots/p_gau_L_SD.png")
+# p_gamm_L_OtherEvents <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "last",
+#   x = "NumOtherHunts",
+#   xlab = "Other hunting events"
+# )
+# ggsave(plot = p_gamm_L_OtherEvents, device = "png", filename = "Plots/p_gamm_L_OtherEvents.png")
 
-p_gau_L_OtherEvents <- plot_predictions_across_datasets(res,
-                                                        model_type = "gaussian_gam",
-                                                        filter_criterion = "last",
-                                                        x = "NumOtherHunts",
-                                                        xlab = "Other hunting events"
-)
-ggsave(plot = p_gau_L_OtherEvents, device = "png", filename = "Plots/p_gau_L_OtherEvents.png")
-
-p_gau_L_Day <- plot_predictions_across_datasets(res,
-                                                model_type = "gaussian_gam",
-                                                filter_criterion = "last",
-                                                x = "DefecDay",
-                                                xlab = "Defecation day"
-)
-ggsave(plot = p_gau_L_Day, device = "png", filename = "Plots/p_gau_L_Day.png")
-
-#####################
-#### Plot GAMMs ####
-#####################
-p_gaum_L_TD <- plot_predictions_across_datasets(res,
-                                                model_type = "gaussian_gamm",
-                                                filter_criterion = "last",
-                                                x = "TimeDiff",
-                                                xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gaum_L_TD, device = "png", filename = "Plots/p_gaum_L_TD.png")
+# p_gamm_L_Day <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "last",
+#   x = "DefecDay",
+#   xlab = "Defecation day"
+# )
+# ggsave(plot = p_gamm_L_Day, device = "png", filename = "Plots/p_gamm_L_Day.png")
 
 
-p_gaum_L_Dist <- plot_predictions_across_datasets(res,
-                                                  model_type = "gaussian_gamm",
-                                                  filter_criterion = "last",
-                                                  x = "Distance",
-                                                  xlab = "Distance [km]"
-)
-ggsave(plot = p_gaum_L_Dist, device = "png", filename = "Plots/p_gaum_L_Dist.png")
+# # Define distance and timediff w.r.t. nearest hunting event within 19~50 hours
+# # Plot GAMs
+# p_gam_N_TD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "nearest",
+#   x = "TimeDiff",
+#   xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gam_N_TD, device = "png", filename = "Plots/p_gam_N_TD.png")
 
-p_gaum_L_SD <- plot_predictions_across_datasets(res,
-                                                model_type = "gaussian_gamm",
-                                                filter_criterion = "last",
-                                                x = "SampleDelay",
-                                                xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gaum_L_SD, device = "png", filename = "Plots/p_gaum_L_SD.png")
+# p_gam_N_Dist <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "nearest",
+#   x = "Distance",
+#   xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gam_N_Dist, device = "png", filename = "Plots/p_gam_N_Dist.png")
 
-p_gaum_L_OtherEvents <- plot_predictions_across_datasets(res,
-                                                         model_type = "gaussian_gamm",
-                                                         filter_criterion = "last",
-                                                         x = "NumOtherHunts",
-                                                         xlab = "Other hunting events"
-)
-ggsave(plot = p_gaum_L_OtherEvents, device = "png", filename = "Plots/p_gaum_L_OtherEvents.png")
+# p_gam_N_SD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "nearest",
+#   x = "SampleDelay",
+#   xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gam_N_SD, device = "png", filename = "Plots/p_gam_N_SD.png")
 
-p_gaum_L_Day <- plot_predictions_across_datasets(res,
-                                                 model_type = "gaussian_gam",
-                                                 filter_criterion = "last",
-                                                 x = "DefecDay",
-                                                 xlab = "Defecation day"
-)
-ggsave(plot = p_gaum_L_Day, device = "png", filename = "Plots/p_gaum_L_Day.png")
+# p_gam_N_OtherEvents <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "nearest",
+#   x = "NumOtherHunts",
+#   xlab = "Other Hunting Events"
+# )
+# ggsave(plot = p_gam_N_OtherEvents, device = "png", filename = "Plots/p_gam_N_OtherEvents.png")
 
+# p_gam_N_Day <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gam",
+#   filter_criterion = "nearest",
+#   x = "DefecDay",
+#   xlab = "Defecation day"
+# )
+# ggsave(plot = p_gam_N_Day, device = "png", filename = "Plots/p_gam_N_Day.png")
 
-# Define distance and timediff w.r.t. nearest hunting event within 19~50 hours
-# Plot GAMs
-p_gau_N_TD <- plot_predictions_across_datasets(res,
-                                               model_type = "gaussian_gam",
-                                               filter_criterion = "nearest",
-                                               x = "TimeDiff",
-                                               xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gau_N_TD, device = "png", filename = "Plots/p_gau_N_TD.png")
-
-p_gau_N_Dist <- plot_predictions_across_datasets(res,
-                                                 model_type = "gaussian_gam",
-                                                 filter_criterion = "nearest",
-                                                 x = "Distance",
-                                                 xlab = "Distance [km]"
-)
-ggsave(plot = p_gau_N_Dist, device = "png", filename = "Plots/p_gau_N_Dist.png")
-
-p_gau_N_SD <- plot_predictions_across_datasets(res,
-                                               model_type = "gaussian_gam",
-                                               filter_criterion = "nearest",
-                                               x = "SampleDelay",
-                                               xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gau_N_SD, device = "png", filename = "Plots/p_gau_N_SD.png")
-
-p_gau_N_OtherEvents <- plot_predictions_across_datasets(res,
-                                                        model_type = "gaussian_gam",
-                                                        filter_criterion = "nearest",
-                                                        x = "NumOtherHunts",
-                                                        xlab = "Other Hunting Events"
-)
-ggsave(plot = p_gau_N_OtherEvents, device = "png", filename = "Plots/p_gau_N_OtherEvents.png")
-
-p_gau_N_Day <- plot_predictions_across_datasets(res,
-                                                model_type = "gaussian_gam",
-                                                filter_criterion = "nearest",
-                                                x = "DefecDay",
-                                                xlab = "Defecation day"
-)
-ggsave(plot = p_gau_N_Day, device = "png", filename = "Plots/p_gau_N_Day.png")
-
-# Plot GAMMs
-p_gaum_N_TD <- plot_predictions_across_datasets(res,
-                                                model_type = "gaussian_gamm",
-                                                filter_criterion = "nearest",
-                                                x = "TimeDiff",
-                                                xlab = "Time difference [hours]"
-)
-ggsave(plot = p_gaum_N_TD, device = "png", filename = "Plots/p_gaum_N_TD.png")
+# # Plot GAMMs
+# p_gamm_N_TD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "nearest",
+#   x = "TimeDiff",
+#   xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gamm_N_TD, device = "png", filename = "Plots/p_gamm_N_TD.png")
 
 
-p_gaum_N_Dist <- plot_predictions_across_datasets(res,
-                                                  model_type = "gaussian_gamm",
-                                                  filter_criterion = "nearest",
-                                                  x = "Distance",
-                                                  xlab = "Distance [km]"
-)
-ggsave(plot = p_gaum_N_Dist, device = "png", filename = "Plots/p_gaum_N_Dist.png")
+# p_gamm_N_Dist <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "nearest",
+#   x = "Distance",
+#   xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gamm_N_Dist, device = "png", filename = "Plots/p_gamm_N_Dist.png")
 
-p_gaum_N_SD <- plot_predictions_across_datasets(res,
-                                                model_type = "gaussian_gamm",
-                                                filter_criterion = "nearest",
-                                                x = "SampleDelay",
-                                                xlab = "Sample delay [hours]"
-)
-ggsave(plot = p_gaum_N_SD, device = "png", filename = "Plots/p_gaum_N_SD.png")
+# p_gamm_N_SD <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "nearest",
+#   x = "SampleDelay",
+#   xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gamm_N_SD, device = "png", filename = "Plots/p_gamm_N_SD.png")
 
-p_gaum_N_OtherEvents <- plot_predictions_across_datasets(res,
-                                                         model_type = "gaussian_gamm",
-                                                         filter_criterion = "nearest",
-                                                         x = "NumOtherHunts",
-                                                         xlab = "Other Hunting Events"
-)
-ggsave(plot = p_gaum_N_OtherEvents, device = "png", filename = "Plots/p_gaum_N_OtherEvents.png")
+# p_gamm_N_OtherEvents <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "nearest",
+#   x = "NumOtherHunts",
+#   xlab = "Other Hunting Events"
+# )
+# ggsave(plot = p_gamm_N_OtherEvents, device = "png", filename = "Plots/p_gamm_N_OtherEvents.png")
 
-p_gaum_N_Day <- plot_predictions_across_datasets(res,
-                                                 model_type = "gaussian_gamm",
-                                                 filter_criterion = "nearest",
-                                                 x = "DefecDay",
-                                                 xlab = "Defecation day"
-)
-ggsave(plot = p_gaum_N_Day, device = "png", filename = "Plots/p_gaum_N_Day.png")
+# p_gamm_N_Day <- plot_predictions_across_datasets(res,
+#   model_type = "gamma_gamm",
+#   filter_criterion = "nearest",
+#   x = "DefecDay",
+#   xlab = "Defecation day"
+# )
+# ggsave(plot = p_gamm_N_Day, device = "png", filename = "Plots/p_gamm_N_Day.png")
 
 
-# # -------------------------
-# # XGBoost Model
-# # -------------------------
+# ####### Gaussian Gam/Gamm 
+# p_gau_L_TD <- plot_predictions_across_datasets(res,
+#                                                model_type = "gaussian_gam",
+#                                                filter_criterion = "last",
+#                                                x = "TimeDiff",
+#                                                xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gau_L_TD, device = "png", filename = "Plots/p_gau_L_TD.png")
 
-# # Set tune = TRUE if you want to run hyperparameter tuning.
-# # Leave it = FALSE if you want to use the included result of the tuning. (Models/final_xgboost..)
-# # WARNING: Setting tune = TRUE means the function will take very long (Multiple Hours+) to execute due to many computations.
-# # Max_Iterations: Only relevant if tune = TRUE
+# p_gau_L_Dist <- plot_predictions_across_datasets(res,
+#                                                  model_type = "gaussian_gam",
+#                                                  filter_criterion = "last",
+#                                                  x = "Distance",
+#                                                  xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gau_L_Dist, device = "png", filename = "Plots/p_gau_L_Dist.png")
 
-# xg_boost_results <- XGBoost_run_default_pipeline(data_cleanedup,
-#                                                  covariables = c("TimeDiff", "Distance"),
-#                                                  tune = FALSE,
-#                                                  max_iterations = 3)
-# xg_boost_results_transformed <- XGBoost_run_transformed_pipeline(data_cleanedup,
-#                                                                  tune = FALSE,
-#                                                                  max_iterations = 3)
+# p_gau_L_SD <- plot_predictions_across_datasets(res,
+#                                                model_type = "gaussian_gam",
+#                                                filter_criterion = "last",
+#                                                x = "SampleDelay",
+#                                                xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gau_L_SD, device = "png", filename = "Plots/p_gau_L_SD.png")
 
-# #3D Figure of Model
-# xg_boost_results$plotly_fig
-# #3D Figure of Model of transformed variables
-# xg_boost_results_transformed$plotly_fig 
+# p_gau_L_OtherEvents <- plot_predictions_across_datasets(res,
+#                                                         model_type = "gaussian_gam",
+#                                                         filter_criterion = "last",
+#                                                         x = "NumOtherHunts",
+#                                                         xlab = "Other hunting events"
+# )
+# ggsave(plot = p_gau_L_OtherEvents, device = "png", filename = "Plots/p_gau_L_OtherEvents.png")
+
+# p_gau_L_Day <- plot_predictions_across_datasets(res,
+#                                                 model_type = "gaussian_gam",
+#                                                 filter_criterion = "last",
+#                                                 x = "DefecDay",
+#                                                 xlab = "Defecation day"
+# )
+# ggsave(plot = p_gau_L_Day, device = "png", filename = "Plots/p_gau_L_Day.png")
+
+# #####################
+# #### Plot GAMMs ####
+# #####################
+# p_gaum_L_TD <- plot_predictions_across_datasets(res,
+#                                                 model_type = "gaussian_gamm",
+#                                                 filter_criterion = "last",
+#                                                 x = "TimeDiff",
+#                                                 xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gaum_L_TD, device = "png", filename = "Plots/p_gaum_L_TD.png")
+
+
+# p_gaum_L_Dist <- plot_predictions_across_datasets(res,
+#                                                   model_type = "gaussian_gamm",
+#                                                   filter_criterion = "last",
+#                                                   x = "Distance",
+#                                                   xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gaum_L_Dist, device = "png", filename = "Plots/p_gaum_L_Dist.png")
+
+# p_gaum_L_SD <- plot_predictions_across_datasets(res,
+#                                                 model_type = "gaussian_gamm",
+#                                                 filter_criterion = "last",
+#                                                 x = "SampleDelay",
+#                                                 xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gaum_L_SD, device = "png", filename = "Plots/p_gaum_L_SD.png")
+
+# p_gaum_L_OtherEvents <- plot_predictions_across_datasets(res,
+#                                                          model_type = "gaussian_gamm",
+#                                                          filter_criterion = "last",
+#                                                          x = "NumOtherHunts",
+#                                                          xlab = "Other hunting events"
+# )
+# ggsave(plot = p_gaum_L_OtherEvents, device = "png", filename = "Plots/p_gaum_L_OtherEvents.png")
+
+# p_gaum_L_Day <- plot_predictions_across_datasets(res,
+#                                                  model_type = "gaussian_gam",
+#                                                  filter_criterion = "last",
+#                                                  x = "DefecDay",
+#                                                  xlab = "Defecation day"
+# )
+# ggsave(plot = p_gaum_L_Day, device = "png", filename = "Plots/p_gaum_L_Day.png")
+
+
+# # Define distance and timediff w.r.t. nearest hunting event within 19~50 hours
+# # Plot GAMs
+# p_gau_N_TD <- plot_predictions_across_datasets(res,
+#                                                model_type = "gaussian_gam",
+#                                                filter_criterion = "nearest",
+#                                                x = "TimeDiff",
+#                                                xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gau_N_TD, device = "png", filename = "Plots/p_gau_N_TD.png")
+
+# p_gau_N_Dist <- plot_predictions_across_datasets(res,
+#                                                  model_type = "gaussian_gam",
+#                                                  filter_criterion = "nearest",
+#                                                  x = "Distance",
+#                                                  xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gau_N_Dist, device = "png", filename = "Plots/p_gau_N_Dist.png")
+
+# p_gau_N_SD <- plot_predictions_across_datasets(res,
+#                                                model_type = "gaussian_gam",
+#                                                filter_criterion = "nearest",
+#                                                x = "SampleDelay",
+#                                                xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gau_N_SD, device = "png", filename = "Plots/p_gau_N_SD.png")
+
+# p_gau_N_OtherEvents <- plot_predictions_across_datasets(res,
+#                                                         model_type = "gaussian_gam",
+#                                                         filter_criterion = "nearest",
+#                                                         x = "NumOtherHunts",
+#                                                         xlab = "Other Hunting Events"
+# )
+# ggsave(plot = p_gau_N_OtherEvents, device = "png", filename = "Plots/p_gau_N_OtherEvents.png")
+
+# p_gau_N_Day <- plot_predictions_across_datasets(res,
+#                                                 model_type = "gaussian_gam",
+#                                                 filter_criterion = "nearest",
+#                                                 x = "DefecDay",
+#                                                 xlab = "Defecation day"
+# )
+# ggsave(plot = p_gau_N_Day, device = "png", filename = "Plots/p_gau_N_Day.png")
+
+# # Plot GAMMs
+# p_gaum_N_TD <- plot_predictions_across_datasets(res,
+#                                                 model_type = "gaussian_gamm",
+#                                                 filter_criterion = "nearest",
+#                                                 x = "TimeDiff",
+#                                                 xlab = "Time difference [hours]"
+# )
+# ggsave(plot = p_gaum_N_TD, device = "png", filename = "Plots/p_gaum_N_TD.png")
+
+
+# p_gaum_N_Dist <- plot_predictions_across_datasets(res,
+#                                                   model_type = "gaussian_gamm",
+#                                                   filter_criterion = "nearest",
+#                                                   x = "Distance",
+#                                                   xlab = "Distance [km]"
+# )
+# ggsave(plot = p_gaum_N_Dist, device = "png", filename = "Plots/p_gaum_N_Dist.png")
+
+# p_gaum_N_SD <- plot_predictions_across_datasets(res,
+#                                                 model_type = "gaussian_gamm",
+#                                                 filter_criterion = "nearest",
+#                                                 x = "SampleDelay",
+#                                                 xlab = "Sample delay [hours]"
+# )
+# ggsave(plot = p_gaum_N_SD, device = "png", filename = "Plots/p_gaum_N_SD.png")
+
+# p_gaum_N_OtherEvents <- plot_predictions_across_datasets(res,
+#                                                          model_type = "gaussian_gamm",
+#                                                          filter_criterion = "nearest",
+#                                                          x = "NumOtherHunts",
+#                                                          xlab = "Other Hunting Events"
+# )
+# ggsave(plot = p_gaum_N_OtherEvents, device = "png", filename = "Plots/p_gaum_N_OtherEvents.png")
+
+# p_gaum_N_Day <- plot_predictions_across_datasets(res,
+#                                                  model_type = "gaussian_gamm",
+#                                                  filter_criterion = "nearest",
+#                                                  x = "DefecDay",
+#                                                  xlab = "Defecation day"
+# )
+# ggsave(plot = p_gaum_N_Day, device = "png", filename = "Plots/p_gaum_N_Day.png")
+
+
+# # # -------------------------
+# # # XGBoost Model
+# # # -------------------------
+
+# # # Set tune = TRUE if you want to run hyperparameter tuning.
+# # # Leave it = FALSE if you want to use the included result of the tuning. (Models/final_xgboost..)
+# # # WARNING: Setting tune = TRUE means the function will take very long (Multiple Hours+) to execute due to many computations.
+# # # Max_Iterations: Only relevant if tune = TRUE
+
+# # xg_boost_results <- XGBoost_run_default_pipeline(data_cleanedup,
+# #                                                  covariables = c("TimeDiff", "Distance"),
+# #                                                  tune = FALSE,
+# #                                                  max_iterations = 3)
+# # xg_boost_results_transformed <- XGBoost_run_transformed_pipeline(data_cleanedup,
+# #                                                                  tune = FALSE,
+# #                                                                  max_iterations = 3)
+
+# # #3D Figure of Model
+# # xg_boost_results$plotly_fig
+# # #3D Figure of Model of transformed variables
+# # xg_boost_results_transformed$plotly_fig 
 
