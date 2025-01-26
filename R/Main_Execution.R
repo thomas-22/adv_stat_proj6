@@ -10,6 +10,7 @@ library(lubridate)
 library(readxl)
 library(purrr)
 library(ggplot2)
+library(ggrepel)
 theme_set(theme_bw(base_size = 22))
 
 library(ggeffects)
@@ -156,7 +157,7 @@ saveRDS(table_datasets, "Data/Datasets.RDS")
 # Plot Data
 # -------------------------
 
-# Draw_Illustration_Map()
+Draw_Illustration_Map()
 
 # #Example Calls for one of the datasets
 # plot_ng_as_func_of_dist_timediff(data_cleanedup, chosen_var = "Distance")

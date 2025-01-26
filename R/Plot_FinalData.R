@@ -4,6 +4,7 @@ library(ggplot2)
 library(plotly)
 #install.packages("ggtext")
 library(ggtext)
+library(ggrepel)
 
 #RUN "Assign_FCMData_to_Stressors.R" FIRST
 
@@ -282,67 +283,74 @@ plot_collar_t_raw <- function(){
 
 #Draws a plot to illustrate why and how we interpolate the positions of the deer
 Draw_Illustration_Map <- function(){
-  row_index <- 7
-  row_data <- interpolated_positions[row_index, ]
   
-  plot_df <- data.frame(
-    x = c(row_data$HuntEventX, row_data$x_before, row_data$x_after, row_data$InterpolatedX),
-    y = c(row_data$HuntEventY, row_data$y_before, row_data$y_after, row_data$InterpolatedY),
-    label = c("Hunting\nEvent", "Deer\nBefore", "Deer\nAfter", "Interpolated")
+  # Define individual points
+  deer_time_0 <- c(2, 4.5)       # x, y coordinates for Deer @ Time 0
+  deer_time_1 <- c(1, 2)         # x, y coordinates for Deer @ Time 1
+  hunt_event <- c(4.5, 2.5)      # x, y coordinates for Hunt Event @ Time 0.75
+  fecal_sample <- c(1.5, 0.5)    # x, y coordinates for Fecal Sample @ Time 5
+  
+  # Calculate interpolated position at Time 0.75 (75% from Time 0 to Time 1)
+  interpolated_position <- c(
+    deer_time_0[1] + 0.75 * (deer_time_1[1] - deer_time_0[1]), # x coordinate
+    deer_time_0[2] + 0.75 * (deer_time_1[2] - deer_time_0[2])  # y coordinate
   )
   
-  mid_x <- (row_data$HuntEventX + row_data$InterpolatedX) / 2
-  mid_y <- (row_data$HuntEventY + row_data$InterpolatedY) / 2
+  # Calculate distance between Hunt Event and Interpolated Position
+  distance <- sqrt((hunt_event[1] - interpolated_position[1])^2 + 
+                     (hunt_event[2] - interpolated_position[2])^2)
+  distance <- round(distance, 2) # Round to two decimal places for readability
   
-  dx <- row_data$InterpolatedX - row_data$HuntEventX
-  dy <- row_data$InterpolatedY - row_data$HuntEventY
+  # Combine all points into a data frame
+  data <- data.frame(
+    x = c(deer_time_0[1], deer_time_1[1], interpolated_position[1], hunt_event[1], fecal_sample[1]),
+    y = c(deer_time_0[2], deer_time_1[2], interpolated_position[2], hunt_event[2], fecal_sample[2]),
+    label = c("Deer @ Time 0", 
+              "Deer @ Time 1", 
+              "Interpolated Position @ Time 0.75", 
+              "Hunt Event @ Time 0.75", 
+              "Fecal Sample @ Time 5\n(TimeDiff: 5 - 0.75 = 4.25 Hrs & Distance: 3.25 Km)"),
+    type = c("Deer", "Deer", "Deer Interpolated", "Hunt Event", "Fecal Sample")
+  )
   
-  offset_ratio <- -0.05
-  label_x <- mid_x + offset_ratio * dx
-  label_y <- mid_y
-  
-  ggplot(plot_df, aes(x = x, y = y, color = label)) +
-    geom_point(size = 3) +
-    geom_text(
-      aes(label = label,
-          vjust = ifelse(label %in% c("Deer\nBefore", "Deer\nAfter"), 1.5, -1)),
-      show.legend = FALSE
+  # Create the map with improved label positioning, aspect ratio, and additional features
+  ggplot(data, aes(x = x, y = y, color = type, label = label)) +
+    geom_point(size = 3) + # Plot points
+    geom_text_repel( # Use ggrepel for better label placement
+      size = 3.25, # Uniform font size
+      max.overlaps = Inf
     ) +
-    geom_segment(
-      aes(
-        x = row_data$HuntEventX,
-        y = row_data$HuntEventY,
-        xend = row_data$InterpolatedX,
-        yend = row_data$InterpolatedY
-      ),
-      linetype = "dashed",
-      color = "black",
-      inherit.aes = FALSE
-    ) +
-    
-    annotate(
-      "text",
-      x = label_x,
-      y = label_y,
-      label = "Distance",
-      color = "black",
-      vjust = -0.5
-    ) +
-    
-    labs(
-      title = "Position Interpolation Illustration",
-      x = "X",
-      y = "Y"
-    ) +
-    
-    # "zoom out" on the map
-    scale_x_continuous(expand = expansion(mult = 0.2)) +
-    scale_y_continuous(expand = expansion(mult = 0.2)) +
-    
+    scale_color_manual(values = c("Deer" = "blue", 
+                                  "Deer Interpolated" = "green", 
+                                  "Hunt Event" = "red", 
+                                  "Fecal Sample" = "purple")) + # Customize colors
+    # Add dashed line between Hunt Event and Interpolated Position
+    geom_segment(aes(x = hunt_event[1], y = hunt_event[2], 
+                     xend = interpolated_position[1], yend = interpolated_position[2]),
+                 color = "black", linetype = "dashed", size = 0.5) +
+    # Add thin dashed blue line between Deer @ Time 0 and Deer @ Time 1
+    geom_segment(aes(x = deer_time_0[1], y = deer_time_0[2],
+                     xend = deer_time_1[1], yend = deer_time_1[2]),
+                 color = "blue", linetype = "dashed", size = 0.5) +
+    # Add thin dashed blue line between Deer @ Time 1 and Fecal Sample
+    geom_segment(aes(x = deer_time_1[1], y = deer_time_1[2],
+                     xend = fecal_sample[1], yend = fecal_sample[2]),
+                 color = "blue", linetype = "dashed", size = 0.5) +
+    # Add text for the distance label below the connecting line
+    annotate("text", 
+             x = mean(c(hunt_event[1], interpolated_position[1])), 
+             y = mean(c(hunt_event[2], interpolated_position[2])) - 0.2, # Adjusted to place below
+             label = paste("Distance:", distance, "Km"), 
+             size = 3.25, # Uniform font size
+             color = "black") +
+    # Fix aspect ratio to 1:1
+    coord_fixed() +
+    # Adjust plot limits to ensure all labels are visible
+    expand_limits(x = c(0, 6), y = c(0, 6)) +
+    labs(title = "Illustration of FCM Sample & Hunting Event Assignment Process",
+         x = "X in Km",
+         y = "Y in Km") +
     theme_minimal() +
-    theme(
-      legend.position = "none",
-      axis.text = element_blank(),
-      axis.ticks = element_blank()
-    )
+    theme(legend.position = "none") # Remove the legend
+  
 }
