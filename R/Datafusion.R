@@ -9,7 +9,8 @@ run_datafusion <- function (save=FALSE) {
            SampleTime = str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
              parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
             SampleDate = dmy(Waypoint_day),
-           Sender.ID = as.factor(Sender.ID)) %>%
+           Sender.ID = as.factor(Sender.ID),
+           Deer.ID = as.factor(HairID)) %>%
     rename(Sample.ID = Sample_ID,
            DefecX = X,
            DefecY = Y) %>%
@@ -21,7 +22,7 @@ run_datafusion <- function (save=FALSE) {
     mutate(ng_g = mean(ng_g)) %>%
     ungroup() %>%
     distinct(
-      Sample.ID, Sender.ID,
+      Sample.ID, Sender.ID, Deer.ID,
       # FCM level (our response variable)
       ng_g,
       # info about defecation event

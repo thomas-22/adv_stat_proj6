@@ -10,7 +10,6 @@ plot_predictions <- function(model, covariate, xlab, xmin = NULL, title = "") {
     plot(show_data = FALSE) +  # turn on to show data points
     labs(title = title, y = "FCM level [ng/g]", x = xlab) +
     theme_bw() +
-    ylim(50, 800) +
     if (!is.null(xmin)) xlim(xmin, NA)
 }
 
@@ -32,15 +31,11 @@ plot_predictions_across_datasets <- function(res, model_type, filter_criterion, 
     geom_line(data = prediction_data, aes(x = x, y = predicted)) +
     geom_ribbon(data = prediction_data,
       aes(x = x, ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-    facet_grid(
-      gut_retention_time_lower ~ distance_threshold,
-      scales = "free_x"
-    ) +
+    facet_wrap(~gut_retention_time_lower, scales = "free") +
     labs(
       title = paste0("Dataset \"", filter_criterion, "\""),
       x = xlab,
       y = "FCM level [ng/g]"
     ) +
-    theme_bw() +
-    ylim(0, 1000)
+    theme_bw()
 }
