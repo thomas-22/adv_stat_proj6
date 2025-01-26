@@ -112,7 +112,8 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
   data <- if (filter_criterion == "last") {
     interesting_data %>%
       group_by(Sender.ID, Sample.ID) %>%
-      filter(TimeDiff == min(TimeDiff, na.rm = TRUE), !is.na(Distance)) %>%
+      filter(abs(TimeDiff - 19) == min(abs(TimeDiff - 19), na.rm = TRUE), !is.na(Distance)) %>%
+      #Selects assignment that is closest to 19 hrs
       ungroup()
   } else if (filter_criterion == "nearest") {
     interesting_data %>%

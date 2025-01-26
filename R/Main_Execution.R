@@ -106,7 +106,7 @@ HuntEvents <- prepared_data$HuntEvents
 cat("Preparing data for modeling...\n")
 param_grid <- list_rbind(list(
   # last
-  data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
+  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
   # nearest
   data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "nearest"),
   # score
