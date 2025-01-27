@@ -203,9 +203,11 @@ Contains information about of **16** collared deer about
 -   if they were pregnant in one year,
 -   if they were accompanied by a calf in one year.
 
-## Distance Approximation via Interpolation
+## Distance Approximation {.smaller}
 
-TBD: Illustration.
+Deer location at the time of hunting event is approximated by linear interpolation.
+
+![](Figures/p_interpolation.png){fig-align="center"}
 
 ## Relevant Hunting Events {.smaller}
 

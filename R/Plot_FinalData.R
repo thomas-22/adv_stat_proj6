@@ -310,16 +310,16 @@ Draw_Illustration_Map <- function(){
               "Interpolated Position @ Time 0.75", 
               "Hunt Event @ Time 0.75", 
               "Fecal Sample @ Time 5\n(TimeDiff: 5 - 0.75 = 4.25 Hrs & Distance: 3.25 Km)"),
-    type = c("Deer", "Deer", "Deer Interpolated", "Hunt Event", "Fecal Sample")
+    type = c("Deer", "Deer", "Deer Interpolated", "Hunt Event", "Faecal Sample")
   )
   
   # Create the map with improved label positioning, aspect ratio, and additional features
   ggplot(data, aes(x = x, y = y, color = type, label = label)) +
     geom_point(size = 3) + # Plot points
-    geom_text_repel( # Use ggrepel for better label placement
-      size = 3.25, # Uniform font size
-      max.overlaps = Inf
-    ) +
+    # geom_text_repel( # Use ggrepel for better label placement
+    #   size = 4, # Uniform font size
+    #   max.overlaps = Inf
+    # ) +
     scale_color_manual(values = c("Deer" = "blue", 
                                   "Deer Interpolated" = "darkgreen", 
                                   "Hunt Event" = "red", 
@@ -327,30 +327,52 @@ Draw_Illustration_Map <- function(){
     # Add dashed line between Hunt Event and Interpolated Position
     geom_segment(aes(x = hunt_event[1], y = hunt_event[2], 
                      xend = interpolated_position[1], yend = interpolated_position[2]),
-                 color = "black", linetype = "dashed", size = 0.5) +
+                 color = "black", linetype = "dashed", linewidth = 0.5) +
     # Add thin dashed blue line between Deer @ Time 0 and Deer @ Time 1
     geom_segment(aes(x = deer_time_0[1], y = deer_time_0[2],
                      xend = deer_time_1[1], yend = deer_time_1[2]),
-                 color = "blue", linetype = "dashed", size = 0.5) +
+                 color = "blue", linetype = "dashed", linewidth = 0.5) +
     # Add thin dashed blue line between Deer @ Time 1 and Fecal Sample
     geom_segment(aes(x = deer_time_1[1], y = deer_time_1[2],
                      xend = fecal_sample[1], yend = fecal_sample[2]),
-                 color = "blue", linetype = "dashed", size = 0.5) +
+                 color = "blue", linetype = "dashed", linewidth = 0.5) +
     # Add text for the distance label below the connecting line
     annotate("text", 
              x = mean(c(hunt_event[1], interpolated_position[1])), 
              y = mean(c(hunt_event[2], interpolated_position[2])) - 0.2, # Adjusted to place below
-             label = paste("Distance:", distance, "km"), 
-             size = 3.25, # Uniform font size
-             color = "black") +
+             label = paste("Distance:", distance, "km"),
+             color = "black", size = 4.25) +
+    # Manually place labels
+    annotate("text",
+      x = deer_time_0[1], y = deer_time_0[2] + 0.3,
+      label = "Deer @ Time 0", color = "blue", size = 4.25
+    ) +
+    annotate("text",
+      x = deer_time_1[1] - 1, y = deer_time_1[2],
+      label = "Deer @ Time 1", color = "blue", size = 4.25
+    ) +
+    annotate("text",
+      x = interpolated_position[1] - 2, y = interpolated_position[2],
+      label = "Interpolated Position @ Time 0.75", color = "darkgreen", size = 4.25
+    ) +
+    annotate("text",
+      x = hunt_event[1], y = hunt_event[2] + 0.3,
+      label = "Hunting Event @ Time 0.75", color = "red", size = 4.25
+    ) +
+    annotate("text",
+      x = fecal_sample[1] + 1.6, y = fecal_sample[2] - 0.2,
+      label = "Faecal Sample @ Time 5\n(TimeDiff: 5 - 0.75 = 4.25 Hrs & Distance: 3.25 Km)",
+      color = "purple",
+      size = 4.25
+    ) +
     # Fix aspect ratio to 1:1
     coord_fixed() +
     # Adjust plot limits to ensure all labels are visible
-    expand_limits(x = c(0, 6), y = c(0, 6)) +
-    labs(title = "Illustration of FCM Sample & Hunting Event Assignment Process",
+    expand_limits(x = c(-3, 6), y = c(0, 5)) +
+    labs(title = "",
          x = "X [km]",
          y = "Y [Km]") +
-    theme_minimal() +
+    theme_minimal(base_size = 16) +
     theme(legend.position = "none") # Remove the legend
   
 }

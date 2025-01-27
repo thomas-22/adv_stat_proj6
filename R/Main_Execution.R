@@ -161,6 +161,7 @@ saveRDS(table_datasets, "Data/Datasets.RDS")
 # -------------------------
 
 p_interpolation <- Draw_Illustration_Map()
+ggsave("Figures/p_interpolation.png", p_interpolation, width = 9, height = 5, dpi = 300)
 
 # #Example Calls for one of the datasets
 # plot_ng_as_func_of_dist_timediff(data_cleanedup, chosen_var = "Distance")
