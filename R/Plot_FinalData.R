@@ -321,9 +321,9 @@ Draw_Illustration_Map <- function(){
       max.overlaps = Inf
     ) +
     scale_color_manual(values = c("Deer" = "blue", 
-                                  "Deer Interpolated" = "green", 
+                                  "Deer Interpolated" = "darkgreen", 
                                   "Hunt Event" = "red", 
-                                  "Fecal Sample" = "purple")) + # Customize colors
+                                  "Faecal Sample" = "purple")) + # Customize colors
     # Add dashed line between Hunt Event and Interpolated Position
     geom_segment(aes(x = hunt_event[1], y = hunt_event[2], 
                      xend = interpolated_position[1], yend = interpolated_position[2]),
@@ -340,7 +340,7 @@ Draw_Illustration_Map <- function(){
     annotate("text", 
              x = mean(c(hunt_event[1], interpolated_position[1])), 
              y = mean(c(hunt_event[2], interpolated_position[2])) - 0.2, # Adjusted to place below
-             label = paste("Distance:", distance, "Km"), 
+             label = paste("Distance:", distance, "km"), 
              size = 3.25, # Uniform font size
              color = "black") +
     # Fix aspect ratio to 1:1
@@ -348,8 +348,8 @@ Draw_Illustration_Map <- function(){
     # Adjust plot limits to ensure all labels are visible
     expand_limits(x = c(0, 6), y = c(0, 6)) +
     labs(title = "Illustration of FCM Sample & Hunting Event Assignment Process",
-         x = "X in Km",
-         y = "Y in Km") +
+         x = "X [km]",
+         y = "Y [Km]") +
     theme_minimal() +
     theme(legend.position = "none") # Remove the legend
   
