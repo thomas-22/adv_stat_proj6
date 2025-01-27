@@ -48,7 +48,6 @@ run_datafusion <- function (save=FALSE) {
       hasCalf = ifelse(preg_year != year(DefecTime), FALSE, hasCalf),
       hasCalf = factor(hasCalf, levels = c(FALSE, TRUE, NA))
     )
-  View(FCMStress)
 
   # Read movement data
   path.Movement <- "Data/Movement - CRS=ETRS UTM 33N.csv"
