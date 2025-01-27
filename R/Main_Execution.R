@@ -11,7 +11,6 @@ library(readxl)
 library(purrr)
 library(ggplot2)
 library(ggrepel)
-theme_set(theme_bw(base_size = 22))
 
 library(ggeffects)
 library(patchwork)
@@ -65,26 +64,37 @@ HuntEvents <- prepared_data$HuntEvents
 # -------------------------
 
 # FCM levels: Please use your plot for Zwischenpraesentation
+
 # ggplot(FCMStress) +
 #   geom_boxplot(aes(x = Sender.ID, y = ng_g))
 
 # When the samples where taken?
 # Message: irregular sampling times.
 
-# deer_order <- FCMStress %>%
-#   group_by(Deer.ID) %>%
-#   filter(DefecTime == max(DefecTime)) %>%
-#   ungroup() %>%
-#   arrange(DefecTime) %>%
-#   distinct(Deer.ID) %>%
-#   pull(Deer.ID)
+deer_order <- FCMStress %>%
+  group_by(Deer.ID) %>%
+  filter(DefecTime == max(DefecTime)) %>%
+  ungroup() %>%
+  arrange(DefecTime) %>%
+  distinct(Deer.ID) %>%
+  pull(Deer.ID)
 
-# ggplot(FCMStress) +
-#   geom_line(aes(x = DefecTime, y = Deer.ID)) +
-#   geom_point(aes(x = DefecTime, y = Deer.ID)) +
-#   labs(x = "Defecation time", y = "Deer") +
-#   scale_y_discrete(limits = rev(deer_order)) +
-#   theme(axis.text.y = element_blank())
+p_fcm_sample_times <- ggplot(FCMStress) +
+  geom_line(aes(x = DefecTime, y = Deer.ID)) +
+  geom_point(aes(x = DefecTime, y = Deer.ID)) +
+  labs(x = "Defecation time", y = "Deer") +
+  scale_y_discrete(limits = rev(deer_order)) +
+  theme_bw(base_size = 16) +
+  theme(axis.text.y = element_blank())
+ggsave("Figures/p_fcm_sample_times.svg", p_fcm_sample_times, width = 8, height = 5, dpi = 300)
+
+p_fcm_levels <- ggplot(FCMStress) +
+  geom_boxplot(aes(x = Deer.ID, y = ng_g)) +
+  labs(x = "Deer", y = "FCM level [ng/g]") +
+  scale_x_discrete(limits = deer_order) +
+  theme_bw(base_size = 16) +
+  theme(axis.text.x = element_blank())
+ggsave("Figures/p_fcm_levels.svg", p_fcm_levels, width = 8, height = 5, dpi = 300)
 
 # -- This block is not very relvant --
 # # Sample intervals: we do need to consider correlation between samples.
@@ -107,9 +117,9 @@ HuntEvents <- prepared_data$HuntEvents
 cat("Preparing data for modeling...\n")
 param_grid <- list_rbind(list(
   # last
-  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
+  data.frame(gut_retention_time_lower = 0, gut_retention_time_upper = 36, distance_threshold = 10, filter_criterion = "last"),
   # nearest
-  data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "nearest"),
+  data.frame(gut_retention_time_lower = 0, gut_retention_time_upper = 36, distance_threshold = 10, filter_criterion = "nearest"),
   # score
   data.frame(gut_retention_time_lower = 0, gut_retention_time_upper = 200, distance_threshold = 15, filter_criterion = "score")
 ))
@@ -133,14 +143,7 @@ table_datasets$unique_deers <- vapply(table_datasets$data, function(x) length(un
 table_datasets$obs <- vapply(table_datasets$data, nrow, numeric(1))
 table_datasets$data <- NULL
 
-
-
-
 saveRDS(table_datasets, "Data/Datasets.RDS")
-
-
-
-
 
 # plot(res[[5]][[3]]$Score, res[[5]][[3]]$ng_g,
 #      main = "Scatter Plot: Score vs ng/g (Log Scale)",
@@ -157,7 +160,7 @@ saveRDS(table_datasets, "Data/Datasets.RDS")
 # Plot Data
 # -------------------------
 
-Draw_Illustration_Map()
+p_interpolation <- Draw_Illustration_Map()
 
 # #Example Calls for one of the datasets
 # plot_ng_as_func_of_dist_timediff(data_cleanedup, chosen_var = "Distance")
@@ -181,7 +184,7 @@ fit_gam <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr", k = 20) + s(Distance, bs = "cr", k = 10) +
       s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 20) +
-      Pregnant + NumOtherHunts,
+      NumOtherHunts,
     data = data,
     family = family
   )
@@ -191,7 +194,7 @@ fit_gamm <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr", k = 20) + s(Distance, bs = "cr", k = 10) +
       s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 20) +
-      Pregnant + NumOtherHunts + s(Deer.ID, bs = "re"),
+      NumOtherHunts + s(Deer.ID, bs = "re"),
     data = data,
     family = family
   )
@@ -201,7 +204,7 @@ fit_gamm <- function(data, family = gaussian()) {
 #   gam(
 #     ng_g ~ te(TimeDiff, Distance, k = 20) +
 #       s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 10) +
-#       Pregnant + NumOtherHunts + s(Deer.ID, bs = "re"),
+#       hasCalf + NumOtherHunts + s(Deer.ID, bs = "re"),
 #     data = data,
 #     family = family
 #   )
@@ -210,7 +213,7 @@ fit_gamm <- function(data, family = gaussian()) {
 # fit_gam_tp <- function(data, family = gaussian()) {
 #   gam(
 #     ng_g ~ s(TimeDiff, bs = "ps") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "ps") +
-#       Pregnant + NumOtherHunts + s(DefecDay, bs = "ps"),
+#       hasCalf + NumOtherHunts + s(DefecDay, bs = "ps"),
 #     # random = list(Deer.ID = ~1, DefecMonth = ~1),
 #     data = data,
 #     family = family
@@ -222,84 +225,99 @@ cat("Fitting models...\n")
 # -------------------------
 # Last
 m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"))
-saveRDS(m_L, "Models/m_L.RDS")
+
+p_L_diagnostic <- appraise(m_L)
 
 p_L_TimeDiff <- ggpredict(m_L, terms = c("TimeDiff")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "")
 # Predicted values of the FCM level for a "typical deer", i.e.,
 # the other covariates are held constant at their mean values or reference category
-# (Pregnant = FALSE).
+# (hasCalf = FALSE).
 # (Random effect is set to that of one deer, but since it's just an intercept,
 # it is irrelevant to our interpretation of the overall shape/tendency of the curve.)
 
 p_L_Distance <- ggpredict(m_L, terms = c("Distance")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
+  theme_bw(base_size = 16)
 
 p_L_SampleDelay <- ggpredict(m_L, terms = c("SampleDelay")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
+  theme_bw(base_size = 16)
 
 p_L_Day <- ggpredict(m_L, terms = c("DefecDay"), title = "") %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "")
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
+  theme_bw(base_size = 16)
 
 p_L <- p_L_TimeDiff + p_L_Distance + p_L_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
-saveRDS(p_L, "Figures/p_L.RDS")
+
 # -------------------------
 
 # -------------------------
 # Nearest
 m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"))
-saveRDS(m_N, "Models/m_N.RDS")
+
+p_N_diagnostic <- appraise(m_N)
 
 p_N_TimeDiff <- ggpredict(m_N, terms = c("TimeDiff")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16)
 
 p_N_Distance <- ggpredict(m_N, terms = c("Distance")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
+  theme_bw(base_size = 16)
 
 p_N_SampleDelay <- ggpredict(m_N, terms = c("SampleDelay")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
+  theme_bw(base_size = 16)
 
 p_N_Day <- ggpredict(m_N, terms = c("DefecDay"), title = "") %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "")
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
+  theme_bw(base_size = 16)
 
 p_N <- p_N_TimeDiff + p_N_Distance + p_N_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
-saveRDS(p_L, "Figures/p_N.RDS")
+
 # -------------------------
 
 # -------------------------
 # Score
 m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"))
-saveRDS(m_S, "Models/m_S.RDS")
+# saveRDS(m_S, "Models/m_S.RDS")
+
+p_S_diagnostic <- appraise(m_S, method = "simulate")
 
 p_S_TimeDiff <- ggpredict(m_S, terms = c("TimeDiff")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16)
 
 p_S_Distance <- ggpredict(m_S, terms = c("Distance")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
+  theme_bw(base_size = 16)
 
 p_S_SampleDelay <- ggpredict(m_S, terms = c("SampleDelay")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
+  theme_bw(base_size = 16)
 
 p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "")
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
+  theme_bw(base_size = 16)
 
 p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
-saveRDS(p_S, "Figures/p_S.RDS")
+
 # -------------------------
 
 # # Gaussian
