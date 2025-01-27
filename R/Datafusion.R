@@ -37,7 +37,9 @@ run_datafusion <- function (save=FALSE) {
   path.ReproductionSuccess <- "Data/Reproduction Success Results.xlsx"
   ReproductionSuccess <- readxl::read_excel(path.ReproductionSuccess) %>%
     mutate(Sender.ID = factor(`Collar ID`, levels = sender_ids)) %>%
+    filter(calf == 1) %>%
     distinct(Sender.ID, preg_year)
+  
   FCMStress <- FCMStress %>%
     left_join(ReproductionSuccess, by = "Sender.ID") %>%
     mutate(
