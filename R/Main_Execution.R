@@ -86,7 +86,7 @@ p_fcm_sample_times <- ggplot(FCMStress) +
   scale_y_discrete(limits = rev(deer_order)) +
   theme_bw(base_size = 16) +
   theme(axis.text.y = element_blank())
-ggsave("Figures/p_fcm_sample_times.svg", p_fcm_sample_times, width = 8, height = 5, dpi = 300)
+# ggsave("Figures/p_fcm_sample_times.svg", p_fcm_sample_times, width = 8, height = 5, dpi = 300)
 
 p_fcm_levels <- ggplot(FCMStress) +
   geom_boxplot(aes(x = Deer.ID, y = ng_g)) +
@@ -94,7 +94,7 @@ p_fcm_levels <- ggplot(FCMStress) +
   scale_x_discrete(limits = deer_order) +
   theme_bw(base_size = 16) +
   theme(axis.text.x = element_blank())
-ggsave("Figures/p_fcm_levels.svg", p_fcm_levels, width = 8, height = 5, dpi = 300)
+# ggsave("Figures/p_fcm_levels.svg", p_fcm_levels, width = 8, height = 5, dpi = 300)
 
 # -- This block is not very relvant --
 # # Sample intervals: we do need to consider correlation between samples.
