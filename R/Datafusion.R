@@ -91,6 +91,12 @@ run_datafusion <- function (save=FALSE) {
     mutate(Hunt.ID = row_number()) %>%
     dplyr::select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
   
+  # remove spatial outliers
+  FCMStress <- FCMStress %>%
+    filter(DefecX > 370000, DefecY < 5450000)
+  HuntEvents <- HuntEvents %>%
+    filter(HuntY > 5400000, HuntY < 5460000, HuntX > 365000)
+
   # save as RDS
   if (save) {
     saveRDS(Movement, "data/Movement.RDS")
