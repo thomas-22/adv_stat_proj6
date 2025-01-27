@@ -1,4 +1,4 @@
-run_datafusion <- function (save=FALSE) {
+run_datafusion <- function(save = FALSE, remove_outlers = TRUE) {
   # Read FCM data
   path.FCMStress <- "Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
   FCMStress <- read.csv(path.FCMStress, header = TRUE, sep = ",") %>%
@@ -92,10 +92,12 @@ run_datafusion <- function (save=FALSE) {
     dplyr::select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
   
   # remove spatial outliers  
-  FCMStress <- FCMStress %>%
-    filter(DefecX > 370000, DefecY < 5450000)
-  HuntEvents <- HuntEvents %>%
-    filter(HuntY > 5400000, HuntY < 5460000, HuntX > 365000)
+  if (remove_outlers) {
+    FCMStress <- FCMStress %>%
+      filter(DefecX > 370000, DefecY < 5450000)
+    HuntEvents <- HuntEvents %>%
+      filter(HuntY > 5400000, HuntY < 5460000, HuntX > 365000)
+  }
 
   # save as RDS
   if (save) {
