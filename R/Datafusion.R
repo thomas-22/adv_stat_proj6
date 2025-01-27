@@ -32,22 +32,23 @@ run_datafusion <- function (save=FALSE) {
     )
   
   sender_ids = levels(FCMStress$Sender.ID)
+  deer_ids = levels(FCMStress$Deer.ID)
   
   # Add pregnancy information
   path.ReproductionSuccess <- "Data/Reproduction Success Results.xlsx"
   ReproductionSuccess <- readxl::read_excel(path.ReproductionSuccess) %>%
-    mutate(Sender.ID = factor(`Collar ID`, levels = sender_ids)) %>%
-    filter(calf == 1) %>%
-    distinct(Sender.ID, preg_year)
+    mutate(Deer.ID = factor(`Genetic_id`, levels = deer_ids)) %>%
+    distinct(Deer.ID, preg_year, calf)
   
   FCMStress <- FCMStress %>%
-    left_join(ReproductionSuccess, by = "Sender.ID") %>%
+    left_join(ReproductionSuccess, by = "Deer.ID") %>%
     mutate(
-      Pregnant = preg_year == year(DefecTime),
-      Pregnant = ifelse(is.na(Pregnant), FALSE, Pregnant),
-      Pregnant = factor(Pregnant)
-    ) %>%
-    dplyr::select(-preg_year)
+      hasCalf = preg_year == year(DefecTime) & calf == 1,
+      hasCalf = ifelse(preg_year == year(DefecTime) & is.na(calf), NA, hasCalf),
+      hasCalf = ifelse(preg_year != year(DefecTime), FALSE, hasCalf),
+      hasCalf = factor(hasCalf, levels = c(FALSE, TRUE, NA))
+    )
+  View(FCMStress)
 
   # Read movement data
   path.Movement <- "Data/Movement - CRS=ETRS UTM 33N.csv"
@@ -91,7 +92,7 @@ run_datafusion <- function (save=FALSE) {
     mutate(Hunt.ID = row_number()) %>%
     dplyr::select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
   
-  # remove spatial outliers
+  # remove spatial outliers  
   FCMStress <- FCMStress %>%
     filter(DefecX > 370000, DefecY < 5450000)
   HuntEvents <- HuntEvents %>%
