@@ -15,7 +15,6 @@ format:
     smaller: false
     footer: "Effect of Hunting on Red Deer" 
     logo: "Resources/LMU_Logo.svg"
-editor: visual 
 ---
 
 # Agenda
@@ -221,7 +220,7 @@ The scoring function is defined as TBD.
 
 ### Finish Datasets
 
-We suggest eight different Datasets for Modelling
+We suggest 3 different datasets for modelling
 
 ```{r}
 library(dplyr)
@@ -269,317 +268,11 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 -   [Defecation day (between 1 and 366)]{.fragment fragment-index="2"}
 -   [Number of other relevant hunting events]{.fragment fragment-index="2"}
 
-```{=html}
-<!-- ## The Models
-
-::::: columns
-::: {.column width="50%"}
-**Necessary**
-
--   Time Difference
--   Distance
--   Sample Delay
-:::
-
-::: {.column width="50%"}
-**Addidtional**
-
--   Pregnant
--   Day of Year
--   Number of Other Hunts
--   Deer
-:::
-::::: -->
-```
-
 ## The Models {.smaller}
 
-```{=html}
-<!--
-Baisu: I'd say we only report Gamma GAMMs.
-GAMs are "worse" in that they do not account for individual differences between deer.
-Gaussian GAMMs are bad because the QQ plots show the residuals are not normally distributed.
--->
-```
-
-| Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
-|------------|------------|------------|------------|------------|------------|
-| A | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gaussian |
-| B | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gamma |
-| C | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gaussian |
-| D | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gamma |
-
-## A Generalized Additive Model {.smaller}
-
-### i) Gaussian: Identity Link
-
--   $FCM_i \sim  \mathcal{N}(\mu_i, \sigma^2)$
-
--   Identity Link: $E(FCM_i) = \mu_i = \eta_i$
-
--   Linear Predictor: $$
-    \begin{equation}
-    \begin{gathered}
-      \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\
-      \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\
-      f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i)
-    \end{gathered}
-    \end{equation}
-    $$
-
-## A Generalized Additive Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gau_L_Dist.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gau_N_Dist.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gau_L_TD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gau_N_TD.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gau_L_SD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gau_N_SD.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gau_L_OtherEvents.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gau_N_OtherEvents.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gau_L_Day.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gau_N_Day.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### ii) Gamma: Log Link
-
--   $FCM_i \sim  \mathcal{Ga}(\nu, \frac{\nu}{\mu_i})$
-
--   For better Interpretability we use the Log-Link: $E(FCM_i) = \mu_i = exp(\eta_i)$
-
--   Linear Predictor: $$ 
-    \begin{equation}
-    \begin{gathered}
-      \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\
-      \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\
-      f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i)
-    \end{gathered}
-    \end{equation}
-    $$
-
-## A Generalized Additive Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gam_L_Dist.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gam_N_Dist.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gam_L_TD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gam_N_TD.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gam_L_SD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gam_N_SD.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gam_L_OtherEvents.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gam_N_OtherEvents.png" width="800"/>
-:::
-:::::
-
-## A Generalized Additive Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gam_L_Day.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gam_N_Day.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### i) Gaussian: Identity Link {.smaller}
-
-Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
-
-$$
-\begin{eqnarray}
-\textup{FCM}_{ij} &\sim& \mathcal{N}\left( \mu_{ij}, \sigma^2 \right) \\
-\mu_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
-&& f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\
-&& f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
-&& \gamma_{i}, \\
-\gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2).
-\end{eqnarray}
-$$
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gaum_L_Dist.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gaum_N_Dist.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gaum_L_TD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gaum_N_TD.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gaum_L_SD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gaum_N_SD.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gaum_L_OtherEvents.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gaum_N_OtherEvents.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### i) Gaussian: Identity Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gaum_L_Day.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gaum_N_Day.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-## i) Gamma: Log link {.smaller}
-
--   Log link for interpretability.
+-   Generalized additive mixed model with Gamma family and log link.
 
 -   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
-
 $$
 \begin{eqnarray}
 \textup{FCM}_{ij} &\sim& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \\
@@ -591,128 +284,26 @@ $$
 \gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2).
 \end{eqnarray}
 $$
+-   $f_1, \dots, f_4$ are penalized cubic regression splines.
+<!-- We do not use cyclic splines for defecation day, because we have no observations in winter. The start and end of the spline does not connect. -->
 
-## B Generalized Additive Mixed Model {.smaller}
+## Results on Dataset "Latest" {.smaller}
 
-### ii) Gamma: Log Link
+```{r}
+#| results: asis
+library(itsadug)
+m_L <- readRDS("Models/m_L.RDS")
+gamtabs(m_L, caption = "GAM summary on dataset \"latest\".", type = "html")
+```
 
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_Dist.png" width="800"/>
-:::
+## Results on Dataset "Latest"
 
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_Dist.png" width="800"/>
-:::
-:::::
+Large uncertainty, no visible time effect
 
-## B Generalized Additive Mixed Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_TD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_TD.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_SD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_SD.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_OtherEvents.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_OtherEvents.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_Day.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_Day.png" width="800"/>
-:::
-:::::
-
-<!-- ## B Generalized Additive Mixed Model{.smaller} -->
-
-<!-- ### i) Gaussian: Identity Link -->
-
-<!-- $$ -->
-
-<!-- \begin{equation} -->
-
-<!--   \begin{gathered} -->
-
-<!--     FCM_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\ -->
-
-<!--     \beta_2\,Number\,Other\,Hunts_{i\,j} +  f_1(Time\,Diff_{i\,j}) + \\ -->
-
-<!--     f_2(Distance_{i\,j}) + f_3(Sample\,Delay_{i\,j}) + f_4(Day\,of\,Year_{i\,j}) +\\ -->
-
-<!--     \gamma_j + \epsilon_{i\,j} -->
-
-<!--   \end{gathered} -->
-
-<!-- \end{equation} -->
-
-<!-- \\ -->
-
-<!-- $$ -->
-
-<!-- with: -->
-
-<!--   - $\gamma_j \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_{\gamma}^2)$: Random Intercept of j-th Deer -->
-
-<!--   - $\epsilon_{i\,j} \overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma^2)$: Random error at the i-th observation of the j-th deer -->
-
-<!-- $$ -->
-
-<!-- \begin{equation} -->
-
-<!--   \begin{gathered} -->
-
-<!--   a +b  -->
-
-<!--   \end{gathered} -->
-
-<!-- \end{equation} -->
-
-<!-- \\ -->
-
-<!-- $$ -->
-
-<!-- - Identity Link: $E(FCM_i) = \mu_i = \eta_i$ -->
-
-<!-- - Linear Predictor: -->
+```{r}
+p_L <- readRDS("Figures/p_L.RDS")
+print(p_L)
+```
 
 # Agenda
 
