@@ -10,6 +10,7 @@ library(lubridate)
 library(readxl)
 library(purrr)
 library(ggplot2)
+library(ggrepel)
 theme_set(theme_bw(base_size = 22))
 
 library(ggeffects)
@@ -106,11 +107,11 @@ HuntEvents <- prepared_data$HuntEvents
 cat("Preparing data for modeling...\n")
 param_grid <- list_rbind(list(
   # last
-  data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
+  data.frame(gut_retention_time_lower = 14, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "last"),
   # nearest
   data.frame(gut_retention_time_lower = 19, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "nearest"),
   # score
-  data.frame(gut_retention_time_lower = 0, gut_retention_time_upper = 50, distance_threshold = 10, filter_criterion = "score")
+  data.frame(gut_retention_time_lower = 0, gut_retention_time_upper = 200, distance_threshold = 15, filter_criterion = "score")
 ))
 
 datasets <- param_grid %>%
@@ -131,13 +132,32 @@ table_datasets <- relocate(table_datasets, set)
 table_datasets$unique_deers <- vapply(table_datasets$data, function(x) length(unique(x$Deer.ID)), numeric(1))
 table_datasets$obs <- vapply(table_datasets$data, nrow, numeric(1))
 table_datasets$data <- NULL
+
+
+
+
 saveRDS(table_datasets, "Data/Datasets.RDS")
+
+
+
+
+
+# plot(res[[5]][[3]]$Score, res[[5]][[3]]$ng_g,
+#      main = "Scatter Plot: Score vs ng/g (Log Scale)",
+#      xlab = "Score (log scale)",
+#      ylab = "ng/g",
+#      col = "blue",
+#      pch = 19,    # Solid circle for points
+#      cex = 1.5,   # Size of points
+#      log = "x")   # Logarithmic scale for x-axis
+# grid()            # Add a grid to the plot
+
   
 # -------------------------
 # Plot Data
 # -------------------------
 
-# Draw_Illustration_Map()
+Draw_Illustration_Map()
 
 # #Example Calls for one of the datasets
 # plot_ng_as_func_of_dist_timediff(data_cleanedup, chosen_var = "Distance")
