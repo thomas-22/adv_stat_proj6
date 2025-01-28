@@ -20,6 +20,31 @@ timediff_evaluation_asym_curve <- function(x, peak = 19, rise_sigma = 2, fall_si
   
 }
 
+save_jpg_timediff_function <- function(){
+  
+  #getwd()
+  
+  output_directory <- "./Figures"
+  output_filename <- "Timediff_Function_impact_curve.jpg"
+  output_path <- file.path(output_directory, output_filename)
+  
+  jpeg(
+    filename = output_path,    # Full path to save the JPEG
+    width = 800,               # Width in pixels
+    height = 600,              # Height in pixels
+    units = "px",              # Units for width and height
+    quality = 100               # Quality of the JPEG (1-100)
+  )
+  
+  plot(seq(0, 40, by = 0.1), timediff_evaluation_asym_curve(seq(0, 40, by = 0.1), peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1), type = "l", col = "blue", lwd = 2,
+       xlab = "Time (hours)", ylab = "Score Impact", main = "Score Impact ~ TimeDiff Curve")
+  
+  
+  dev.off()
+  
+  
+}
+save_jpg_timediff_function()
 
 # For each FCM sample, find all hunting events within a certain time frame,
 # calculate distance and time diff, and add potential confounders.
@@ -124,7 +149,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
     interesting_data %>%
       group_by(Sender.ID, Sample.ID) %>%
       mutate(Score = (10000000000 / Distance^2) * timediff_evaluation_asym_curve(TimeDiff)) %>%
-      filter(Score == max(Score, na.rm = TRUE) & Score > 1000) %>% #1000: Minimum score to be considered.
+      filter(Score == max(Score, na.rm = TRUE) & Score > 250) %>% # Score > 250: Minimum score to be considered.
       ungroup()
   } else {
     stop("Invalid filter_criterion")

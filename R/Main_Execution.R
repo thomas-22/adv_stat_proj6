@@ -32,7 +32,7 @@ source("R/Assign_FCMData_to_Stressors.R")
 source("R/Plot_FinalData.R")
 
 #Modelling
-# source("R/XGBoost_Model.R")
+source("R/XGBoost_Model.R")
 
 # Plotting Models
 source("R/PlotModels.R")
@@ -685,7 +685,26 @@ p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
 # # # Set tune = TRUE if you want to run hyperparameter tuning.
 # # # Leave it = FALSE if you want to use the included result of the tuning. (Models/final_xgboost..)
 # # # WARNING: Setting tune = TRUE means the function will take very long (Multiple Hours+) to execute due to many computations.
-# # # Max_Iterations: Only relevant if tune = TRUE
+# # # Max_Iterations: Max iterations for the readjustment (setting new param grid to explore) for the Hyperparameter Tuning process.
+# # # Max_Iterations is only relevant if tune = TRUE.
+
+# generate_score_map()
+
+xg_boost_result_last <-    XGBoost_run_default_pipeline(res$data[[1]],
+                                                     covariables = c("TimeDiff", "Distance"),
+                                                     tune = FALSE,
+                                                     max_iterations = 3)
+
+xg_boost_result_nearest <- XGBoost_run_default_pipeline(res$data[[2]],
+                                                       covariables = c("TimeDiff", "Distance"),
+                                                       tune = FALSE,
+                                                       max_iterations = 3)
+
+xg_boost_result_score <-   XGBoost_run_default_pipeline(res$data[[3]],
+                                                        covariables = c("TimeDiff", "Distance"),
+                                                        tune = FALSE,
+                                                        max_iterations = 3)
+
 
 # # xg_boost_results <- XGBoost_run_default_pipeline(data_cleanedup,
 # #                                                  covariables = c("TimeDiff", "Distance"),

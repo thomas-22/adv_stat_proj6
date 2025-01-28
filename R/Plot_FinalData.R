@@ -376,3 +376,156 @@ Draw_Illustration_Map <- function(){
     theme(legend.position = "none") # Remove the legend
   
 }
+
+
+# Define the generate_score_map function with enhanced label customization and fixed aesthetics
+generate_score_map <- function(
+    d_min = 1,
+    d_max = 7500,
+    t_min = 0,
+    t_max = 40,
+    d_steps = 300,
+    t_steps = 300,
+    peak = 19,
+    rise_sigma = 2,
+    fall_sigma = 2.5,
+    height = 1,
+    threshold = 250,
+    highlight = FALSE,
+    label_color = "white",       # Parameter for label color
+    label_size = 5,              # Parameter for label size
+    label_fontface = "plain"     # Parameter for label font face
+) {
+  # Install and load necessary packages
+  required_packages <- c("ggplot2", "viridis", "scales")
+  installed_packages <- rownames(installed.packages())
+  for (pkg in required_packages) {
+    if (!(pkg %in% installed_packages)) {
+      install.packages(pkg, dependencies = TRUE)
+    }
+  }
+  library(ggplot2)
+  library(viridis)
+  library(scales)
+  
+  # Define the time difference evaluation function
+  timediff_evaluation_asym_curve <- function(x, peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1) {
+    ifelse(
+      x <= peak,
+      height * exp(-((x - peak)^2) / (2 * rise_sigma^2)),  # Rising phase (Gaussian)
+      height * exp(-(x - peak) / fall_sigma)              # Falling phase (Exponential decay)
+    )
+  }
+  
+  # Define the scoring function
+  score_function <- function(d, t, peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1) {
+    # Avoid division by zero by setting a minimum distance
+    d <- ifelse(d < 1, 1, d)
+    (1e10 / d^2) * timediff_evaluation_asym_curve(t, peak, rise_sigma, fall_sigma, height)
+  }
+  
+  # Create a grid of distance and time difference values
+  d_values <- seq(d_min, d_max, length.out = d_steps)
+  t_values <- seq(t_min, t_max, length.out = t_steps)
+  grid <- expand.grid(d = d_values, t = t_values)
+  
+  # Compute the score for each grid point
+  grid$Score <- score_function(grid$d, grid$t, peak, rise_sigma, fall_sigma, height)
+  
+  # Create the plot based on the highlight flag
+  if (!highlight) {
+    # Plot without explicit highlighting, using contour
+    plot <- ggplot(grid, aes(x = d, y = t, fill = Score)) +
+      geom_tile() +
+      scale_fill_viridis(
+        option = "C",
+        trans = "log",
+        name = "Score",
+        limits = c(50, NA),                      # Set lower limit to 50
+        oob = scales::squish,                    # Squish values below 50 to 50
+        breaks = c(50, 100, 1000, 1e4, 1e6, 1e8),# Updated breaks to include 50
+        labels = comma
+      ) +
+      geom_contour(
+        aes(x = d, y = t, z = Score), 
+        breaks = threshold, 
+        color = "white", 
+        size = 1, 
+        inherit.aes = FALSE
+      ) +  # Prevent inheriting global aesthetics
+      labs(
+        title = expression("2D Plot of Score Function " ~ S(d, t)),
+        subtitle = expression("Regions where " ~ S(d, t) ~ " > " ~ threshold ~ " are highlighted by contour"),
+        x = "Distance (d)",
+        y = "Time Difference (t)"
+      ) +
+      theme_minimal() +
+      theme(
+        plot.title = element_text(size = 16, face = "bold"),
+        plot.subtitle = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 10)
+      ) +
+      # Add annotation for threshold with customizable color, size, and font face
+      annotate("text", 
+               x = d_max * 0.8, 
+               y = t_max * 0.9, 
+               label = paste("S(d, t) >", threshold), 
+               color = label_color, 
+               size = label_size, 
+               fontface = label_fontface)
+  } else {
+    # Plot with regions above threshold highlighted
+    grid$AboveThreshold <- grid$Score > threshold
+    
+    plot <- ggplot(grid, aes(x = d, y = t)) +
+      geom_tile(aes(fill = AboveThreshold), alpha = 0.6) +
+      scale_fill_manual(
+        values = c("FALSE" = "white", "TRUE" = "white"), 
+        name = expression(S(d, t) > .(threshold))
+      ) +
+      geom_contour(
+        aes(x = d, y = t, z = Score), 
+        breaks = threshold, 
+        color = "blue", 
+        size = 1, 
+        inherit.aes = FALSE
+      ) +  # Prevent inheriting global aesthetics
+      labs(
+        title = expression("Regions where " ~ S(d, t) ~ " > " ~ threshold),
+        x = "Distance (d)",
+        y = "Time Difference (t)"
+      ) +
+      theme_minimal() +
+      theme(
+        plot.title = element_text(size = 16, face = "bold"),
+        axis.title = element_text(size = 14),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 10)
+      ) +
+      # Add annotation for threshold with customizable color, size, and font face
+      annotate("text", 
+               x = d_max * 0.8, 
+               y = t_max * 0.9, 
+               label = paste("S(d, t) >", threshold), 
+               color = label_color, 
+               size = label_size, 
+               fontface = label_fontface)
+  }
+  
+  # Save the plot
+  ggsave(
+    filename = "score_map.jpg",    # Name of the file
+    plot = plot,                   # Plot object to save
+    path = "./Figures",            # Optional: specify the directory
+    width = 8,                     # Width of the image in inches
+    height = 6,                    # Height of the image in inches
+    dpi = 500                      # Resolution in dots per inch
+  )
+  
+  return(plot)
+}
+
+
+

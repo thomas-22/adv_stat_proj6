@@ -81,7 +81,9 @@ evaluate_gamma_fit <- function(modeling_data, test_data, target_column, num_iter
 # HYPERPARAMETER TUNING FUNCTION
 # -------------------------
 tune_xgboost <- function(X_train, y_train, X_test, y_test, 
-                         best_params = list(max_depth = 5, eta = 0.1, gamma = 1, subsample = 0.8, colsample_bytree = 0.8, min_child_weight = 1), 
+                         best_params = list(max_depth = 5, eta = 0.1, gamma = 1, 
+                                            subsample = 0.8, colsample_bytree = 0.8, 
+                                            min_child_weight = 1), 
                          initialize_tuning = TRUE,
                          max_iterations = 20, 
                          rmse_converge_tolerance = 0.1) {
@@ -91,6 +93,9 @@ tune_xgboost <- function(X_train, y_train, X_test, y_test,
   # - Chooses best parameters based on test RMSE.
   
   best_rmse <- Inf
+  best_params_final <- best_params
+  best_nrounds <- 100  # Initialize with a default value
+  
   tuning_converge <- FALSE
   dynamic_early_stopping <- max(5, min(30, floor(nrow(X_train)/5)/10)) - 4
   iteration_count <- 1
@@ -110,14 +115,14 @@ tune_xgboost <- function(X_train, y_train, X_test, y_test,
         min_child_weight = pmax(0.1, rnorm(4, mean = 4.798780, sd = 0.2))
       )
     } else {
-      # Search around current best_params
+      # Search around current best_params_final
       param_grid <- expand.grid(
-        max_depth = round(rnorm(4, mean = best_params$max_depth, sd = 1)),
-        eta = pmax(0.01, rnorm(4, mean = best_params$eta, sd = 0.02)), 
-        gamma = pmax(0, rnorm(4, mean = best_params$gamma, sd = 0.05)),
-        subsample = pmax(0.5, pmin(1, rnorm(4, mean = best_params$subsample, sd = 0.05))),
-        colsample_bytree = pmax(0.5, pmin(1, rnorm(4, mean = best_params$colsample_bytree, sd = 0.05))),
-        min_child_weight = pmax(0.1, rnorm(4, mean = best_params$min_child_weight, sd = 0.2))
+        max_depth = round(rnorm(4, mean = best_params_final$max_depth, sd = 1)),
+        eta = pmax(0.01, rnorm(4, mean = best_params_final$eta, sd = 0.02)), 
+        gamma = pmax(0, rnorm(4, mean = best_params_final$gamma, sd = 0.05)),
+        subsample = pmax(0.5, pmin(1, rnorm(4, mean = best_params_final$subsample, sd = 0.05))),
+        colsample_bytree = pmax(0.5, pmin(1, rnorm(4, mean = best_params_final$colsample_bytree, sd = 0.05))),
+        min_child_weight = pmax(0.1, rnorm(4, mean = best_params_final$min_child_weight, sd = 0.2))
       )
     }
     
@@ -181,8 +186,8 @@ tune_xgboost <- function(X_train, y_train, X_test, y_test,
     # Update global best if improved
     if (iteration_best_rmse < best_rmse) {
       best_rmse <- iteration_best_rmse
-      best_params <- iteration_best_params
-      best_params$nrounds <- iteration_best_nrounds
+      best_params_final <- iteration_best_params
+      best_nrounds <- iteration_best_nrounds
     } else {
       # If no improvement, consider we might be converged
       if (abs(iteration_best_rmse - best_rmse) < rmse_converge_tolerance) {
@@ -199,25 +204,32 @@ tune_xgboost <- function(X_train, y_train, X_test, y_test,
   cat("Tuning completed!\n")
   cat(sprintf("Best test RMSE: %.5f\n", best_rmse))
   cat("Best parameters:\n")
-  print(best_params)
+  print(best_params_final)
+  cat("Best nrounds:", best_nrounds, "\n")
   
-  best_params
+  # Return parameters and nrounds separately
+  list(
+    params = best_params_final,
+    nrounds = best_nrounds,
+    mean_rmse = best_rmse
+  )
 }
 
 # -------------------------
-# MODEL TRAINING AND EVALUATION
+# MODEL TRAINING FUNCTION
 # -------------------------
-train_final_model <- function(X_full, y_full, best_params, nfold = 7) {
+train_final_model <- function(X_full, y_full, best_params, best_nrounds, nfold = 7) {
   cat("Starting final model training...\n")
   start_time <- Sys.time()
   
+  # Perform cross-validation to confirm the best iteration (optional)
   dynamic_early_stopping <- max(5, min(30, floor(nrow(X_full)/5)/10))
   
   final_cv <- xgb.cv(
     params = best_params,
     data = X_full,
     label = y_full,
-    nrounds = 1000,
+    nrounds = best_nrounds,
     nfold = nfold,
     verbose = 1,
     early_stopping_rounds = dynamic_early_stopping
@@ -240,7 +252,7 @@ train_final_model <- function(X_full, y_full, best_params, nfold = 7) {
   cat(sprintf("Total training time: %s seconds\n", 
               round(as.numeric(difftime(end_time, start_time, units="secs")),2)))
   
-  final_model
+  return(final_model)
 }
 
 # -------------------------
@@ -252,7 +264,7 @@ calculate_rmse <- function(actual, predicted) {
 
 compare_baselines <- function(final_model, X_test, y_test, X_full, y_full, 
                               gamma_fit_eval_full, gamma_fit_eval_train,
-                              best_params) {
+                              best_params, best_nrounds) {
   # RMSE on test with final model
   y_test_pred <- predict(final_model, X_test)
   rmse_test <- calculate_rmse(y_test, y_test_pred)
@@ -274,8 +286,9 @@ compare_baselines <- function(final_model, X_test, y_test, X_full, y_full,
   mean_rmse_full_random <- mean(rmse_full_random)
   
   # Permutation test: shuffle y_full and train model again
-  # Use best_params, which should contain the best hyperparameters including nrounds
+  # Use best_params and best_nrounds separately
   params <- best_params
+  nrounds <- best_nrounds
   
   dynamic_early_stopping <- max(5, min(30, floor(nrow(X_full) / 5) / 10))
   
@@ -284,17 +297,19 @@ compare_baselines <- function(final_model, X_test, y_test, X_full, y_full,
     params = params,
     data = X_full,
     label = sampled_yfull,
-    nrounds = params$nrounds,
-    verbose = 0,
+    nrounds = 2000,  # Using a high number; will use early stopping
     nfold = 5,
+    verbose = 0,
     early_stopping_rounds = dynamic_early_stopping
   )
+  
+  best_iter_permute <- fm_permutated_result_cv$best_iteration
   
   fm_permutate_result <- xgboost(
     params = params,
     data = X_full,
     label = sampled_yfull,
-    nrounds = fm_permutated_result_cv$best_iteration,
+    nrounds = best_iter_permute,
     verbose = 0
   )
   
@@ -402,7 +417,7 @@ plot_results <- function(final_model, X_test, y_test,
       )
     )
   
-  fig
+  return(fig)
 }
 
 plot_results_v2 <- function(final_model, X_test, y_test, 
@@ -497,10 +512,8 @@ plot_results_v2 <- function(final_model, X_test, y_test,
         )
       )
     )
-  
-  fig
+  return(fig)
 }
-
 
 # -------------------------------------
 # MAIN PIPELINE
@@ -523,9 +536,14 @@ XGBoost_run_default_pipeline <- function(data_cleanedup,
   test_data  <- prepared_data$test_data
   
   cat("Data preparation complete.\n")
-  # 2) Either tune hyperparameters or skip if you want to use existing best_params
+  
+  # Initialize variables to store best parameters and nrounds
+  best_params <- NULL
+  best_nrounds <- NULL
+  
+  # 2) Either tune hyperparameters or load existing model
   if (tune) {
-    best_params <- tune_xgboost(
+    tuning_results <- tune_xgboost(
       X_train = X_train, 
       y_train = y_train, 
       X_test  = X_test, 
@@ -543,22 +561,33 @@ XGBoost_run_default_pipeline <- function(data_cleanedup,
       rmse_converge_tolerance = 1
     )
     
-    # 3) Train final model on full data
-    final_model <- train_final_model(X_full, y_full, best_params, nfold = 7)
+    best_params <- tuning_results$params
+    best_nrounds <- tuning_results$nrounds
     
-    # Save both model AND best_params in one RDS
+    # 3) Train final model on full data
+    final_model <- xgboost(
+      params = best_params,
+      data = X_full,
+      label = y_full,
+      nrounds = best_nrounds,
+      verbose = 1
+    )
+    
+    # 4) Save both model AND best_params and best_nrounds in one RDS
     model_and_params <- list(
       final_model = final_model,
-      best_params = best_params
+      best_params = best_params,
+      best_nrounds = best_nrounds
     )
     saveRDS(model_and_params, model_path)
     
     cat("Final model + params saved to:", model_path, "\n")
   } else {
-    # Skip tuning, just load the model + params
+    # 3) Load the model + params
     loaded_obj <- readRDS(model_path)
     final_model <- loaded_obj$final_model
     best_params <- loaded_obj$best_params
+    best_nrounds <- loaded_obj$best_nrounds
     cat("Loaded pre-trained model from:", model_path, "\n")
   }
   
@@ -575,7 +604,8 @@ XGBoost_run_default_pipeline <- function(data_cleanedup,
     y_full               = y_full,
     gamma_fit_eval_full  = gamma_fit_eval_full,
     gamma_fit_eval_train = gamma_fit_eval_train,
-    best_params          = best_params  # <-- not NULL anymore
+    best_params          = best_params,
+    best_nrounds         = best_nrounds
   )
   
   cat("Final Model RMSE on Test:", comparisons$rmse_test_final, "\n")
@@ -605,7 +635,6 @@ XGBoost_run_default_pipeline <- function(data_cleanedup,
   )
 }
 
-
 # -------------------------------------
 # TRANSFORMED PIPELINE
 # -------------------------------------
@@ -633,33 +662,49 @@ XGBoost_run_transformed_pipeline <- function(data_cleanedup,
   train_data_v2 <- prepared_data_v2$train_data
   test_data_v2  <- prepared_data_v2$test_data
   
+  cat("Transformed data preparation complete.\n")
+  
+  # Initialize variables to store best parameters and nrounds
+  best_params_v2 <- NULL
+  best_nrounds_v2 <- NULL
+  
   # 3) Tune or load model
   if (tune) {
-    best_params_v2 <- tune_xgboost(
+    tuning_results_v2 <- tune_xgboost(
       X_train = X_train_v2, 
       y_train = y_train_v2, 
       X_test  = X_test_v2, 
       y_test  = y_test_v2,
       best_params = list(
-        max_depth         = 6,
-        eta               = 0.1734111,
-        gamma             = 5.907800,
-        subsample         = 0.6074106,
-        colsample_bytree  = 1,
-        min_child_weight  = 4.798780
+        max_depth = 6,
+        eta = 0.1734111,
+        gamma = 5.907800,
+        subsample = 0.6074106,
+        colsample_bytree = 1,
+        min_child_weight = 4.798780
       ),
-      initialize_tuning       = FALSE,
+      initialize_tuning = FALSE,
       max_iterations = max_iterations,
       rmse_converge_tolerance = 1
     )
     
-    # Train final model
-    final_model_v2 <- train_final_model(X_full_v2, y_full_v2, best_params_v2, nfold = 7)
+    best_params_v2 <- tuning_results_v2$params
+    best_nrounds_v2 <- tuning_results_v2$nrounds
     
-    # Save both model AND best_params in one RDS
+    # 4) Train final model on full data
+    final_model_v2 <- xgboost(
+      params = best_params_v2,
+      data = X_full_v2,
+      label = y_full_v2,
+      nrounds = best_nrounds_v2,
+      verbose = 1
+    )
+    
+    # 5) Save both model AND best_params and best_nrounds in one RDS
     model_and_params_v2 <- list(
       final_model = final_model_v2,
-      best_params = best_params_v2
+      best_params = best_params_v2,
+      best_nrounds = best_nrounds_v2
     )
     saveRDS(model_and_params_v2, model_path)
     cat("Saved transformed final model + params to:", model_path, "\n")
@@ -669,6 +714,7 @@ XGBoost_run_transformed_pipeline <- function(data_cleanedup,
     loaded_obj_v2 <- readRDS(model_path)
     final_model_v2 <- loaded_obj_v2$final_model
     best_params_v2 <- loaded_obj_v2$best_params
+    best_nrounds_v2 <- loaded_obj_v2$best_nrounds
     cat("Loaded pre-trained transformed model from:", model_path, "\n")
   }
   
@@ -685,7 +731,8 @@ XGBoost_run_transformed_pipeline <- function(data_cleanedup,
     y_full               = y_full_v2,
     gamma_fit_eval_full  = gamma_fit_eval_full_v2,
     gamma_fit_eval_train = gamma_fit_eval_train_v2,
-    best_params          = best_params_v2
+    best_params          = best_params_v2,
+    best_nrounds         = best_nrounds_v2
   )
   
   cat("Final Transformed Model RMSE on Test:", comparisons_v2$rmse_test_final, "\n")
