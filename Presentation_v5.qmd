@@ -291,11 +291,9 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 ```
 
 | Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
-|------------|------------|------------|------------|------------|------------|
-| A | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gaussian |
-| B | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gamma |
-| C | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gaussian |
-| D | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gamma |
+|------------|------------|-----------------------|------------|------------|----------------|
+| A | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gamma |
+| B | XGBoost | Uses all covariates as input features, learning interactions through decision trees | None | None | No specific distribution assumption |
 
 ------------------------------------------------------------------------
 
@@ -677,9 +675,9 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 
 <!-- ::::: -->
 
-## B Generalized Additive Mixed Model {.smaller}
+## A Generalized Additive Mixed Model {.smaller}
 
-## i) Gamma: Log link {.smaller}
+### Gamma: Log Link
 
 -   Log link for interpretability.
 
@@ -697,77 +695,46 @@ $$
 \end{eqnarray}
 $$
 
-## B Generalized Additive Mixed Model {.smaller}
+## A Generalized Additive Mixed Model {.smaller}
 
-### ii) Gamma: Log Link
+### Gamma: Log Link \n  
 
+### Last
 ::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_Dist.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_Dist.png" width="800"/>
+::: {.column width="100%"}
+<img src="p_L.png" width="900"/>
 :::
 :::::
 
-## B Generalized Additive Mixed Model {.smaller}
+## A Generalized Additive Mixed Model {.smaller}
 
-### ii) Gamma: Log Link
+### Gamma: Log Link  
 
+### Nearest
 ::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_TD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_TD.png" width="800"/>
+::: {.column width="100%"}
+<img src="p_N.png" width="900"/>
 :::
 :::::
 
-## B Generalized Additive Mixed Model {.smaller}
+## A Generalized Additive Mixed Model {.smaller}
 
-### ii) Gamma: Log Link
+### Gamma: Log Link 
+
+### Highest score
 
 ::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_SD.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_SD.png" width="800"/>
+::: {.column width="100%"}
+<img src="p_S.png" width="900"/>
 :::
 :::::
 
-## B Generalized Additive Mixed Model {.smaller}
+## B XGBoost {.smaller}
 
-### ii) Gamma: Log Link
+### TBD
 
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_OtherEvents.png" width="800"/>
-:::
 
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_OtherEvents.png" width="800"/>
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### ii) Gamma: Log Link
-
-::::: columns
-::: {.column width="50%"}
-<img src="Plots/p_gamm_L_Day.png" width="800"/>
-:::
-
-::: {.column width="50%"}
-<img src="Plots/p_gamm_N_Day.png" width="800"/>
-:::
-:::::
-
-<!-- ## B Generalized Additive Mixed Model{.smaller} -->
+### <!-- ## B Generalized Additive Mixed Model{.smaller} -->
 
 <!-- ### i) Gaussian: Identity Link -->
 
