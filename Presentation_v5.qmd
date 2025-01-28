@@ -67,7 +67,7 @@ editor: visual
 :::
 :::::
 
-## FCMs as a Measure of Stress{.smaller}
+## FCMs as a Measure of Stress {.smaller}
 
 ::::: columns
 ::: {.column width="50%"}
@@ -82,7 +82,6 @@ editor: visual
 ![Huber et al (2003)](Figures/FCM-levels.png)
 :::
 :::::
-
 
 ## Approach
 
@@ -107,7 +106,6 @@ editor: visual
 ::: {.fragment .semi-fade-out fragment-index="1"}
 4.  The Wrap-up
 :::
-
 
 ## The Datasets
 
@@ -180,9 +178,9 @@ To identify relevant Hunting Events respective to a given FCM Sample, we introdu
 
 ## The Most Relevant Hunting Event {.smaller}
 
-Among the relevant hunting events, the **most relevant** one is defined by one of the three introduced **Proximity criteria**:
+Among the relevant hunting events, the **most relevant** one is defined by one of the three introduced **proximity criteria**:
 
--   the closest in time ("**last**"),
+-   the closest in time to GRT = 19 hours ("**closest in time**"),
 -   the closest in space ("**nearest**"), or
 -   the one with the "highest **score**".
 
@@ -298,7 +296,9 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 | B | GAM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None | Gamma |
 | C | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gaussian |
 | D | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | Deer | Gamma |
----
+
+------------------------------------------------------------------------
+
 <!-- ## A Generalized Additive Model {.smaller} -->
 
 <!-- ### i) Gaussian: Identity Link -->
@@ -308,13 +308,21 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- -   Identity Link: $E(FCM_i) = \mu_i = \eta_i$ -->
 
 <!-- -   Linear Predictor: $$ -->
+
 <!--     \begin{equation} -->
+
 <!--     \begin{gathered} -->
+
 <!--       \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\ -->
+
 <!--       \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\ -->
+
 <!--       f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i) -->
+
 <!--     \end{gathered} -->
+
 <!--     \end{equation} -->
+
 <!--     $$ -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -322,13 +330,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_L_Dist.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_N_Dist.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -336,13 +350,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_L_TD.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_N_TD.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -350,13 +370,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_L_SD.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_N_SD.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -364,13 +390,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_L_OtherEvents.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_N_OtherEvents.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -378,13 +410,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_L_Day.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gau_N_Day.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -396,13 +434,21 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- -   For better Interpretability we use the Log-Link: $E(FCM_i) = \mu_i = exp(\eta_i)$ -->
 
 <!-- -   Linear Predictor: $$  -->
+
 <!--     \begin{equation} -->
+
 <!--     \begin{gathered} -->
+
 <!--       \eta_i = \beta_0 + \beta_1\,Pregnant_i +\\ -->
+
 <!--       \beta_2\,Number\,Other\,Hunts_i +  f_1(Time\,Diff_i) + \\ -->
+
 <!--       f_2(Distance_i) + f_3(Sample\,Delay_i) + f_4(Day\,of\,Year_i) -->
+
 <!--     \end{gathered} -->
+
 <!--     \end{equation} -->
+
 <!--     $$ -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -410,13 +456,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### ii) Gamma: Log Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_L_Dist.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_N_Dist.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -424,13 +476,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### ii) Gamma: Log Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_L_TD.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_N_TD.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -438,13 +496,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### ii) Gamma: Log Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_L_SD.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_N_SD.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -452,13 +516,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### ii) Gamma: Log Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_L_OtherEvents.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_N_OtherEvents.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## A Generalized Additive Model {.smaller} -->
@@ -466,13 +536,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### ii) Gamma: Log Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_L_Day.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gam_N_Day.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## B Generalized Additive Mixed Model {.smaller} -->
@@ -482,14 +558,23 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer. -->
 
 <!-- $$ -->
+
 <!-- \begin{eqnarray} -->
+
 <!-- \textup{FCM}_{ij} &\sim& \mathcal{N}\left( \mu_{ij}, \sigma^2 \right) \\ -->
+
 <!-- \mu_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\ -->
+
 <!-- && f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\ -->
+
 <!-- && f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\ -->
+
 <!-- && \gamma_{i}, \\ -->
+
 <!-- \gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2). -->
+
 <!-- \end{eqnarray} -->
+
 <!-- $$ -->
 
 <!-- ## B Generalized Additive Mixed Model {.smaller} -->
@@ -497,13 +582,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_L_Dist.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_N_Dist.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## B Generalized Additive Mixed Model {.smaller} -->
@@ -511,13 +602,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_L_TD.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_N_TD.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## B Generalized Additive Mixed Model {.smaller} -->
@@ -525,13 +622,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_L_SD.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_N_SD.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## B Generalized Additive Mixed Model {.smaller} -->
@@ -539,13 +642,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_L_OtherEvents.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_N_OtherEvents.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 <!-- ## B Generalized Additive Mixed Model {.smaller} -->
@@ -553,13 +662,19 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 <!-- ### i) Gaussian: Identity Link -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_L_Day.png" width="800"/> -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- <img src="Plots/p_gaum_N_Day.png" width="800"/> -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 ## B Generalized Additive Mixed Model {.smaller}
