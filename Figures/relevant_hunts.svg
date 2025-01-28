@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="1320.1996"
-   height="1080.0002"
-   viewBox="0 0 355.19357 290.56905"
+   width="1311.5917"
+   height="1041.8756"
+   viewBox="0 0 352.87765 280.31179"
    version="1.1"
    id="svg1"
    inkscape:export-filename="illustration_new.png"
@@ -28,9 +28,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      inkscape:export-bgcolor="#ffffffff"
-     inkscape:zoom="0.45254834"
-     inkscape:cx="894.93202"
-     inkscape:cy="449.67572"
+     inkscape:zoom="0.64"
+     inkscape:cx="545.3125"
+     inkscape:cy="553.90625"
      inkscape:current-layer="layer1"
      showborder="false"
      borderlayer="false" />
@@ -72,19 +72,19 @@
        x2="147.75101"
        y2="19.193064"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(11.539907,3.5090729)" />
+       gradientTransform="translate(11.703507,3.5090729)" />
   </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-46.471735,5.2772237)">
+     transform="translate(-46.635335,5.2772237)">
     <path
        style="fill:#000000;stroke:#000000;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;marker-end:url(#Triangle);paint-order:fill markers stroke"
        d="M 97.194617,259.24551 H 348.22085"
        id="path1" />
     <path
-       style="fill:#000000;stroke:#000000;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;marker-end:url(#Triangle);paint-order:fill markers stroke"
+       style="fill:#000000;stroke:#000000;stroke-width:0.538091;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#Triangle);paint-order:fill markers stroke"
        d="M 97.194617,259.24551 V 6.5279997"
        id="path2" />
     <ellipse
@@ -95,53 +95,53 @@
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff6600;stroke:#1a1a1a;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:#1a1a1a;stroke-width:1.64441;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        id="path3-3"
        cx="230.52904"
        cy="213.25833"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff6600;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
        id="path3-3-2-2"
-       cx="197.13316"
-       cy="126.0335"
+       cx="235.28304"
+       cy="99.128967"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff6600;stroke:#000000;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:#000000;stroke-width:1.64441;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        id="path3-3-2-9"
-       cx="149.3595"
-       cy="201.17691"
+       cx="150.43567"
+       cy="200.10074"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff6600;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
        id="path3-3-2-9-4"
        cx="331.2168"
        cy="87.238159"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff6600;stroke:#1a1a1a;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:#1a1a1a;stroke-width:1.64441;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        id="path3-3-0"
-       cx="122.37878"
-       cy="145.57613"
+       cx="122.29723"
+       cy="131.56029"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff6600;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
        id="path3-3-26"
        cx="160.60756"
        cy="31.482386"
        rx="7.5737772"
        ry="7.624804" />
     <path
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:0.705998, 1.412;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       d="M 345.19833,225.66422 H 97.194599"
+       style="fill:#ff6600;fill-opacity:1;stroke:#ff6600;stroke-width:1.07618;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:2.15236, 4.30474;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 345.37484,223.10514 H 97.371117"
        id="path6-3" />
     <path
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:0.705998, 1.412;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.538091;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:1.07618, 2.15237;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
        d="M 276.26667,259.24551 V 11.241785"
        id="path6-3-1" />
     <text
@@ -159,27 +159,27 @@
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#1a1a1a;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
-       x="380.49554"
-       y="262.72852"
+       x="378.336"
+       y="262.19223"
        id="text4"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
          id="tspan4"
          style="stroke-width:0.352999"
-         x="380.49554"
-         y="262.72852">Distance</tspan></text>
+         x="378.336"
+         y="262.19223">Distance</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
-       x="69.407013"
-       y="228.36906"
+       style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#ff7f2a;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
+       x="71.026718"
+       y="225.15135"
        id="text5"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
-         style="fill:#000000;stroke:none;stroke-width:0.352999"
-         x="69.407013"
-         y="228.36906"
-         id="tspan6">14 hours</tspan></text>
+         style="fill:#ff7f2a;stroke:none;stroke-width:0.352999"
+         x="71.026718"
+         y="225.15135"
+         id="tspan6">19 hours</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
@@ -191,19 +191,24 @@
          style="fill:#000000;stroke:none;stroke-width:0.352999"
          x="277.21259"
          y="273.95087"
-         id="tspan6-4">20 km</tspan></text>
+         id="tspan6-4">distance threshold</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
-       x="69.407013"
-       y="70.261269"
+       x="71.636047"
+       y="64.66301"
        id="text5-0"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
          style="fill:#000000;stroke:none;stroke-width:0.352999"
-         x="69.407013"
-         y="70.261269"
-         id="tspan6-8">50 hours</tspan></text>
+         x="71.636047"
+         y="64.66301"
+         id="tspan16">GRT high</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;stroke:none;stroke-width:0.352999"
+         x="71.636047"
+         y="78.028633"
+         id="tspan5">threshold</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#1a1a1a;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
@@ -234,63 +239,73 @@
        id="text8"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
-         id="tspan8"
          style="fill:#008080;stroke:none;stroke-width:0.352999"
          x="73.793343"
-         y="268.81894">FCM</tspan><tspan
-         sodipodi:role="line"
-         style="fill:#008080;stroke:none;stroke-width:0.352999"
-         x="73.793343"
-         y="282.18457"
-         id="tspan9">Sample</tspan></text>
+         y="268.81894"
+         id="tspan9">Deer</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#ff6600;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:2.11799, 2.11799;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:2.11799, 2.11799;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
        x="211.62781"
        y="22.733803"
        id="text10"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
-         style="fill:#ff6600;stroke-width:0.352999"
+         style="fill:#ff0000;stroke-width:0.352999"
          x="211.62781"
          y="22.733803"
          id="tspan12">Hunting events</tspan></text>
     <path
-       style="fill:url(#linearGradient18);fill-opacity:1;stroke:#1a1a1a;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:1.059, 1.059;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:url(#linearGradient18);fill-opacity:1;stroke:#1a1a1a;stroke-width:0.538091;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:1.61428, 1.61428;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
        d="M 345.19836,67.024707 H 97.194617"
        id="path14" />
     <text
        xml:space="preserve"
        style="font-size:11.4658px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="122.75938"
-       y="134.36975"
+       x="121.85495"
+       y="119.59586"
        id="text18"><tspan
          sodipodi:role="line"
-         id="tspan18"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="122.75938"
-         y="134.36975">Nearest</tspan></text>
+         x="121.85495"
+         y="119.59586"
+         id="tspan11">Nearest</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:11.4658px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="149.07957"
-       y="186.20538"
+       x="149.99338"
+       y="174.99557"
        id="text18-20"><tspan
          sodipodi:role="line"
          id="tspan18-0"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="149.07957"
-         y="186.20538">Highest score</tspan></text>
+         x="149.99338"
+         y="174.99557">Highest</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
+         x="149.99338"
+         y="189.32782"
+         id="tspan8">score</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:11.4658px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="230.08675"
-       y="201.93086"
+       x="230.29111"
+       y="172.19089"
        id="text18-2"><tspan
-         id="tspan18-2"
          style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="230.08675"
-         y="201.93086"
-         sodipodi:role="line">Last</tspan></text>
+         x="230.29111"
+         y="172.19089"
+         sodipodi:role="line"
+         id="tspan13">Closest</tspan><tspan
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
+         x="230.29111"
+         y="186.52313"
+         sodipodi:role="line"
+         id="tspan21">in time</tspan><tspan
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
+         x="230.29111"
+         y="200.85539"
+         sodipodi:role="line"
+         id="tspan22">(to 19 hours)</tspan></text>
   </g>
 </svg>

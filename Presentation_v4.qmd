@@ -213,21 +213,21 @@ Deer location at the time of hunting event is approximated by linear interpolati
 
 We introduce **4 parameters**:
 
--   **Gut retention time (GRT) low** \[hours\],
--   **Gut retention time (GRT) high** \[hours\],
+-   **Gut retention time (GRT)** \[hours\],
+-   **Gut retention time (GRT) high threshold** \[hours\],
 -   **Distance threshold** \[km\],
--   **Proximity criterion** ("last", "nearest", or "highest score")
+-   **Proximity criterion** ("closest in time", "nearest", or "highest score")
 
 A hunting event is considered **relevant** to a FCM sample, if
 
--   the time difference between experiencing stress (hunting) and defecation is between the GRT thresholds, and
+-   the time difference between experiencing stress (hunting) and defecation is $\leq$ GRT high threshold, and
 -   the distance between the deer and the hunting event is $\leq$ distance threshold.
 
 ## The Most Relevant Hunting Event {.smaller}
 
 Among the relevant hunting events, the **most relevant** one is defined by the proximity criterion:
 
--   the closest in time ("last"),
+-   the closest in time to GRT = 19 hours ("closest in time"),
 -   the closest in space ("nearest"), or
 -   the one with the "highest score."
 
@@ -245,9 +245,9 @@ The scoring function is defined as TBD.
 <!-- right column -->
 
 ::: {.column width="40%"}
--   GRT lower = 14 hours
 -   GRT upper = 50 hours
--   Distance threshold = 20 km
+
+-   Distance threshold = 10 km
 :::
 :::::
 
