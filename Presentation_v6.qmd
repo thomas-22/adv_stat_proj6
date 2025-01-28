@@ -192,9 +192,19 @@ $$
 S(d, t) = \frac{10^{10}}{d^2} \times \begin{cases}h \cdot \exp\left( -\frac{(t - p)^2}{2 \sigma_r^2} \right), & \text{if } t \leq p, \\h \cdot \exp\left( -\frac{t - p}{\sigma_f} \right), & \text{if } t > p.\end{cases}\text{where}\begin{align*}S(d, t) & \text{ = Score } \\d & \text{ = Distance } \\t & \text{ = Time Difference } \\p & = \text{peak time = 19 } \\\sigma_r & = \text{rise standard deviation = 2 } \\\sigma_f & = \text{fall standard deviation = 2.5 } \\h & = \text{height scaling factor = 1}\end{align*}
 $$
 
-![](Figures/Timediff_Function_impact_curve.jpg)
+## Plots{.smaller}
 
-![](Figures/score_map.jpg)
+::::: columns
+::: {.column width="50%"}
+![](Figures/Timediff_Function_impact_curve.jpg)
+:::
+
+::: {.column width="50%"}
+![](Figures/score_map.jpg) 
+:::
+:::::
+
+
 
 ## Illustration {.smaller}
 
@@ -300,15 +310,15 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 -->
 ```
 
-+----------+-----------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
-| Model    | Type      | Non-Parametric Effects                               | Linear Effects               | Random Intercept | Distribution Assumption             |
-+==========+===========+======================================================+==============================+==================+=====================================+
-| A        | GAMM      | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None             | Gamma                               |
-+----------+-----------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
-| B        | XGBoost   | Time Difference, Distance.                           | None                         | None             | No specific distribution assumption |
-|          |           |                                                      |                              |                  |                                     |
-|          |           | Learns interactions through decision trees.          |                              |                  |                                     |
-+----------+-----------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
++---------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
+| Model   | Type    | Non-Parametric Effects                               | Linear Effects               | Random Intercept | Distribution Assumption             |
++=========+=========+======================================================+==============================+==================+=====================================+
+| A       | GAMM    | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None             | Gamma                               |
++---------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
+| B       | XGBoost | Time Difference, Distance.                           | None                         | None             | No specific distribution assumption |
+|         |         |                                                      |                              |                  |                                     |
+|         |         | Learns interactions through decision trees.          |                              |                  |                                     |
++---------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
 
 ------------------------------------------------------------------------
 
