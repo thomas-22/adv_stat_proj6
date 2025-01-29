@@ -227,11 +227,13 @@ cat("Fitting models...\n")
 # Last
 m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"))
 
-p_L_diagnostic <- appraise(m_L)
+p_L_diagnostic <- appraise(m_L, method = "simulate") & theme_bw()
+ggsave("Figures/p_L_diagnostic.png", p_L_diagnostic, width = 7, height = 7, dpi = 300)
 
 p_L_TimeDiff <- ggpredict(m_L, terms = c("TimeDiff")) %>%
   plot() +
-  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "")
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16)
 # Predicted values of the FCM level for a "typical deer", i.e.,
 # the other covariates are held constant at their mean values or reference category
 # (hasCalf = FALSE).
@@ -255,6 +257,7 @@ p_L_Day <- ggpredict(m_L, terms = c("DefecDay"), title = "") %>%
 
 p_L <- p_L_TimeDiff + p_L_Distance + p_L_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
+ggsave("Figures/p_L.png", p_L, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 
@@ -262,7 +265,8 @@ p_L <- p_L_TimeDiff + p_L_Distance + p_L_SampleDelay +
 # Nearest
 m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"))
 
-p_N_diagnostic <- appraise(m_N)
+p_N_diagnostic <- appraise(m_N, method = "simulate") & theme_bw()
+ggsave("Figures/p_N_diagnostic.png", p_N_diagnostic, width = 7, height = 7, dpi = 300)
 
 p_N_TimeDiff <- ggpredict(m_N, terms = c("TimeDiff")) %>%
   plot() +
@@ -286,6 +290,7 @@ p_N_Day <- ggpredict(m_N, terms = c("DefecDay"), title = "") %>%
 
 p_N <- p_N_TimeDiff + p_N_Distance + p_N_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
+ggsave("Figures/p_N.png", p_N, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 
@@ -294,7 +299,8 @@ p_N <- p_N_TimeDiff + p_N_Distance + p_N_SampleDelay +
 m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"))
 # saveRDS(m_S, "Models/m_S.RDS")
 
-p_S_diagnostic <- appraise(m_S, method = "simulate")
+p_S_diagnostic <- appraise(m_S, method = "simulate") & theme_bw()
+ggsave("Figures/p_S_diagnostic.png", p_S_diagnostic, width = 7, height = 7, dpi = 300)
 
 p_S_TimeDiff <- ggpredict(m_S, terms = c("TimeDiff")) %>%
   plot() +
@@ -318,6 +324,7 @@ p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
 
 p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
+ggsave("Figures/p_S.png", p_S, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 
