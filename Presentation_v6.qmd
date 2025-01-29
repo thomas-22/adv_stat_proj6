@@ -192,7 +192,7 @@ $$
 S(d, t) = \frac{10^{10}}{d^2} \times \begin{cases}h \cdot \exp\left( -\frac{(t - p)^2}{2 \sigma_r^2} \right), & \text{if } t \leq p, \\h \cdot \exp\left( -\frac{t - p}{\sigma_f} \right), & \text{if } t > p.\end{cases}\text{where}\begin{align*}S(d, t) & \text{ = Score } \\d & \text{ = Distance } \\t & \text{ = Time Difference } \\p & = \text{peak time = 19 } \\\sigma_r & = \text{rise standard deviation = 2 } \\\sigma_f & = \text{fall standard deviation = 2.5 } \\h & = \text{height scaling factor = 1}\end{align*}
 $$
 
-## Plots{.smaller}
+## Plots {.smaller}
 
 ::::: columns
 ::: {.column width="50%"}
@@ -200,11 +200,9 @@ $$
 :::
 
 ::: {.column width="50%"}
-![](Figures/score_map.jpg) 
+![](Figures/score_map.jpg)
 :::
 :::::
-
-
 
 ## Illustration {.smaller}
 
@@ -273,7 +271,6 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 -   [**Time difference** \[hours\]]{.fragment fragment-index="1"}
 -   [**Distance** \[km\]]{.fragment fragment-index="1"}
 -   [**Sample delay** \[hours\]]{.fragment fragment-index="1"}
--   [Pregnant]{.fragment fragment-index="2"}
 -   [Defecation day (between 1 and 366)]{.fragment fragment-index="2"}
 -   [Number of other relevant hunting events]{.fragment fragment-index="2"}
 
@@ -310,15 +307,10 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 -->
 ```
 
-+---------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
-| Model   | Type    | Non-Parametric Effects                               | Linear Effects               | Random Intercept | Distribution Assumption             |
-+=========+=========+======================================================+==============================+==================+=====================================+
-| A       | GAMM    | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None             | Gamma                               |
-+---------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
-| B       | XGBoost | Time Difference, Distance.                           | None                         | None             | No specific distribution assumption |
-|         |         |                                                      |                              |                  |                                     |
-|         |         | Learns interactions through decision trees.          |                              |                  |                                     |
-+---------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
+| Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
+|-----------|-----------|-----------------------|-----------|-----------|---------------|
+| A | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Number Other Hunts | Deer | gamma |
+| B | XGBoost | Uses all covariates as input features, learning interactions through decision trees | None | None | No specific distribution assumption |
 
 ------------------------------------------------------------------------
 
@@ -712,7 +704,7 @@ $$
 \begin{eqnarray}
 \textup{FCM}_{ij} &\sim& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \\
 \mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}) \\
-\eta_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
+\eta_{ij} &=& \beta_0 + \beta_1 \textup{NumberOtherHunts}_{ij} + \\
 && f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\
 && f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
 && \gamma_{i}, \\
@@ -724,7 +716,7 @@ $$
 
 ### Gamma: Log Link \n  
 
-### Last
+### Closest in time
 
 :::: columns
 ::: {.column width="100%"}
@@ -756,17 +748,33 @@ $$
 :::
 ::::
 
+## Coefficient Table{.smaller}
+### Below is the linear coefficient table for all three datasets:
+
+
+| Dataset          | Term           | Estimate     | Std. Error   |
+|------------------|----------------|--------------|--------------|
+| Closest in Time  | (Intercept)    | 348.749226   | 19.160755    |
+| Closest in Time  | NumOtherHunts  | -39.625957   | 21.256122    |
+| Nearest          | (Intercept)    | 343.642929   | 19.269818    |
+| Nearest          | NumOtherHunts  | -27.930584   | 20.266997    |
+| Highest Score    | (Intercept)    | 389.147541   | 44.638442    |
+| Highest Score    | NumOtherHunts  | -7.136975    | 8.293382     |
+
+\newpage
+
 ## B XGBoost {.smaller}
 
 ### TBD
 
-### <!-- ## B Generalized Additive Mixed Model{.smaller} -->
 
-<!-- ### i) Gaussian: Identity Link -->
+<!-- ## B Generalized Additive Mixed Model{.smaller} -->
 
-<!-- $$ -->
+<!-- \### i) Gaussian: Ident`nk -->`
 
-<!-- \begin{equation} -->
+<!-- $$ -->`
+
+<!-- \begin{equ`ation} --\>
 
 <!--   \begin{gathered} -->
 
