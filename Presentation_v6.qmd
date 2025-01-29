@@ -749,7 +749,8 @@ $$
 ::::
 
 ## Coefficient Table{.smaller}
-### Below is the linear coefficient table for all three datasets:
+
+### Below are the linear coefficient table for all three datasets:
 
 
 | Dataset          | Term           | Estimate     | Std. Error   |
