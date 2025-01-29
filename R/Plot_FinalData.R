@@ -379,6 +379,7 @@ Draw_Illustration_Map <- function(){
 
 
 # Define the generate_score_map function with enhanced label customization and fixed aesthetics
+#generate_score_map()
 generate_score_map <- function(
     d_min = 1,
     d_max = 7500,
@@ -455,7 +456,7 @@ generate_score_map <- function(
       ) +  # Prevent inheriting global aesthetics
       labs(
         title = expression("2D Plot of Score Function " ~ S(d, t)),
-        subtitle = expression("Regions where " ~ S(d, t) ~ " > " ~ threshold ~ " are highlighted by contour"),
+        subtitle = expression("Regions where " ~ S(d, t) ~ " > " ~ 250 ~ " are highlighted by contour"),
         x = "Distance (d)",
         y = "Time Difference (t)"
       ) +
