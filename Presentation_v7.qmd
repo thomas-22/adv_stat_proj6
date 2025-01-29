@@ -392,15 +392,24 @@ Linear Effects:
 
 ## Conclusion
 
--   Not many observations after datafusion left for robust modelling
+:::{.incremental}
+-   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels.
+-   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection.
+-   With more datapoints, the uncertainty will highly likely shrink.
+-   We can see a case of the curse of high dimension.
+:::
 
--   Trade-off between spatial and temporal distance
+<!-- ## Conclusion -->
 
--   Sample Delay seems to be significant
+<!-- -   Not many observations after datafusion left for robust modelling -->
 
--   Modelling Outcomes don't show much difference
+<!-- -   Trade-off between spatial and temporal distance -->
 
--   Trade-off between Complexity and Explainability
+<!-- -   Sample Delay seems to be significant -->
+
+<!-- -   Modelling Outcomes don't show much difference -->
+
+<!-- -   Trade-off between Complexity and Explainability -->
 
 ## Discussion
 
