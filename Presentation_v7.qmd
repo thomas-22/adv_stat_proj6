@@ -220,7 +220,10 @@ S(d, t) \propto \begin{cases}
 \frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{N}(\mu, \sigma^2) &|t \leq \mu \\
 \frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{Laplace}(\mu, b) &|t > \mu
 \end{cases}
-$$ where: $$
+$$ 
+where: 
+
+$$
 \begin{align*}
 d & \text{: Distance } \\
 t & \text{: Time Difference } \\
@@ -320,7 +323,7 @@ $$
 && f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\
 && f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
 && \gamma_{i}, \\
-\gamma_i &\sim& \mathcal{N}(0, \sigma_\gamma^2).
+\gamma_i &\overset{\mathrm{iid}}{\sim}& \mathcal{N}(0, \sigma_\gamma^2).
 \end{eqnarray}
 $$
 
