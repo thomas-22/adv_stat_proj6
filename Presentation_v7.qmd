@@ -356,6 +356,19 @@ $$
 :::
 ::::
 
+## Coefficient Table {.smaller}
+
+Linear Effects:
+
+| Dataset         | Term          | Estimate   | Std. Error |
+|-----------------|---------------|------------|------------|
+| Closest in Time | (Intercept)   | 348.749226 | 19.160755  |
+| Closest in Time | NumOtherHunts | -39.625957 | 21.256122  |
+| Nearest         | (Intercept)   | 343.642929 | 19.269818  |
+| Nearest         | NumOtherHunts | -27.930584 | 20.266997  |
+| Highest Score   | (Intercept)   | 389.147541 | 44.638442  |
+| Highest Score   | NumOtherHunts | -7.136975  | 8.293382   |
+
 # Agenda
 
 ::: {.fragment .semi-fade-out fragment-index="1"}
