@@ -271,7 +271,6 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 -   [**Time difference** \[hours\]]{.fragment fragment-index="1"}
 -   [**Distance** \[km\]]{.fragment fragment-index="1"}
 -   [**Sample delay** \[hours\]]{.fragment fragment-index="1"}
--   [Pregnant]{.fragment fragment-index="2"}
 -   [Defecation day (between 1 and 366)]{.fragment fragment-index="2"}
 -   [Number of other relevant hunting events]{.fragment fragment-index="2"}
 
@@ -308,15 +307,10 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 -->
 ```
 
-+-------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
-| Model | Type    | Non-Parametric Effects                               | Linear Effects               | Random Intercept | Distribution Assumption             |
-+=======+=========+======================================================+==============================+==================+=====================================+
-| A     | GAMM    | Time Difference, Distance, Sample Delay, Day of Year | Pregnant, Number Other Hunts | None             | Gamma                               |
-+-------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
-| B     | XGBoost | Time Difference, Distance.                           | None                         | None             | No specific distribution assumption |
-|       |         |                                                      |                              |                  |                                     |
-|       |         | Learns interactions through decision trees.          |                              |                  |                                     |
-+-------+---------+------------------------------------------------------+------------------------------+------------------+-------------------------------------+
+| Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
+|-----------|-----------|-----------------------|-----------|-----------|---------------|
+| A | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Number Other Hunts | Deer | gamma |
+| B | XGBoost | Uses all covariates as input features, learning interactions through decision trees | None | None | No specific distribution assumption |
 
 ------------------------------------------------------------------------
 
@@ -710,7 +704,7 @@ $$
 \begin{eqnarray}
 \textup{FCM}_{ij} &\sim& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \\
 \mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}) \\
-\eta_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
+\eta_{ij} &=& \beta_0 + \beta_1 \textup{NumberOtherHunts}_{ij} + \\
 && f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\
 && f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
 && \gamma_{i}, \\
@@ -722,7 +716,7 @@ $$
 
 ### Gamma: Log Link \n  
 
-### Last
+### Closest in time
 
 :::: columns
 ::: {.column width="100%"}
@@ -754,17 +748,34 @@ $$
 :::
 ::::
 
+## Coefficient Table{.smaller}
+
+### Below is the linear coefficient table for all three datasets:
+
+
+| Dataset          | Term           | Estimate     | Std. Error   |
+|------------------|----------------|--------------|--------------|
+| Closest in Time  | (Intercept)    | 5.8243844    | 0.0533979    |
+| Closest in Time  | NumOtherHunts  | -0.1370438   | 0.0614158    |
+| Nearest          | (Intercept)    | 5.8123504    | 0.0541316    |
+| Nearest          | NumOtherHunts  | -0.1026115   | 0.0596574    |
+| Highest Score    | (Intercept)    | 5.8882327    | 0.0812529    |
+| Highest Score    | NumOtherHunts  | -0.0112701   | 0.0141569    |
+
+\newpage
+
 ## B XGBoost {.smaller}
 
-### TBD
+### TBDTBD
 
-### <!-- ## B Generalized Additive Mixed Model{.smaller} -->
 
-<!-- ### i) Gaussian: Identity Link -->
+<!-- ## B Generalized Additive Mixed Model{.smaller} -->
 
-<!-- $$ -->
+<!-- \### i) Gaussian: Ident`nk -->`
 
-<!-- \begin{equation} -->
+<!-- $$ -->`
+
+<!-- \begin{equ`ation} --\>
 
 <!--   \begin{gathered} -->
 
