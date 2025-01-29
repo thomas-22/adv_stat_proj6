@@ -750,7 +750,7 @@ $$
 
 ## Coefficient Table{.smaller}
 
-### Below are the linear coefficient table for all three datasets:
+### Below is the linear coefficient table for all three datasets:
 
 
 | Dataset          | Term           | Estimate     | Std. Error   |
