@@ -755,12 +755,12 @@ $$
 
 | Dataset          | Term           | Estimate     | Std. Error   |
 |------------------|----------------|--------------|--------------|
-| Closest in Time  | (Intercept)    | 348.749226   | 19.160755    |
-| Closest in Time  | NumOtherHunts  | -39.625957   | 21.256122    |
-| Nearest          | (Intercept)    | 343.642929   | 19.269818    |
-| Nearest          | NumOtherHunts  | -27.930584   | 20.266997    |
-| Highest Score    | (Intercept)    | 389.147541   | 44.638442    |
-| Highest Score    | NumOtherHunts  | -7.136975    | 8.293382     |
+| Closest in Time  | (Intercept)    | 5.8243844    | 0.0533979    |
+| Closest in Time  | NumOtherHunts  | -0.1370438   | 0.0614158    |
+| Nearest          | (Intercept)    | 5.8123504    | 0.0541316    |
+| Nearest          | NumOtherHunts  | -0.1026115   | 0.0596574    |
+| Highest Score    | (Intercept)    | 5.8882327    | 0.0812529    |
+| Highest Score    | NumOtherHunts  | -0.0112701   | 0.0141569    |
 
 \newpage
 
