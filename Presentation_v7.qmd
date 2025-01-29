@@ -253,6 +253,8 @@ We suggest three different Datasets for Modelling
 library(dplyr)
 data <- readRDS("Data/Datasets.RDS")
 
+data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
+
 knitr::kable(data, 
              format = "html", 
              align = c("r", "r", "r", "r", "r", "r"), 
@@ -300,14 +302,14 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 
 We chose two different approaches to Modelling:
 
-1.  **Machine Learning**: a model, which minimizes the residuals, in our case a **XGBoost** Model
-2.  **Statistical Modelling**: a model, which helps to understand the effects of our covariables, here a **General Additive Mixed Model**
+A.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
+B.  **Statistical Modelling**: a model, which helps to understand the effects of our covariables, here a **General Additive Mixed Model**
 
-## A XGBoost {.smaller}
+## A. XGBoost {.smaller}
 
 ### TBD
 
-## B Generalized Additive Mixed Model {.smaller}
+## B. Generalized Additive Mixed Model {.smaller}
 
 -   Family: Gamma
 
@@ -329,7 +331,7 @@ $$
 
 ## B Generalized Additive Mixed Model {.smaller}
 
-### Last
+### Closest in Time
 
 :::: columns
 ::: {.column width="100%"}
