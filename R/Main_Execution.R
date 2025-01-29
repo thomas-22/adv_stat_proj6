@@ -837,9 +837,9 @@ final_pipeline_results_score <- run_multiple_xgboost_pipelines_aggregated(
 
 
 
-aggregated_last <- pipeline_results_last$aggregated_results
-aggregated_nearest <- pipeline_results_nearest$aggregated_results
-aggregated_score <- pipeline_results_score$aggregated_results
+aggregated_last <- final_pipeline_results_last$aggregated_results
+aggregated_nearest <- final_pipeline_results_nearest$aggregated_results
+aggregated_score <- final_pipeline_results_score$aggregated_results
 
 # Compile the XGBoost Summary Table
 xgboost_summary <- data.frame(
