@@ -308,7 +308,7 @@ Gaussian GAMMs are bad because the QQ plots show the residuals are not normally 
 ```
 
 | Model | Type | Non-Parametric Effects | Linear Effects | Random Intercept | Distribution Assumption |
-|-----------|-----------|-----------------------|-----------|-----------|---------------|
+|------------|------------|------------|------------|------------|------------|
 | A | GAMM | Time Difference, Distance, Sample Delay, Day of Year | Number Other Hunts | Deer | gamma |
 | B | XGBoost | Uses all covariates as input features, learning interactions through decision trees | None | None | No specific distribution assumption |
 
@@ -720,7 +720,7 @@ $$
 
 :::: columns
 ::: {.column width="100%"}
-<img src="p_L.png" width="900"/>
+<img src="Figures/p_L.png" width="900"/>
 :::
 ::::
 
@@ -732,7 +732,7 @@ $$
 
 :::: columns
 ::: {.column width="100%"}
-<img src="p_N.png" width="900"/>
+<img src="Figures/p_N.png" width="900"/>
 :::
 ::::
 
@@ -744,23 +744,22 @@ $$
 
 :::: columns
 ::: {.column width="100%"}
-<img src="p_S.png" width="900"/>
+<img src="Figures/p_S.png" width="900"/>
 :::
 ::::
 
-## Coefficient Table{.smaller}
+## Coefficient Table {.smaller}
 
 ### Below is the linear coefficient table for all three datasets:
 
-
-| Dataset          | Term           | Estimate     | Std. Error   |
-|------------------|----------------|--------------|--------------|
-| Closest in Time  | (Intercept)    | 348.749226   | 19.160755    |
-| Closest in Time  | NumOtherHunts  | -39.625957   | 21.256122    |
-| Nearest          | (Intercept)    | 343.642929   | 19.269818    |
-| Nearest          | NumOtherHunts  | -27.930584   | 20.266997    |
-| Highest Score    | (Intercept)    | 389.147541   | 44.638442    |
-| Highest Score    | NumOtherHunts  | -7.136975    | 8.293382     |
+| Dataset         | Term          | Estimate   | Std. Error |
+|-----------------|---------------|------------|------------|
+| Closest in Time | (Intercept)   | 348.749226 | 19.160755  |
+| Closest in Time | NumOtherHunts | -39.625957 | 21.256122  |
+| Nearest         | (Intercept)   | 343.642929 | 19.269818  |
+| Nearest         | NumOtherHunts | -27.930584 | 20.266997  |
+| Highest Score   | (Intercept)   | 389.147541 | 44.638442  |
+| Highest Score   | NumOtherHunts | -7.136975  | 8.293382   |
 
 \newpage
 
@@ -768,16 +767,21 @@ $$
 
 ### TBD
 
-
 <!-- ## B Generalized Additive Mixed Model{.smaller} -->
 
-<!-- \### i) Gaussian: Ident`nk -->`
+<!-- \### i) Gaussian: Ident`nk -->
 
-<!-- $$ -->`
+\`
 
+<!-- $$ -->
+
+\`
+
+```{=html}
 <!-- \begin{equ`ation} --\>
 
 <!--   \begin{gathered} -->
+```
 
 <!--     FCM_{i\,j} = \beta_0 + \beta_1\,Pregnant_{i\,j} +\\ -->
 
