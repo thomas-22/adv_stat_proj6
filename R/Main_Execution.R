@@ -688,31 +688,173 @@ p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
 # # # Max_Iterations: Max iterations for the readjustment (setting new param grid to explore) for the Hyperparameter Tuning process.
 # # # Max_Iterations is only relevant if tune = TRUE.
 
-# generate_score_map()
+# Recommended values: max_iterations = 3, num_runs = 5
 
-xg_boost_result_last <-    XGBoost_run_default_pipeline(res$data[[1]],
-                                                     covariables = c("TimeDiff", "Distance"),
-                                                     tune = FALSE,
-                                                     max_iterations = 3)
+# # LAST Dataset
+# pipeline_results_last <- run_multiple_xgboost_pipelines_aggregated(
+#   data_cleanedup = res$data[[1]],
+#   covariables = c("TimeDiff", "Distance"),
+#   tune = TRUE,
+#   base_model_path = "Models/xgboost_model_last",
+#   max_iterations = 1,
+#   num_runs = 5,
+#   seed = NULL
+# )
+# 
+# 
+# # NEAREST Dataset
+# pipeline_results_nearest <- run_multiple_xgboost_pipelines_aggregated(
+#   data_cleanedup = res$data[[2]],
+#   covariables = c("TimeDiff", "Distance"),
+#   tune = TRUE,
+#   base_model_path = "Models/xgboost_model_nearest",
+#   max_iterations = 1,
+#   num_runs = 5,
+#   seed = NULL
+# )
+# 
+# # SCORE Dataset
+# pipeline_results_score <- run_multiple_xgboost_pipelines_aggregated(
+#   data_cleanedup = res$data[[3]],
+#   covariables = c("TimeDiff", "Distance"),
+#   tune = TRUE,
+#   base_model_path = "Models/xgboost_model_score",
+#   max_iterations = 1,
+#   num_runs = 5,
+#   seed = NULL
+# )
 
-xg_boost_result_nearest <- XGBoost_run_default_pipeline(res$data[[2]],
-                                                       covariables = c("TimeDiff", "Distance"),
-                                                       tune = FALSE,
-                                                       max_iterations = 3)
+# xgboost_model_last_all_runs <- read_rds("Models/xgboost_model_last_all_runs.rds")
+# xgboost_model_nearest_all_runs <- read_rds("Models/xgboost_model_nearest_all_runs.rds")
+# xgboost_model_score_all_runs <- read_rds("Models/xgboost_model_score_all_runs.rds")
+# 
+# 
+# xg_bestmodel_last <- xgboost_model_last_all_runs[[
+#   which.min(
+#     sapply(xgboost_model_last_all_runs, function(model) {
+#       if (length(model$evaluation_log$train_rmse) > 0) {
+#         min(model$evaluation_log$train_rmse)
+#       } else {
+#         Inf
+#       }
+#     })
+#   )
+# ]]
+# 
+# xg_bestmodel_nearest <- xgboost_model_nearest_all_runs[[
+#   which.min(
+#     sapply(xgboost_model_nearest_all_runs, function(model) {
+#       if (length(model$evaluation_log$train_rmse) > 0) {
+#         min(model$evaluation_log$train_rmse)
+#       } else {
+#         Inf
+#       }
+#     })
+#   )
+# ]]
+# 
+# xg_bestmodel_score <- xgboost_model_score_all_runs[[
+#   which.min(
+#     sapply(xgboost_model_score_all_runs, function(model) {
+#       if (length(model$evaluation_log$train_rmse) > 0) {
+#         min(model$evaluation_log$train_rmse)
+#       } else {
+#         Inf
+#       }
+#     })
+#   )
+# ]]
+# 
+# xg_bestmodel_last$best_params <- xg_bestmodel_last$final_model$params
+# xg_bestmodel_last$best_nrounds <- as.integer(13)
+# xg_bestmodel_last$best_params <- modifyList(xg_bestmodel_last$best_params, list(validate_parameters = NULL))
+# xg_bestmodel_last <- modifyList(xg_bestmodel_last, list(comparisons = NULL,
+#                                                         plotly_fig = NULL))
+# 
+# 
+# xg_bestmodel_nearest$best_params <- xg_bestmodel_nearest$final_model$params
+# xg_bestmodel_nearest$best_nrounds <- as.integer(13)
+# xg_bestmodel_nearest$best_params <- modifyList(xg_bestmodel_nearest$best_params, list(validate_parameters = NULL))
+# xg_bestmodel_nearest <- modifyList(xg_bestmodel_nearest, list(comparisons = NULL,
+#                                                         plotly_fig = NULL))
+# 
+# xg_bestmodel_score$best_params <- xg_bestmodel_score$final_model$params
+# xg_bestmodel_score$best_nrounds <- as.integer(13)
+# xg_bestmodel_score$best_params <- modifyList(xg_bestmodel_score$best_params, list(validate_parameters = NULL))
+# xg_bestmodel_score <- modifyList(xg_bestmodel_score, list(comparisons = NULL,
+#                                                         plotly_fig = NULL))
+# 
+# 
+# 
+# saveRDS(xg_bestmodel_last, "Models/best_xgboost_model_LAST.rds")
+# saveRDS(xg_bestmodel_nearest, "Models/best_xgboost_model_NEAREST.rds")
+# saveRDS(xg_bestmodel_score, "Models/best_xgboost_model_SCORE.rds")
 
-xg_boost_result_score <-   XGBoost_run_default_pipeline(res$data[[3]],
-                                                        covariables = c("TimeDiff", "Distance"),
-                                                        tune = FALSE,
-                                                        max_iterations = 3)
+
+#-----------------------------------
+# USE PREVIOUSLY CALCULATED MODELS:
+
+# LAST Dataset
+final_pipeline_results_last <- run_multiple_xgboost_pipelines_aggregated(
+  data_cleanedup = res$data[[1]],
+  covariables = c("TimeDiff", "Distance"),
+  tune = FALSE,
+  base_model_path = "Models/best_xgboost_model_LAST",
+  max_iterations = 1,
+  num_runs = 20,
+  seed = NULL
+)
 
 
-# # xg_boost_results <- XGBoost_run_default_pipeline(data_cleanedup,
-# #                                                  covariables = c("TimeDiff", "Distance"),
-# #                                                  tune = FALSE,
-# #                                                  max_iterations = 3)
-# # xg_boost_results_transformed <- XGBoost_run_transformed_pipeline(data_cleanedup,
-# #                                                                  tune = FALSE,
-# #                                                                  max_iterations = 3)
+# NEAREST Dataset
+final_pipeline_results_nearest <- run_multiple_xgboost_pipelines_aggregated(
+  data_cleanedup = res$data[[2]],
+  covariables = c("TimeDiff", "Distance"),
+  tune = FALSE,
+  base_model_path = "Models/best_xgboost_model_NEAREST",
+  max_iterations = 1,
+  num_runs = 20,
+  seed = NULL
+)
+
+# SCORE Dataset
+final_pipeline_results_score <- run_multiple_xgboost_pipelines_aggregated(
+  data_cleanedup = res$data[[3]],
+  covariables = c("TimeDiff", "Distance"),
+  tune = FALSE,
+  base_model_path = "Models/best_xgboost_model_SCORE",
+  max_iterations = 1,
+  num_runs = 20,
+  seed = NULL
+)
+
+
+
+aggregated_last <- pipeline_results_last$aggregated_results
+aggregated_nearest <- pipeline_results_nearest$aggregated_results
+aggregated_score <- pipeline_results_score$aggregated_results
+
+# Compile the XGBoost Summary Table
+xgboost_summary <- data.frame(
+  Dataset = c("last", "nearest", "score"),
+  Mean_Test_RMSE = c(
+    aggregated_last$mean_rmse_test_final,
+    aggregated_nearest$mean_rmse_test_final,
+    aggregated_score$mean_rmse_test_final
+  ),
+  SD_Test_RMSE = c(
+    aggregated_last$sd_rmse_test_final,
+    aggregated_nearest$sd_rmse_test_final,
+    aggregated_score$sd_rmse_test_final
+  ),
+  Number_of_Observations = c(
+    nrow(res$data[[1]]),
+    nrow(res$data[[2]]),
+    nrow(res$data[[3]])
+  )
+)
+#-----------------------------------
+
 
 # # #3D Figure of Model
 # # xg_boost_results$plotly_fig

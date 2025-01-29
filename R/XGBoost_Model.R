@@ -756,3 +756,106 @@ XGBoost_run_transformed_pipeline <- function(data_cleanedup,
   )
 }
 
+
+
+# -------------------------------------
+# Wrapper Function to get a good run
+# -------------------------------------
+
+# Wrapper function to run the pipeline multiple times
+run_multiple_xgboost_pipelines_aggregated <- function(data_cleanedup,
+                                                      covariables = c("TimeDiff", "Distance"),
+                                                      tune = TRUE,
+                                                      base_model_path = "Models/xgboost_model_aggregated",
+                                                      max_iterations = 10,
+                                                      num_runs = 10,
+                                                      seed = NULL) {
+  
+  # Set seed for reproducibility if provided
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+  
+  # Initialize a list to store results
+  results_list <- vector("list", num_runs)
+  
+  # Vector to store RMSEs for comparison
+  rmse_values <- numeric(num_runs)
+  
+  # Initialize lists to store other metrics if needed
+  gamma_rmse_full <- numeric(num_runs)
+  gamma_rmse_train <- numeric(num_runs)
+  mean_rmse_test_random <- numeric(num_runs)
+  mean_rmse_full_random <- numeric(num_runs)
+  fm_trainedon_permute_data_test_rmse <- numeric(num_runs)
+  
+  cat("Starting", num_runs, "runs of XGBoost pipeline with aggregated results...\n")
+  
+  for (i in 1:num_runs) {
+    cat("\nRun", i, "of", num_runs, "\n")
+    if (tune == TRUE) {
+      model_path_i <- paste0(base_model_path, "_run", i, ".rds")
+    }
+    else{
+      model_path_i <- paste0(base_model_path, ".rds")
+    }
+    
+    # Execute the pipeline
+    result <- XGBoost_run_default_pipeline(
+      data_cleanedup = data_cleanedup,
+      covariables = covariables,
+      tune = tune,
+      model_path = model_path_i,
+      max_iterations = max_iterations
+    )
+    
+    # Store the result
+    results_list[[i]] <- result
+    
+    # Extract and store the RMSE and other metrics
+    rmse_values[i] <- result$comparisons$rmse_test_final
+    gamma_rmse_full[i] <- result$comparisons$gamma_fit_rmse_full
+    gamma_rmse_train[i] <- result$comparisons$gamma_fit_rmse_train
+    mean_rmse_test_random[i] <- result$comparisons$mean_rmse_test_random
+    mean_rmse_full_random[i] <- result$comparisons$mean_rmse_full_random
+    fm_trainedon_permute_data_test_rmse[i] <- result$comparisons$fm_trainedon_permute_data_test_rmse
+    
+    cat("Run", i, "RMSE on Test:", rmse_values[i], "\n")
+  }
+  
+  # Aggregate the results
+  aggregated_results <- list(
+    mean_rmse_test_final = mean(rmse_values),
+    sd_rmse_test_final = sd(rmse_values),
+    mean_gamma_fit_rmse_full = mean(gamma_rmse_full),
+    sd_gamma_fit_rmse_full = sd(gamma_rmse_full),
+    mean_gamma_fit_rmse_train = mean(gamma_rmse_train),
+    sd_gamma_fit_rmse_train = sd(gamma_rmse_train),
+    mean_rmse_test_random = mean(mean_rmse_test_random),
+    sd_rmse_test_random = sd(mean_rmse_test_random),
+    mean_rmse_full_random = mean(mean_rmse_full_random),
+    sd_rmse_full_random = sd(mean_rmse_full_random),
+    mean_fm_trainedon_permute_data_test_rmse = mean(fm_trainedon_permute_data_test_rmse),
+    sd_fm_trainedon_permute_data_test_rmse = sd(fm_trainedon_permute_data_test_rmse)
+  )
+  
+  if (tune == TRUE) {
+    # Optionally, save aggregated results to a file
+    aggregated_results_path <- paste0(base_model_path, "_aggregated_results.rds")
+    saveRDS(aggregated_results, aggregated_results_path)
+    cat("Aggregated results saved to:", aggregated_results_path, "\n")
+    
+    # Optionally, save all individual run results
+    all_runs_path <- paste0(base_model_path, "_all_runs.rds")
+    saveRDS(results_list, all_runs_path)
+    cat("All run results saved to:", all_runs_path, "\n")
+  }
+  
+  # Return the aggregated results along with all run details
+  return(list(
+    aggregated_results = aggregated_results,
+    all_runs = results_list,
+    rmse_values = rmse_values
+  ))
+}
+
