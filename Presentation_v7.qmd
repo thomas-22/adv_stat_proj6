@@ -1,6 +1,6 @@
 ---
 title: "Effect of Hunting on Red Deer" 
-subtitle: "Modelling Fecal Cortisol Metabolites" 
+subtitle: "P15.2 Fortgeschrittenes Praxisprojekt" 
 institute: "Dr. Nicolas Ferry - Bavarian National Forest Park / Daniel Schlichting - StabLab" 
 author: "Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou" 
 date: 2025-01-31 
@@ -46,8 +46,9 @@ editor: visual
 
 ## Motivation
 
--   Hunting activities might induce stress for red deer, even if non-lethal.
--   **Goal**: analyze how the distance in space and time to the (last) hunting event affects the stress in deer.
+-   Hunting activities have a numerical effect on animal populations.
+-   Additionally, hunting can have non-lethal effects.
+-   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park
 
 <!-- Putting "last" in parentheses, because it is mentioned in the project description, but we know only looking at the last hunting event is not good enough. (We have "nearest" and "score" as well.) -->
 
@@ -82,6 +83,12 @@ editor: visual
 ![Huber et al (2003)](Figures/FCM-levels.png)
 :::
 :::::
+
+## Research Questions
+:::{.incremental}
+-   What is the effect of temporal and spatial distance on FCM levels?
+-   Does the time between defecation event and sample collection effect FCM levels?
+:::
 
 ## Approach
 
