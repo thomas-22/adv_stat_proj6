@@ -73,7 +73,7 @@ editor: visual
 ::::: columns
 ::: {.column width="50%"}
 -   **Faecal Cortisol Metabolites (FCM)** are substances found in feces of animals
--   The FCM level is used to measure previous stress. Higher Stress $\implies$ Higher FCM level
+-   The FCM level is used to measure previous stress. Higher Stress $\Rightarrow$ Higher FCM level
 -   Stress $\Rightarrow$ secretion of certain hormones $\Rightarrow$ gut retention $\Rightarrow$ FCM
 -   Gut retention time $\approx$ 19 hours
 -   Once defecated, FCM levels **decay over time**
@@ -93,7 +93,7 @@ editor: visual
 
 ## Approach
 
--   Model FCM levels - amongst other covariables - on spatial and temporal distance to hunting activities
+-   Model FCM levels - amongst other covariates - on spatial and temporal distance to hunting activities
 
 -   **Expectations**:
 
@@ -121,38 +121,10 @@ editor: visual
 ## The Datasets
 
 ::: incremental
--   **Movement Data**
--   **Hunting Events**
 -   **FCM Data**
+-   **Hunting Events**
+-   **Movement Data**
 :::
-
-## Movement Data {.smaller}
-
-::::: columns
-::: {.column width="40%"}
--   Contains the location of the **40** collared deer
--   Period: Feb 2020 - Feb 2023
--   Movement is tracked in **hourly** intervals
-:::
-
-::: {.column width="60%"}
-![](Figures/Maps/Movement.png)
-:::
-:::::
-
-## Hunting Events {.smaller}
-
-::::: columns
-::: {.column width="40%"}
--   Contains location and date of hunting events
--   Observations: 720 events
--   **532 Observations with complete timestamp**
-:::
-
-::: {.column width="60%"}
-![](Figures/Maps/Hunts.png)
-:::
-:::::
 
 ## FCM Data {.smaller}
 
@@ -160,10 +132,12 @@ editor: visual
 ::: {.column width="40%"}
 Contains information of **809 faecal samples**, including:
 
--   the FCM level \[ng/g\]
--   the time and location of sampling
--   to which deer the sample belongs
--   when the defecation happened
+-   the FCM level \[ng/g\],
+-   the time and location of sampling,
+-   to which deer the sample belongs,
+-   when the defecation happened.
+
+Samples where taken at irregular time intervals from 2020 to 2022.
 :::
 
 ::: {.column width="60%"}
@@ -171,22 +145,48 @@ Contains information of **809 faecal samples**, including:
 :::
 :::::
 
-## Main Challenges {.smaller}
+## Hunting Events {.smaller}
+
+<!-- Run `HuntEvents %>% na.omit() %>% nrow()` gives 519. Previously I wrote 532, but that included hunting events with missing location. 519 is the number of hunting events that we can use for distance computation. So I'd say we report this number. -->
 
 ::::: columns
 ::: {.column width="40%"}
-**Uncertainty**, due to:
+Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
 
--   Hunting Events are reported as single timestamp
--   Location of Deer reported hourly
--   Collared deer are **not in the proximity** of the reported hunts most of the time
--   **Curse of high dimension**: Locations of Deer are likely to have a big distance to Hunting Events in one dimension (two spatial, one temporal)
+-   **519** hunting events have complete location and time information.
 :::
 
 ::: {.column width="60%"}
-![](Figures/Maps/deer_vs_hunts.png)
+![](Figures/Maps/Hunts.png)
 :::
 :::::
+
+## Movement Data {.smaller}
+
+```{=html}
+<!-- ::::: columns ::: {.column width="40%"} -   Contains the location of the **40** collared deer -   Period: Feb 2020 - Feb 2023 -   Movement is tracked in **hourly** intervals :::  ::: {.column width="60%"} ![](Figures/Maps/Movement.png) ::: ::::: -->
+```
+
+-   Contains the location of the **40** collared deer from Feb. 2020 to Feb. 2023
+-   Movement is tracked at **hourly** intervals
+
+## Limited Data, Large Uncertainty {.smaller}
+
+<!-- Baisu: Two dimensions (time and space) is not "high dimension." -->
+
+::::: columns
+::: {.column width="40%"}
+-   Hunting events are single points in time and space.
+-   Deer locations at hourly intervals $\Rightarrow$ exact distances unknown $\Rightarrow$ approximate needed, **large uncertainty**!
+-   Each deer only encountered few hunting events.
+:::
+
+::: {.column width="60%"}
+![](Figures/Maps/4_deer_vs_hunts.png)
+:::
+:::::
+
+##  {.smaller}
 
 ## Distance Approximation {.smaller}
 
@@ -196,36 +196,32 @@ Deer location at the time of hunting event is approximated by linear interpolati
 
 ## Relevant Hunting Events {.smaller}
 
-To identify relevant Hunting Events respective to a given FCM Sample, we introduce **three selection parameters**:
-
--   **Gut retention time (GRT) target** \[hours\]: Target Delay between Stress Event and Defecation
--   **Gut retention time (GRT) thresholds** \[hours\]: maximum temporal Distance between respective Deer and Hunting Event, with the Minimum beeing Zero
--   **Distance threshold** \[km\]: Maximum spatial Distance between respective Deer and potential Hunting Event
-
-## The Most Relevant Hunting Event {.smaller}
-
-Among the relevant hunting events, the **most relevant** one is defined by one of the three introduced **proximity criteria**:
-
--   the closest in time to GRT = 19 hours ("**closest in time**")
--   the closest in space ("**nearest**")
--   the one with the "highest **score**"
-
-## Illustration {.smaller}
-
 ::::: columns
-<!-- left column -->
-
-::: {.column width="60%"}
-![](Figures/relevant_hunts.svg){fig-align="center" width="630" height="630"}
-:::
-
-<!-- right column -->
-
 ::: {.column width="40%"}
 A hunting event is considered **relevant** to a FCM sample, if
 
--   the time difference between experiencing stress (hunting) and defecation is between the GRT thresholds, and
--   the distance between the deer and the hunting event is $\leq$ distance threshold.
+-   the time difference between hunting and defecation is between the **gut retention time (GRT) thresholds**, and
+-   the distance between the deer and the hunting event is $\leq$ **distance threshold**.
+:::
+
+::: {.column width="60%"}
+![](Figures/relevant_hunts0.svg){fig-align="center" width="630" height="630"}
+:::
+:::::
+
+## The Most Relevant Hunting Event {.smaller}
+
+::::: columns
+::: {.column width="40%"}
+Among the relevant hunting events, the **most relevant** one is defined by one the three proximity criteria:
+
+-   **closest in time** (to the GRT target of 19 hours),
+-   **nearest** (smallest spatial distance),
+-   highest **score**.
+:::
+
+::: {.column width="60%"}
+![](Figures/relevant_hunts1.svg){fig-align="center" width="630" height="630"}
 :::
 :::::
 
@@ -528,9 +524,9 @@ kable(model_results, format = "html", digits = 3)
 ## Conclusion
 
 ::: incremental
--   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels
--   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection
--   With more datapoints, the uncertainty will likely shrink
+-   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels.
+-   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection.
+-   With more datapoints, the uncertainty will likely shrink.
 :::
 
 <!-- ## Conclusion -->
