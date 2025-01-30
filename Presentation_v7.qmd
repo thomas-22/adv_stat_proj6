@@ -84,12 +84,12 @@ editor: visual
 
 ## Research Questions
 
-::: incremental
-
+:::: incremental
 ::: incremental
 -   What is the effect of temporal and spatial distance on FCM levels?
 -   Does the time between defecation event and sample collection effect FCM levels?
 :::
+::::
 
 ## Approach
 
@@ -257,8 +257,7 @@ S(d, t) \propto \begin{cases}
 \frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{N}(\mu, \sigma^2) &|t \leq \mu \\
 \frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{Laplace}(\mu, b) &|t > \mu
 \end{cases}
-$$ where:
-$$ where:
+$$ where: \$\$ where:
 
 $$
 \begin{align*}
@@ -271,7 +270,6 @@ $$
 ## The Scoring Function {.smaller}
 
 The marginal effects of **distance** and **elapsed time since challenge** on the score:
-
 
 ```{r}
 library(ggplot2)
@@ -317,23 +315,17 @@ plot_tdfiff <- ggplot(tdiff, aes(t, score)) +
 
 <!-- ::::: columns -->
 
-
 <!-- ::: {.column width="50%"} -->
-
 
 <!-- Scores relative to $t$ and $d$ ![](Figures/score_map.jpg) -->
 
-
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
 
-
 <!-- Effect of $t$ on the Score ![](Figures/Timediff_Function_impact_curve.jpg) -->
 
-
 <!-- ::: -->
-
 
 <!-- ::::: -->
 
@@ -527,7 +519,7 @@ Linear Effects:
 
 ## Conclusion
 
-::: incremental
+:::: incremental
 ::: incremental
 -   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels
 -   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection
@@ -557,3 +549,4 @@ Linear Effects:
 ## FCM Samples and Hunting Events Over Time
 
 ![](Figures/p_fcm_hunt_dates.png){fig-align="center"}
+::::
