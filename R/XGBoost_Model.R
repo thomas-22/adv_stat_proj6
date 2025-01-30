@@ -420,6 +420,29 @@ plot_results <- function(final_model, X_test, y_test,
   return(fig)
 }
 
+plot_predicted_vs_actual <- function(Y_pred, Y_actual, RMSE, Text = "") {
+  
+  # Create the plot title by incorporating the RMSE and any additional text
+  plot_title <- paste("XGBoost: Predicted Average vs Actual ng_g", Text, "RMSE:", round(RMSE, 2))
+  
+  p <- ggplot(data.frame(Actual = Y_actual, Predicted = Y_pred), aes(x = Actual, y = Predicted)) +
+    geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) +
+    xlim(0, 1250) +
+    ylim(0, 1250) +
+    geom_point(size = 1) +
+    geom_abline(slope = 1, intercept = 0, color = "red") +
+    labs(
+      title = plot_title,
+      x = "Actual",
+      y = "Predicted"
+    ) +
+    theme_light() +
+    coord_fixed(ratio = 1)
+  
+  return(p)
+}
+
+
 plot_results_v2 <- function(final_model, X_test, y_test, 
                             rmse_test_final, 
                             gamma_fit_eval_full_mean,
@@ -631,128 +654,9 @@ XGBoost_run_default_pipeline <- function(data_cleanedup,
   list(
     final_model  = final_model,
     comparisons  = comparisons,
-    plotly_fig   = plotly_fig
-  )
-}
-
-# -------------------------------------
-# TRANSFORMED PIPELINE
-# -------------------------------------
-XGBoost_run_transformed_pipeline <- function(data_cleanedup,
-                                             covariables = c("TimeDiff_T", "Distance_T"),
-                                             tune = TRUE,
-                                             model_path = "Models/final_xgboost_model_transformed_X.rds",
-                                             max_iterations = 10) {
-  # 1) Create your transformed covariates
-  data_cleanedup$TimeDiff_T <- transform_time_diff_lognormal(
-    data_cleanedup$TimeDiff, meanlog = log(32), sdlog = 0.7
-  )
-  data_cleanedup$Distance_T <- 1 / (data_cleanedup$Distance^2)
-  
-  # 2) Prepare data
-  prepared_data_v2 <- prepare_data(data_cleanedup, covariables = covariables)
-  
-  # Extract your train/test splits & data matrices
-  X_train_v2 <- prepared_data_v2$X_train
-  y_train_v2 <- prepared_data_v2$y_train
-  X_test_v2  <- prepared_data_v2$X_test
-  y_test_v2  <- prepared_data_v2$y_test
-  X_full_v2  <- prepared_data_v2$X_full
-  y_full_v2  <- prepared_data_v2$y_full
-  train_data_v2 <- prepared_data_v2$train_data
-  test_data_v2  <- prepared_data_v2$test_data
-  
-  cat("Transformed data preparation complete.\n")
-  
-  # Initialize variables to store best parameters and nrounds
-  best_params_v2 <- NULL
-  best_nrounds_v2 <- NULL
-  
-  # 3) Tune or load model
-  if (tune) {
-    tuning_results_v2 <- tune_xgboost(
-      X_train = X_train_v2, 
-      y_train = y_train_v2, 
-      X_test  = X_test_v2, 
-      y_test  = y_test_v2,
-      best_params = list(
-        max_depth = 6,
-        eta = 0.1734111,
-        gamma = 5.907800,
-        subsample = 0.6074106,
-        colsample_bytree = 1,
-        min_child_weight = 4.798780
-      ),
-      initialize_tuning = FALSE,
-      max_iterations = max_iterations,
-      rmse_converge_tolerance = 1
-    )
-    
-    best_params_v2 <- tuning_results_v2$params
-    best_nrounds_v2 <- tuning_results_v2$nrounds
-    
-    # 4) Train final model on full data
-    final_model_v2 <- xgboost(
-      params = best_params_v2,
-      data = X_full_v2,
-      label = y_full_v2,
-      nrounds = best_nrounds_v2,
-      verbose = 1
-    )
-    
-    # 5) Save both model AND best_params and best_nrounds in one RDS
-    model_and_params_v2 <- list(
-      final_model = final_model_v2,
-      best_params = best_params_v2,
-      best_nrounds = best_nrounds_v2
-    )
-    saveRDS(model_and_params_v2, model_path)
-    cat("Saved transformed final model + params to:", model_path, "\n")
-    
-  } else {
-    # Load pre-trained transformed model and its params
-    loaded_obj_v2 <- readRDS(model_path)
-    final_model_v2 <- loaded_obj_v2$final_model
-    best_params_v2 <- loaded_obj_v2$best_params
-    best_nrounds_v2 <- loaded_obj_v2$best_nrounds
-    cat("Loaded pre-trained transformed model from:", model_path, "\n")
-  }
-  
-  # 4) Evaluate gamma baseline
-  gamma_fit_eval_full_v2 <- evaluate_gamma_fit(train_data_v2, train_data_v2, "ng_g", num_iterations = 1000)
-  gamma_fit_eval_train_v2 <- evaluate_gamma_fit(train_data_v2, test_data_v2, "ng_g", num_iterations = 1000)
-  
-  # 5) Compare baselines & permutations
-  comparisons_v2 <- compare_baselines(
-    final_model          = final_model_v2,
-    X_test               = X_test_v2,
-    y_test               = y_test_v2,
-    X_full               = X_full_v2,
-    y_full               = y_full_v2,
-    gamma_fit_eval_full  = gamma_fit_eval_full_v2,
-    gamma_fit_eval_train = gamma_fit_eval_train_v2,
-    best_params          = best_params_v2,
-    best_nrounds         = best_nrounds_v2
-  )
-  
-  cat("Final Transformed Model RMSE on Test:", comparisons_v2$rmse_test_final, "\n")
-  
-  # 6) Plot results
-  plotly_fig_v2 <- plot_results_v2(
-    final_model            = final_model_v2,
-    X_test                 = X_test_v2,
-    y_test                 = y_test_v2,
-    rmse_test_final        = comparisons_v2$rmse_test_final,
-    gamma_fit_eval_full_mean = comparisons_v2$gamma_fit_rmse_full,
-    upper_difftime         = max(data_cleanedup$TimeDiff_T),
-    upper_distance         = max(data_cleanedup$Distance_T),
-    data_cleanedup         = data_cleanedup
-  )
-  
-  list(
-    final_model_v2 = final_model_v2,
-    comparisons_v2 = comparisons_v2,
-    plotly_fig_v2  = plotly_fig_v2
+    plotly_fig   = plotly_fig,
+    X_full = X_full,
+    predictions_full = predict(final_model, X_full)
   )
 }
 
@@ -762,7 +666,7 @@ XGBoost_run_transformed_pipeline <- function(data_cleanedup,
 # Wrapper Function to get a good run
 # -------------------------------------
 
-# Wrapper function to run the pipeline multiple times
+# Wrapper function to run the pipeline multiple times and aggregate results
 run_multiple_xgboost_pipelines_aggregated <- function(data_cleanedup,
                                                       covariables = c("TimeDiff", "Distance"),
                                                       tune = TRUE,
@@ -779,15 +683,19 @@ run_multiple_xgboost_pipelines_aggregated <- function(data_cleanedup,
   # Initialize a list to store results
   results_list <- vector("list", num_runs)
   
-  # Vector to store RMSEs for comparison
+  # Vectors to store metrics
   rmse_values <- numeric(num_runs)
-  
-  # Initialize lists to store other metrics if needed
   gamma_rmse_full <- numeric(num_runs)
   gamma_rmse_train <- numeric(num_runs)
   mean_rmse_test_random <- numeric(num_runs)
   mean_rmse_full_random <- numeric(num_runs)
   fm_trainedon_permute_data_test_rmse <- numeric(num_runs)
+  
+  # Initialize lists to store predictions from each run
+  predictions_full_list <- vector("list", num_runs)  # For full dataset predictions
+  
+  # Initialize a variable to store full set covariables
+  full_covariables <- NULL
   
   cat("Starting", num_runs, "runs of XGBoost pipeline with aggregated results...\n")
   
@@ -821,6 +729,21 @@ run_multiple_xgboost_pipelines_aggregated <- function(data_cleanedup,
     fm_trainedon_permute_data_test_rmse[i] <- result$comparisons$fm_trainedon_permute_data_test_rmse
     
     cat("Run", i, "RMSE on Test:", rmse_values[i], "\n")
+    
+    # Extract and store the full dataset predictions
+    predictions_full_list[[i]] <- result$predictions_full #COMES FROM PIPELINE
+    
+    # Store full dataset covariables from the first run
+    if (i == 1) {
+      full_covariables <- result$X_full
+    } else {
+      # Optional: Verify that covariables are consistent across runs
+      current_full_covariables <- result$full_data[, covariables, drop = FALSE]
+      if (!all(full_covariables == current_full_covariables)) {
+        warning(paste("Covariables in run", i, "do not match those in the first run."))
+        # Handle inconsistencies as needed
+      }
+    }
   }
   
   # Aggregate the results
@@ -851,11 +774,36 @@ run_multiple_xgboost_pipelines_aggregated <- function(data_cleanedup,
     cat("All run results saved to:", all_runs_path, "\n")
   }
   
-  # Return the aggregated results along with all run details
+  # Compute the average predicted values across all runs for the full dataset
+  # Ensure that predictions_full_list has no NULLs and all elements have the same length
+  if (any(sapply(predictions_full_list, is.null))) {
+    stop("One or more runs did not return predictions_full.")
+  }
+  
+  # Ensure all predictions have the same length
+  pred_lengths <- sapply(predictions_full_list, length)
+  if (length(unique(pred_lengths)) != 1) {
+    stop("Not all predictions_full have the same length.")
+  }
+  
+  predictions_full_matrix <- do.call(cbind, predictions_full_list)
+  Y_pred_full <- rowMeans(predictions_full_matrix)
+  
+  # Combine Y_pred_full with full dataset covariates
+  XXX <- data.frame(Y_pred = Y_pred_full, full_covariables)
+  
+  # # Optionally, save the average predictions to files
+  # average_predictions_full_path <- paste0(base_model_path, "_average_predictions_full.rds")
+  # saveRDS(Y_pred_full_df, average_predictions_full_path)
+  # cat("Average full dataset predictions with covariates saved to:", average_predictions_full_path, "\n")
+  
+  # Return the aggregated results along with all run details and average predictions with covariates
   return(list(
     aggregated_results = aggregated_results,
     all_runs = results_list,
-    rmse_values = rmse_values
-  ))
+    rmse_values = rmse_values,
+    XXX = XXX))    # Average predictions for full set with covariates
 }
+
+
 

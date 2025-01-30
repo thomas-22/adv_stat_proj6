@@ -1,0 +1,4 @@
+"Model","objective","eval_metric","max_depth","eta","gamma","subsample","colsample_bytree","min_child_weight","Mean_Test_RMSE","SD_Test_RMSE","Number_of_Observations"
+"last","reg:squarederror","rmse",4,0.1635,5.85,0.5918,0.9921,4.64,161.346542133354,27.8634989045149,149
+"nearest","reg:squarederror","rmse",4,0.1661,5.893,0.5956,0.9832,4.747,151.12878019313,23.092573217374,147
+"score","reg:squarederror","rmse",5,0.1744,5.834,0.6063,1,4.766,150.231962597858,16.7745071740817,223

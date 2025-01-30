@@ -85,7 +85,8 @@ editor: visual
 :::::
 
 ## Research Questions
-:::{.incremental}
+
+::: incremental
 -   What is the effect of temporal and spatial distance on FCM levels?
 -   Does the time between defecation event and sample collection effect FCM levels?
 :::
@@ -170,7 +171,7 @@ Contains information of **809 faecal samples**, including:
 :::
 :::::
 
-## Main Challenges{.smaller}
+## Main Challenges {.smaller}
 
 ::::: columns
 ::: {.column width="40%"}
@@ -180,7 +181,6 @@ Contains information of **809 faecal samples**, including:
 -   Location of Deer reported hourly
 -   Collared deer are **not in the proximity** of the reported hunts most of the time
 -   **Curse of high dimension**: Locations of Deer are likely to have a big distance to Hunting Events in one dimension (two spatial, one temporal)
-
 :::
 
 ::: {.column width="60%"}
@@ -238,8 +238,7 @@ S(d, t) \propto \begin{cases}
 \frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{N}(\mu, \sigma^2) &|t \leq \mu \\
 \frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{Laplace}(\mu, b) &|t > \mu
 \end{cases}
-$$ 
-where: 
+$$ where:
 
 $$
 \begin{align*}
@@ -252,6 +251,7 @@ $$
 ## The Scoring Function {.smaller}
 
 The marginal effects of **distance** and **elapsed time since challenge** on the score:
+
 ```{r}
 library(ggplot2)
 library(patchwork)
@@ -292,17 +292,22 @@ plot_tdfiff <- ggplot(tdiff, aes(t, score)) +
 (plot_dist | plot_tdfiff) + plot_layout(axes = "collect")
 ```
 
-
 <!-- ## The Scoring Function {.smaller} -->
 
 <!-- ::::: columns -->
+
 <!-- ::: {.column width="50%"} -->
+
 <!-- Scores relative to $t$ and $d$ ![](Figures/score_map.jpg) -->
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
+
 <!-- Effect of $t$ on the Score ![](Figures/Timediff_Function_impact_curve.jpg) -->
+
 <!-- ::: -->
+
 <!-- ::::: -->
 
 ## The Fused Data
@@ -367,9 +372,50 @@ We chose two different approaches to Modelling:
 A.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
 B.  **Statistical Modelling**: a model, which helps to understand the effects of our covariables, here a **General Additive Mixed Model**
 
-## A. XGBoost {.smaller}
+## A. XGBoost Setup {.smaller}
 
-### TBD
+1.  **Split Data:** We divide each dataset into training and testing sets. (75% - 25%)
+2.  **Set Hyperparameter Grid:** We define a range of values for starting hyperparameters.
+3.  **Optimize Hyperparameters:** We then perform a grid search to evaluate different hyperparameter combinations -\> Iteratively readjust the grid based on test RMSE until convergence.
+4.  **Train Final Model on Full Data:** We then use the optimized parameters to train on the entire dataset. We prevent overfitting by optimal n_rounds to keep Test-RMSE low
+5.  **Aggregate Results:** Run the pipeline 20 times with different seeds. Use the average RMSE and average predictions to evaluate the overall performance.
+
+We do this seperately for all 3 datasets (nearest, closest and score).
+
+\newpage
+
+## A. XGBoost Result {.smaller}
+
+```{r}
+library(dplyr)
+library(knitr)
+library(kableExtra)
+data <- read.csv("Models/xgboost_models_overview.csv")
+
+
+knitr::kable(data, 
+             format = "html", 
+             align = c("c", "c", "c", "c", "c", "c", "c", "c", "c", "c", "c", "c"), 
+             col.names = c("Model",
+                           "Objective",
+                           "Evaluation Metric",
+                           "Max Depth",
+                           "Eta",
+                           "Gamma",
+                           "Subsample",
+                           "Colsample Bytree",
+                           "Min Child Weight",
+                           "Mean Test RMSE",
+                           "SD Test RMSE",
+                           "Number of Observations")) %>%
+  kable_styling(font_size = 16, full_width = FALSE, position = "center")
+```
+
+![](Figures/XGBoost_PredVSActual_last.jpg){width="300"}
+
+![](Figures/XGBoost_PredVSActual_nearest.jpg){fig-align="center" width="300"}
+
+![](Figures/XGBoost_PredVSActual_score.jpg){fig-align="right" width="300"}
 
 ## B. Generalized Additive Mixed Model {.smaller}
 
@@ -454,7 +500,7 @@ Linear Effects:
 
 ## Conclusion
 
-:::{.incremental}
+::: incremental
 -   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels
 -   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection
 -   With more datapoints, the uncertainty will likely shrink

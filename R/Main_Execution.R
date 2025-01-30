@@ -811,6 +811,9 @@ final_pipeline_results_last <- run_multiple_xgboost_pipelines_aggregated(
   num_runs = 20,
   seed = NULL
 )
+final_pipeline_results_last$XXX$Y_real <- res$data[[1]]$ng_g
+# calculate_rmse(actual = final_pipeline_results_last$XXX$Y_real,
+#                predicted = final_pipeline_results_last$XXX$Y_pred)
 
 
 # NEAREST Dataset
@@ -823,6 +826,9 @@ final_pipeline_results_nearest <- run_multiple_xgboost_pipelines_aggregated(
   num_runs = 20,
   seed = NULL
 )
+final_pipeline_results_nearest$XXX$Y_real <- res$data[[2]]$ng_g
+# calculate_rmse(actual = final_pipeline_results_nearest$XXX$Y_real,
+#                predicted = final_pipeline_results_nearest$XXX$Y_pred)
 
 # SCORE Dataset
 final_pipeline_results_score <- run_multiple_xgboost_pipelines_aggregated(
@@ -834,6 +840,9 @@ final_pipeline_results_score <- run_multiple_xgboost_pipelines_aggregated(
   num_runs = 20,
   seed = NULL
 )
+final_pipeline_results_score$XXX$Y_real <- res$data[[3]]$ng_g
+# calculate_rmse(actual = final_pipeline_results_score$XXX$Y_real,
+#                predicted = final_pipeline_results_score$XXX$Y_pred)
 
 
 
@@ -860,6 +869,67 @@ xgboost_summary <- data.frame(
     nrow(res$data[[3]])
   )
 )
+
+
+
+
+plot_xgboost_last <- plot_predicted_vs_actual(Y_pred = final_pipeline_results_last$XXX$Y_pred,
+                                              Y_actual = final_pipeline_results_last$XXX$Y_real,
+                                              RMSE = aggregated_last$mean_rmse_test_final,
+                                              Text = "\nCriterion: Closest to 19hrs TimeDiff,")
+
+plot_xgboost_nearest <- plot_predicted_vs_actual(Y_pred = final_pipeline_results_nearest$XXX$Y_pred,
+                                                 Y_actual = final_pipeline_results_nearest$XXX$Y_real,
+                                                 RMSE = aggregated_nearest$mean_rmse_test_final,
+                                                 Text = "\nCriterion: Closest in space,")
+
+plot_xgboost_score <- plot_predicted_vs_actual(Y_pred = final_pipeline_results_score$XXX$Y_pred,
+                                               Y_actual = final_pipeline_results_score$XXX$Y_real,
+                                               RMSE = aggregated_score$mean_rmse_test_final,
+                                               Text = "\nCriterion: Highest Score > 250,")
+
+ggsave(filename = "Figures/XGBoost_PredVSActual_last.jpg", plot = plot_xgboost_last, device = "jpeg",
+       width = 6, height = 6, units = "in", dpi = 500)
+ggsave(filename = "Figures/XGBoost_PredVSActual_nearest.jpg", plot = plot_xgboost_nearest, device = "jpeg",
+       width = 6, height = 6, units = "in", dpi = 500)
+ggsave(filename = "Figures/XGBoost_PredVSActual_score.jpg", plot = plot_xgboost_score, device = "jpeg",
+       width = 6, height = 6, units = "in", dpi = 500)
+
+
+model_last <- read_rds("Models/best_xgboost_model_LAST.rds")$best_params
+model_nearest <- read_rds("Models/best_xgboost_model_NEAREST.rds")$best_params
+model_score <- read_rds("Models/best_xgboost_model_SCORE.rds")$best_params
+
+
+models_list <- list(
+  Last = model_last,
+  Nearest = model_nearest,
+  Score = model_score
+)
+models_df <- bind_rows(models_list, .id = "Model")
+models_df <- models_df %>%
+  mutate(
+    eta = round(eta, 4),
+    gamma = round(gamma, 3),
+    subsample = round(subsample, 4),
+    colsample_bytree = round(colsample_bytree, 4),
+    min_child_weight = round(min_child_weight, 3)
+  )
+models_df
+xgboost_summary_df <- bind_rows(xgboost_summary)
+
+
+xgboost_summary_df$Dataset <- tolower(xgboost_summary_df$Dataset)
+models_df$Model <- tolower(models_df$Model)
+
+combined_df <- merge(models_df, xgboost_summary_df, by.x = "Model", by.y = "Dataset")
+
+
+
+
+write.csv(combined_df, "Models/xgboost_models_overview.csv", row.names = FALSE)
+
+
 #-----------------------------------
 
 
