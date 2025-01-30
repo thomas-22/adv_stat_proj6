@@ -87,6 +87,8 @@ editor: visual
 ## Research Questions
 
 ::: incremental
+
+::: incremental
 -   What is the effect of temporal and spatial distance on FCM levels?
 -   Does the time between defecation event and sample collection effect FCM levels?
 :::
@@ -121,10 +123,47 @@ editor: visual
 ## The Datasets
 
 ::: incremental
--   **Movement Data**
--   **Hunting Events**
 -   **FCM Data**
+-   **Hunting Events**
+-   **Movement Data**
 :::
+
+## FCM Data {.smaller}
+
+::::: columns
+::: {.column width="40%"}
+Contains information of **809 faecal samples**, including:
+
+-   the FCM level \[ng/g\],
+-   the time and location of sampling,
+-   to which deer the sample belongs,
+-   when the defecation happened.
+
+Samples where taken at irregular time intervals from 2020 to 2022.
+:::
+
+::: {.column width="60%"}
+![](Figures/Maps/Samples.png)
+:::
+:::::
+
+## Hunting Events {.smaller}
+
+```{=html}
+<!-- Run `HuntEvents %>% na.omit() %>% nrow()` gives 519. Previously I wrote 532, but that included hunting events with missing location. 519 is the number of hunting events that we can use for distance computation. So I'd say we just report this number. -->
+```
+
+::::: columns
+::: {.column width="40%"}
+Contains location and time of $\geq$ 700 hunting events
+
+-   **519** hunting events have complete location and time information.
+:::
+
+::: {.column width="60%"}
+![](Figures/Maps/Hunts.png)
+:::
+:::::
 
 ## Movement Data {.smaller}
 
@@ -140,51 +179,24 @@ editor: visual
 :::
 :::::
 
-## Hunting Events {.smaller}
-
-::::: columns
-::: {.column width="40%"}
--   Contains location and date of hunting events
--   Observations: 720 events
--   **532 Observations with complete timestamp**
-:::
-
-::: {.column width="60%"}
-![](Figures/Maps/Hunts.png)
-:::
-:::::
-
-## FCM Data {.smaller}
-
-::::: columns
-::: {.column width="40%"}
-Contains information of **809 faecal samples**, including:
-
--   the FCM level \[ng/g\]
--   the time and location of sampling
--   to which deer the sample belongs
--   when the defecation happened
-:::
-
-::: {.column width="60%"}
-![](Figures/Maps/Samples.png)
-:::
-:::::
-
 ## Main Challenges {.smaller}
+
+```{=html}
+<!-- Baisu: In two dimensions (time and space), there is no "curse of dimensionality." This is just the wrong term. -->
+```
 
 ::::: columns
 ::: {.column width="40%"}
 **Uncertainty**, due to:
 
 -   Hunting Events are reported as single timestamp
+
 -   Location of Deer reported hourly
 -   Collared deer are **not in the proximity** of the reported hunts most of the time
--   **Curse of high dimension**: Locations of Deer are likely to have a big distance to Hunting Events in one dimension (two spatial, one temporal)
 :::
 
 ::: {.column width="60%"}
-![](Figures/Maps/deer_vs_hunts.png)
+![](Figures/Maps/4_deer_vs_hunts.png)
 :::
 :::::
 
@@ -239,6 +251,7 @@ S(d, t) \propto \begin{cases}
 \frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{Laplace}(\mu, b) &|t > \mu
 \end{cases}
 $$ where:
+$$ where:
 
 $$
 \begin{align*}
@@ -251,6 +264,7 @@ $$
 ## The Scoring Function {.smaller}
 
 The marginal effects of **distance** and **elapsed time since challenge** on the score:
+
 
 ```{r}
 library(ggplot2)
@@ -296,17 +310,23 @@ plot_tdfiff <- ggplot(tdiff, aes(t, score)) +
 
 <!-- ::::: columns -->
 
+
 <!-- ::: {.column width="50%"} -->
+
 
 <!-- Scores relative to $t$ and $d$ ![](Figures/score_map.jpg) -->
 
+
 <!-- ::: -->
 
 <!-- ::: {.column width="50%"} -->
 
+
 <!-- Effect of $t$ on the Score ![](Figures/Timediff_Function_impact_curve.jpg) -->
 
+
 <!-- ::: -->
+
 
 <!-- ::::: -->
 
@@ -500,6 +520,7 @@ Linear Effects:
 
 ## Conclusion
 
+::: incremental
 ::: incremental
 -   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels
 -   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection
