@@ -101,7 +101,7 @@ p_fcm_dates <- FCMStress %>%
   mutate(nSamples = n(), .by = "DefecDate") %>%
   ggplot() +
   geom_segment(aes(x = DefecDate, y = nSamples, yend = 0), color = "purple") +
-  labs(x = "", y = "Count", title = "Daily count of FCM samples") +
+  labs(x = "", y = "Count", title = "Daily Count of FCM Samples") +
   scale_x_date(
     date_breaks = "6 months",
     limits = as_date(c("2020-04-01", "2022-12-01"))
@@ -112,7 +112,7 @@ p_hunt_dates <- HuntEvents %>% na.omit() %>%
   mutate(nHunts = n(), .by = "HuntDate") %>%
   ggplot() +
   geom_segment(aes(x = HuntDate, y = nHunts, yend = 0), color = "red") +
-  labs(x = "", y = "Count", title = "Daily count of hunting events") +
+  labs(x = "", y = "Count", title = "Daily Count of Hunting Events") +
   scale_x_date(
     date_breaks = "6 months",
     limits = as_date(c("2020-04-01", "2022-12-01"))
