@@ -26,7 +26,7 @@ set.seed(42)
 Movement_sf_selected <- Movement %>%
   dplyr::select(Sender.ID, x_, y_) %>%
   # select randomly 3 deer to prevent overplotting
-  filter(Sender.ID %in% sample(unique(Movement$Sender.ID), 4)) %>%
+  filter(Sender.ID %in% sample(unique(Movement$Sender.ID), 3)) %>%
   st_as_sf(coords = c("x_", "y_"), crs = 25833)
 
 HuntEvents_sf <- HuntEvents %>%
@@ -147,7 +147,7 @@ plot_4_deer_vs_hunts <- ggplot() +
   annotation_scale(location = "bl") +
   # annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
   ggtitle("Hunting Events and 3 Random Deer") +
-  theme(strip.text = element_blank())
+  theme(strip.text = element_blank(), legend.position = "bottom")
 
 ggsave(plot = plot_overview, filename = "Figures/Maps/overview.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_Movement, filename = "Figures/Maps/Movement.png", device = "png", width = 6, height = 6)

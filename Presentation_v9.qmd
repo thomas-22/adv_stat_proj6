@@ -15,7 +15,7 @@ format:
     smaller: false
     footer: "Effect of Hunting on Red Deer" 
     logo: "Resources/LMU_Logo.svg"
-editor: visual 
+editor: source 
 ---
 
 # Agenda
@@ -205,6 +205,11 @@ A hunting event is considered **relevant** to a faecal sample, if
 
 -   the time difference between hunting and defecation is between the **gut retention time (GRT) thresholds**, and
 -   the distance between the deer and the hunting event is $\leq$ **distance threshold**.
+
+In this presentation:
+
+-   GRT thresholds = (0, 36) hours,
+-   distance threshold = 10 hours.
 :::
 
 ::: {.column width="60%"}
@@ -309,25 +314,26 @@ plot_tdfiff <- ggplot(tdiff, aes(t, score)) +
 
 <!-- ::::: -->
 
-## The Fused Data
+## The Fused Data {.smaller}
 
-### Finish Datasets
+<!-- ### Finish Datasets -->
 
-We suggest three different Datasets for Modelling
+We report models fitted on the following datasets:
 
 ```{r}
 library(dplyr)
 data <- readRDS("Data/Datasets.RDS")
 
 data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
+data <- dplyr::select(data, set, filter_criterion, unique_deers, obs)
 
 knitr::kable(data, 
              format = "html", 
-             align = c("r", "r", "r", "r", "r", "r"), 
+             align = c("r", "r", "r", "r"), 
              col.names = c("DataSet",
-                           "GRT low",
-                           "GRT high",
-                           "Distance Threshold",
+                          #  "GRT low",
+                          #  "GRT high",
+                          #  "Distance Threshold",
                            "Proximity Criterion",
                            "Deers",
                            "Observations")) %>%
@@ -389,7 +395,7 @@ B.  **Machine Learning**: a model, which focuses on prediction, in our case a **
     \end{eqnarray}
     $$
 
-    $f_1, f_2, f_3, f_4$ are penalised cubic regression splines.
+    $f_1, f_2, f_3, f_4$ are penalized cubic regression splines.
 
 ## A. Generalized Additive Mixed Model {.smaller}
 
@@ -399,13 +405,27 @@ B.  **Machine Learning**: a model, which focuses on prediction, in our case a **
 
     -   across all datasets.
 
--   Instability with respect to estimation methods.
+-   Instability with respect to estimation methods. GCV tends to yield more wiggly smooth effects than REML.
 
 -   Estimation of random intercepts is sensitive to choice of dataset.
 
--   Consistent pattern of sample delay effect
+-   Consistent pattern of sample delay effect: larger sample delay $\Rightarrow$ lower FCM level, as expected.
 
-    -   Larger sample delay $\Rightarrow$ lower FCM level, as expected.
+<!-- ## A. Generalized Additive Mixed Model {.smaller}
+
+### Example:
+
+High uncertainty, strong penalty.
+
+![](Figures/p_Distance_reml.png){fig-align="center"}
+
+## A. Generalized Additive Mixed Model {.smaller}
+
+## A. Generalized Additive Mixed Model {.smaller}
+
+Result 2: Instability with respect to estimation methods. Example:
+
+![](Figures/p_instable.png){fig-align="center"} -->
 
 ## B. XGBoost {.smaller}
 
@@ -434,68 +454,6 @@ knitr::kable(data_filtered,
                            "Number of Observations")) %>%
   kable_styling(font_size = 16, full_width = FALSE, position = "center")
 ```
-
-````{=html}
-<!-- ### Closest in time
-
-::::: columns
-::: {.column width="35%"}
-<img src="Figures/p_L_TimeDiff.png" width="500"/>
-:::
-
-::: {.column width="65%"}
-```{r}
-library(knitr)
-coeff_closest <- readRDS("Data/coeff_closest.RDS")
-kable(coeff_closest, format = "html", digits = 3)
-```
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### Nearest
-
-::::: columns
-::: {.column width="35%"}
-<img src="Figures/p_N_Distance.png" width="500"/>
-:::
-
-::: {.column width="65%"}
-```{r}
-library(knitr)
-coeff_nearest <- readRDS("Data/coeff_nearest.RDS")
-kable(coeff_nearest, format = "html", digits = 3)
-```
-:::
-:::::
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### Highest score
-
-::::: columns
-::: {.column width="35%"}
-<img src="Figures/p_S_SampleDelay.png" width="600"/>
-:::
-
-::: {.column width="65%"}
-```{r}
-library(knitr)
-coeff_highest <- readRDS("Data/coeff_highest.RDS")
-kable(coeff_highest, format = "html", digits = 3)
-```
-:::
-:::::
-
-## B Results {.smaller}
-
-```{r}
-library(knitr)
-model_results <- readRDS("Data/model_result.RDS")
-kable(model_results, format = "html", digits = 3)
-``` -->
-````
 
 # Agenda
 
@@ -536,27 +494,33 @@ kable(model_results, format = "html", digits = 3)
 
 # Appendix
 
-## GAMM Marginal Predictions (REML / closest in time)
+## GAMM Adjusted Predictions
+### REML / Closest in Time
 
 ![](Figures/p_L_reml.png)
 
-## GAMM Marginal Predictions (REML / nearest)
+## GAMM Adjusted Predictions
+### REML / Nearest
 
 ![](Figures/p_N_reml.png)
 
-## GAMM Marginal Predictions (REML / highest score)
+## GAMM Adjusted Predictions
+### REML / Highest Score
 
 ![](Figures/p_S_reml.png)
 
-## GAMM Marginal Predictions (GCV / closest in time)
+## GAMM Adjusted Predictions
+### GCV / Closest in Time
 
 ![](Figures/p_L.png)
 
-## GAMM Marginal Predictions (GCV / nearest)
+## GAMM Adjusted Predictions
+### GCV / Nearest
 
 ![](Figures/p_N.png)
 
-## GAMM Marginal Predictions (GCV / highest score)
+## GAMM Adjusted Predictions
+### GCV / Highest Score
 
 ![](Figures/p_S.png)
 

@@ -286,13 +286,8 @@ ggsave("Figures/p_L_diagnostic.png", p_L_diagnostic, width = 7, height = 7, dpi 
 p_L_TimeDiff <- ggpredict(m_L, terms = c("TimeDiff")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
-  theme_minimal(base_size = 16) +
-  theme(
-    axis.title.x = element_text(size = 25),  
-    axis.title.y = element_text(size = 25),  
-    axis.text.x = element_text(size = 18),   
-    axis.text.y = element_text(size = 18))
-ggsave("Figures/p_L_TimeDiff.png", p_L_TimeDiff, width = 15, height = 15, dpi = 300)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 # Predicted values of the FCM level for a "typical deer", i.e.,
 # the other covariates are held constant at their mean values or reference category
 # (hasCalf = FALSE).
@@ -302,12 +297,14 @@ ggsave("Figures/p_L_TimeDiff.png", p_L_TimeDiff, width = 15, height = 15, dpi = 
 p_L_Distance <- ggpredict(m_L, terms = c("Distance")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
-  theme_bw(base_size = 16)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 
 p_L_SampleDelay <- ggpredict(m_L, terms = c("SampleDelay")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
-  theme_bw(base_size = 16)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 
 p_L_Day <- ggpredict(m_L, terms = c("DefecDay"), title = "") %>%
   plot() +
@@ -316,7 +313,7 @@ p_L_Day <- ggpredict(m_L, terms = c("DefecDay"), title = "") %>%
 
 p_L <- p_L_TimeDiff + p_L_Distance + p_L_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
-ggsave("Figures/p_L.png", p_L, width = 15, height = 15, dpi = 300)
+ggsave("Figures/p_L.png", p_L, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 
@@ -326,39 +323,36 @@ m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"), method = "GCV.Cp")
 draw(m_N, select = 5)
 
 p_N_diagnostic <- appraise(m_N, method = "simulate") & theme_bw()
-ggsave("Figures/p_N_diagnostic.png", p_N_diagnostic, width = 7, height = 7, dpi = 300)
+# ggsave("Figures/p_N_diagnostic.png", p_N_diagnostic, width = 7, height = 7, dpi = 300)
 
 p_N_TimeDiff <- ggpredict(m_N, terms = c("TimeDiff")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
-  theme_minimal(base_size = 16) 
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 
 p_N_Distance <- ggpredict(m_N, terms = c("Distance")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
-  theme_minimal(base_size = 16) + 
-  theme(
-    axis.title.x = element_text(size = 25),  
-    axis.title.y = element_text(size = 25),  
-    axis.text.x = element_text(size = 18),   
-    axis.text.y = element_text(size = 18))
-ggsave("Figures/p_N_Distance.png", p_N_Distance, width = 15, height = 15, dpi = 300)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
+# ggsave("Figures/p_N_Distance.png", p_N_Distance, width = 12, height = 6, dpi = 300)
 
 p_N_SampleDelay <- ggpredict(m_N, terms = c("SampleDelay")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
-  theme_bw(base_size = 16)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 
 p_N_Day <- ggpredict(m_N, terms = c("DefecDay"), title = "") %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
-  theme_minimal(base_size = 16)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 
 p_N <- p_N_TimeDiff + p_N_Distance + p_N_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
 ggsave("Figures/p_N.png", p_N, width = 12, height = 6, dpi = 300)
-
-# -------------------------
 
 # -------------------------
 # Score
@@ -372,22 +366,20 @@ ggsave("Figures/p_S_diagnostic.png", p_S_diagnostic, width = 7, height = 7, dpi 
 p_S_TimeDiff <- ggpredict(m_S, terms = c("TimeDiff")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
-  theme_bw(base_size = 16)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 
 p_S_Distance <- ggpredict(m_S, terms = c("Distance")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
-  theme_bw(base_size = 16)
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 
 p_S_SampleDelay <- ggpredict(m_S, terms = c("SampleDelay")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
-  theme_minimal(base_size = 16) +
-  theme(
-    axis.title.x = element_text(size = 25),  
-    axis.title.y = element_text(size = 25),  
-    axis.text.x = element_text(size = 18),   
-    axis.text.y = element_text(size = 18))
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600))
 ggsave("Figures/p_S_SampleDelay.png", p_S_SampleDelay, width = 15, height =15, dpi = 300)
 
 p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
@@ -398,6 +390,244 @@ p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
 p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
 ggsave("Figures/p_S.png", p_S, width = 12, height = 6, dpi = 300)
+
+# -------------------------
+# Examples for presentation
+
+m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"), method = "GCV.Cp")
+m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"), method = "GCV.Cp")
+m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"), method = "GCV.Cp")
+
+draw(m_L)
+draw(m_N)
+draw(m_S)
+
+m_L_reml <- fit_gamm(res$data[[1]], family = Gamma(link = "log"), method = "REML")
+m_N_reml <- fit_gamm(res$data[[2]], family = Gamma(link = "log"), method = "REML")
+m_S_reml <- fit_gamm(res$data[[3]], family = Gamma(link = "log"), method = "REML")
+
+draw(m_L_reml)
+draw(m_N_reml)
+draw(m_S_reml)
+
+# -------------------------
+p_L_TimeDiff_gcv <- ggpredict(m_L, terms = c("TimeDiff")) %>% plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 500)) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_TimeDiff_gcv <- ggpredict(m_N, terms = c("TimeDiff")) %>% plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 500)) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_TimeDiff_gcv <- ggpredict(m_S, terms = c("TimeDiff")) %>% plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 500)) +
+  ggtitle("Dataset \"Highest Score\"")
+ggsave(
+  "Figures/p_TimeDiff_gcv.png",
+  p_L_TimeDiff_gcv + p_N_TimeDiff_gcv + p_S_TimeDiff_gcv +
+    plot_annotation(
+      caption = "Method = GCV",
+      theme = theme(text = element_text(size = 16))
+    ) +
+    plot_layout(axis_titles = "collect"),
+  width = 12, height = 6, dpi = 300
+)
+
+p_L_SampleDelay_reml <- ggpredict(m_L_reml, terms = c("SampleDelay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600)) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_SampleDelay_reml <- ggpredict(m_N_reml, terms = c("SampleDelay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600)) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_SampleDelay_reml <- ggpredict(m_S_reml, terms = c("SampleDelay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(150, 600)) +
+  ggtitle("Dataset \"Highest Score\"")
+p_SampleDelay_reml <- p_L_SampleDelay_reml + p_N_SampleDelay_reml + p_S_SampleDelay_reml +
+  plot_annotation(
+    caption = "Method = REML",
+    theme = theme(text = element_text(size = 16))
+  ) +
+  plot_layout(axis_titles = "collect")
+ggsave(
+  "Figures/p_SampleDelay_reml.png",
+  p_SampleDelay_reml,
+  width = 12, height = 6, dpi = 300
+)
+
+p_L_TimeDiff_reml <- ggpredict(m_L_reml, terms = c("TimeDiff")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_TimeDiff_reml <- ggpredict(m_N_reml, terms = c("TimeDiff")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_TimeDiff_reml <- ggpredict(m_S_reml, terms = c("TimeDiff")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Highest Score\"")
+p_TimeDiff_reml <- p_L_TimeDiff_reml + p_N_TimeDiff_reml + p_S_TimeDiff_reml +
+  plot_annotation(
+    caption = "Method = REML",
+    theme = theme(text = element_text(size = 16))
+  ) +
+  plot_layout(axis_titles = "collect")
+ggsave(
+  "Figures/p_TimeDiff_reml.png",
+  p_TimeDiff_reml,
+  width = 12, height = 6, dpi = 300
+)
+
+p_L_Distance_reml <- ggpredict(m_L_reml, terms = c("Distance")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_Distance_reml <- ggpredict(m_N_reml, terms = c("Distance")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_Distance_reml <- ggpredict(m_S_reml, terms = c("Distance")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Highest Score\"")
+p_Distance_reml <- p_L_Distance_reml + p_N_Distance_reml + p_S_Distance_reml +
+  plot_annotation(
+    caption = "Method = REML",
+    theme = theme(text = element_text(size = 16))
+  ) +
+  plot_layout(axis_titles = "collect")
+ggsave(
+  "Figures/p_Distance_reml.png",
+  p_Distance_reml,
+  width = 12, height = 6, dpi = 300
+)
+
+p_L_DefecDay_reml <- ggpredict(m_L_reml, terms = c("DefecDay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_DefecDay_reml <- ggpredict(m_N_reml, terms = c("DefecDay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_DefecDay_reml <- ggpredict(m_S_reml, terms = c("DefecDay")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Highest Score\"")
+ggsave(
+  "Figures/p_DefecDay_reml.png",
+  p_L_DefecDay_reml + p_N_DefecDay_reml + p_S_DefecDay_reml +
+    plot_annotation(
+      caption = "Method = REML",
+      theme = theme(text = element_text(size = 16))
+    ) +
+    plot_layout(axis_titles = "collect"),
+  width = 12, height = 6, dpi = 300
+)
+
+p_L_OtherHunts_reml <- ggpredict(m_L_reml, terms = c("NumOtherHunts")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Number of other relevant hunting events", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_OtherHunts_reml <- ggpredict(m_N_reml, terms = c("NumOtherHunts")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Number of other relevant hunting events", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_OtherHunts_reml <- ggpredict(m_S_reml, terms = c("NumOtherHunts")) %>%
+  plot() +
+  labs(y = "FCM level [ng/g]", x = "Number of other relevant hunting events", title = "") +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(200, 500)) +
+  ggtitle("Dataset \"Highest Score\"")
+ggsave(
+  "Figures/p_OtherHunts_reml.png",
+  p_L_OtherHunts_reml + p_N_OtherHunts_reml + p_S_OtherHunts_reml +
+    plot_annotation(
+      caption = "Method = REML",
+      theme = theme(text = element_text(size = 16))
+    ) +
+    plot_layout(axis_titles = "collect"),
+  width = 12, height = 6, dpi = 300
+)
+
+# Fixed effect table
+table_otherHunts <- data.frame(
+  Method = c("REML", "REML", "REML", "GCV", "GCV", "GCV"),
+  Dataset = rep(c("Closest in Time", "Nearest", "Highest Score"), 2),
+  Estimate = c(
+    coef(m_L_reml)["NumOtherHunts"],
+    coef(m_N_reml)["NumOtherHunts"],
+    coef(m_S_reml)["NumOtherHunts"],
+    coef(m_L)["NumOtherHunts"],
+    coef(m_N)["NumOtherHunts"],
+    coef(m_S)["NumOtherHunts"]
+  ),
+  `exp(Estimate)` = c(
+    exp(coef(m_L_reml)["NumOtherHunts"]),
+    exp(coef(m_N_reml)["NumOtherHunts"]),
+    exp(coef(m_S_reml)["NumOtherHunts"]),
+    exp(coef(m_L)["NumOtherHunts"]),
+    exp(coef(m_N)["NumOtherHunts"]),
+    exp(coef(m_S)["NumOtherHunts"])
+  ),
+  `Standard error` = c(
+    summary(m_L_reml)$p.table["NumOtherHunts", "Std. Error"],
+    summary(m_N_reml)$p.table["NumOtherHunts", "Std. Error"],
+    summary(m_S_reml)$p.table["NumOtherHunts", "Std. Error"],
+    summary(m_L)$p.table["NumOtherHunts", "Std. Error"],
+    summary(m_N)$p.table["NumOtherHunts", "Std. Error"],
+    summary(m_S)$p.table["NumOtherHunts", "Std. Error"]
+  )
+)
+saveRDS(table_otherHunts, "Data/table_otherHunts.RDS")
+
+# Instability w.r.t. estimation methods
+p_L_TimeDiff_gcv_instable <- p_L_TimeDiff_gcv +
+  ggtitle("Dataset \"Closest in Time\"; Method = GCV")
+p_L_TimeDiff_reml_instable <- p_L_TimeDiff_reml +
+  ggtitle("Dataset \"Closest in Time\"; Method = REML")
+ggsave(
+  "Figures/p_instable.png",
+  p_L_TimeDiff_gcv_instable + p_L_TimeDiff_reml_instable +
+    plot_layout(axis_titles = "collect"),
+  width = 12, height = 6, dpi = 300
+)
+
 
 # -------------------------
 # Save coefficient tables
