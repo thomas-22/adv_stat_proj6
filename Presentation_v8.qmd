@@ -415,7 +415,7 @@ kable(coeff_closest, format = "html", digits = 3)
 
 ## B Generalized Additive Mixed Model {.smaller}
 
-### nearest
+### Nearest
 
 :::: columns
 ::: {.column width="35%"}
