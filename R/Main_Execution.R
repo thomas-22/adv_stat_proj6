@@ -878,7 +878,7 @@ final_pipeline_results_last <- run_multiple_xgboost_pipelines_aggregated(
   tune = FALSE,
   base_model_path = "Models/best_xgboost_model_LAST",
   max_iterations = 1,
-  num_runs = 20,
+  num_runs = 40,
   seed = NULL
 )
 final_pipeline_results_last$XXX$Y_real <- res$data[[1]]$ng_g
@@ -893,7 +893,7 @@ final_pipeline_results_nearest <- run_multiple_xgboost_pipelines_aggregated(
   tune = FALSE,
   base_model_path = "Models/best_xgboost_model_NEAREST",
   max_iterations = 1,
-  num_runs = 20,
+  num_runs = 40,
   seed = NULL
 )
 final_pipeline_results_nearest$XXX$Y_real <- res$data[[2]]$ng_g
@@ -907,7 +907,7 @@ final_pipeline_results_score <- run_multiple_xgboost_pipelines_aggregated(
   tune = FALSE,
   base_model_path = "Models/best_xgboost_model_SCORE",
   max_iterations = 1,
-  num_runs = 20,
+  num_runs = 40,
   seed = NULL
 )
 final_pipeline_results_score$XXX$Y_real <- res$data[[3]]$ng_g
@@ -923,12 +923,12 @@ aggregated_score <- final_pipeline_results_score$aggregated_results
 # Compile the XGBoost Summary Table
 xgboost_summary <- data.frame(
   Dataset = c("last", "nearest", "score"),
-  Mean_Test_RMSE = c(
+  Mean_RMSE = c(
     aggregated_last$mean_rmse_test_final,
     aggregated_nearest$mean_rmse_test_final,
     aggregated_score$mean_rmse_test_final
   ),
-  SD_Test_RMSE = c(
+  SD_RMSE = c(
     aggregated_last$sd_rmse_test_final,
     aggregated_nearest$sd_rmse_test_final,
     aggregated_score$sd_rmse_test_final
@@ -946,17 +946,17 @@ xgboost_summary <- data.frame(
 plot_xgboost_last <- plot_predicted_vs_actual(Y_pred = final_pipeline_results_last$XXX$Y_pred,
                                               Y_actual = final_pipeline_results_last$XXX$Y_real,
                                               RMSE = aggregated_last$mean_rmse_test_final,
-                                              Text = "\nCriterion: Closest to 19hrs TimeDiff,")
+                                              Text = "\nDataset: Last,")
 
 plot_xgboost_nearest <- plot_predicted_vs_actual(Y_pred = final_pipeline_results_nearest$XXX$Y_pred,
                                                  Y_actual = final_pipeline_results_nearest$XXX$Y_real,
                                                  RMSE = aggregated_nearest$mean_rmse_test_final,
-                                                 Text = "\nCriterion: Closest in space,")
+                                                 Text = "\nDataset: Closest,")
 
 plot_xgboost_score <- plot_predicted_vs_actual(Y_pred = final_pipeline_results_score$XXX$Y_pred,
                                                Y_actual = final_pipeline_results_score$XXX$Y_real,
                                                RMSE = aggregated_score$mean_rmse_test_final,
-                                               Text = "\nCriterion: Highest Score > 250,")
+                                               Text = "\nDataset: Score,")
 
 ggsave(filename = "Figures/XGBoost_PredVSActual_last.jpg", plot = plot_xgboost_last, device = "jpeg",
        width = 6, height = 6, units = "in", dpi = 500)

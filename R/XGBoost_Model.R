@@ -15,8 +15,8 @@ library(reshape2)
 # -------------------------
 prepare_data <- function(data, covariables = c("TimeDiff", "Distance"), ratio = 0.75) {
   # Filter non-positive values if needed
-  modeling_data <- data %>%
-    filter(ng_g > 0)
+  modeling_data <- data #%>%
+    #filter(ng_g > 0)
   
   # Train/test split
   split <- sample.split(modeling_data$ng_g, SplitRatio = ratio)
@@ -334,25 +334,25 @@ plot_results <- function(final_model, X_test, y_test,
                          upper_difftime, 
                          upper_distance, 
                          data_cleanedup) {
-  # Prediction for plotting
-  y_pred <- predict(final_model, X_test)
-  
-  # Scatter + LM line plot
-  p <- ggplot(data.frame(Actual = y_test, Predicted = y_pred), aes(x = Actual, y = Predicted)) +
-    geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) +
-    xlim(0, 1500) +
-    ylim(0, 1500) +
-    geom_point(size = 1) +
-    geom_abline(slope = 1, intercept = 0, color = "red") +
-    labs(title = "XGBoost: Predicted vs Actual, ng_g, After Grid Search Tuning", 
-         x = "Actual", y = "Predicted") +
-    theme_light() +
-    coord_fixed(ratio = 1) +
-    annotate("text", x = 500, y = Inf, hjust = 1, vjust = 2.5,
-             label = paste("RMSE:", round(rmse_test_final, 2)),
-             color = "black", size = 3.5)
-  
-  print(p)
+  # # Prediction for plotting
+  # y_pred <- predict(final_model, X_test)
+  # 
+  # # Scatter + LM line plot
+  # p <- ggplot(data.frame(Actual = y_test, Predicted = y_pred), aes(x = Actual, y = Predicted)) +
+  #   geom_smooth(method = "lm", color = "blue", linewidth = 0.5, se = FALSE) +
+  #   xlim(0, 1500) +
+  #   ylim(0, 1500) +
+  #   geom_point(size = 1) +
+  #   geom_abline(slope = 1, intercept = 0, color = "red") +
+  #   labs(title = "XGBoost: Predicted vs Actual, ng_g, After Grid Search Tuning", 
+  #        x = "Actual", y = "Predicted") +
+  #   theme_light() +
+  #   coord_fixed(ratio = 1) +
+  #   annotate("text", x = 500, y = Inf, hjust = 1, vjust = 2.5,
+  #            label = paste("RMSE:", round(rmse_test_final, 2)),
+  #            color = "black", size = 3.5)
+  # 
+  # # print(p)
   
   # 3D surface plot
   time_diff <- seq(1, upper_difftime, length.out = 1500)
