@@ -48,7 +48,7 @@ editor: visual
 
 -   Hunting activities have a numerical effect on animal populations.
 -   Additionally, hunting can have non-lethal effects.
--   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park
+-   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park.
 
 <!-- Putting "last" in parentheses, because it is mentioned in the project description, but we know only looking at the last hunting event is not good enough. (We have "nearest" and "score" as well.) -->
 
@@ -167,6 +167,23 @@ Contains information of **809 faecal samples**, including
 
 ::: {.column width="60%"}
 ![](Figures/Maps/Samples.png)
+:::
+:::::
+
+## Main Challenges{.smaller}
+
+::::: columns
+::: {.column width="40%"}
+**Uncertainty**, due to:
+
+-   Hunting Events are reported as single timestamp
+-   Location of Deer reported hourly
+-   Collared deer are **not in the proximity** of the reported hunts most of the time
+
+:::
+
+::: {.column width="60%"}
+![](Figures/Maps/deer_vs_hunts.png)
 :::
 :::::
 
