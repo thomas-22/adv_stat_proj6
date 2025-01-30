@@ -410,12 +410,17 @@ knitr::kable(data,
                            "Number of Observations")) %>%
   kable_styling(font_size = 16, full_width = FALSE, position = "center")
 ```
-
-![](Figures/XGBoost_PredVSActual_last.jpg){fig-align="left" width="300"}
-
-![](Figures/XGBoost_PredVSActual_nearest.jpg){fig-align="center" width="300"}
-
-![](Figures/XGBoost_PredVSActual_score.jpg){fig-align="right" width="300"}
+::::: columns
+::: {.column width="33%"}
+<img src="Figures/XGBoost_PredVSActual_last.jpg" width="500"/>
+:::
+::: {.column width="33%"}
+<img src="Figures/XGBoost_PredVSActual_nearest.jpg" width="500"/>
+:::
+::: {.column width="34%"}
+<img src="Figures/XGBoost_PredVSActual_score.jpg" width="500"/>
+:::
+:::::
 
 ## B. Generalized Additive Mixed Model {.smaller}
 
