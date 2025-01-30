@@ -109,7 +109,7 @@ plot_samples <- ggplot() +
   geom_sf(data = FCM_Samples_sf, color = "purple", alpha = .5) +
   annotation_scale(location = "bl") +
   annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
-  ggtitle("FCM Sample Locations")
+  ggtitle("Faecal Sample Locations")
 
 plot_deer_vs_hunts <- ggplot() +
   geom_sf(data = Park$osm_multipolygons[1, ]) +
