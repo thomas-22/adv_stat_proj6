@@ -376,8 +376,8 @@ B.  **Statistical Modelling**: a model, which helps to understand the effects of
 
 1.  **Split Data:** We divide each dataset into training and testing sets. (75% - 25%)
 2.  **Set Hyperparameter Grid:** We define a range of values for starting hyperparameters.
-3.  **Optimize Hyperparameters:** We then perform a grid search to evaluate different hyperparameter combinations -\> Iteratively readjust the grid based on test RMSE until convergence.
-4.  **Train Final Model on Full Data:** We then use the optimized parameters to train on the entire dataset. We prevent overfitting by optimal n_rounds to keep Test-RMSE low
+3.  **Optimize Hyperparameters:** We then perform a grid search to evaluate different hyperparameter combinations -\> Iteratively readjust the grid based on test RMSE until convergence. Uses CV
+4.  **Train Final Model on Full Data:** We then use the optimized parameters to train on the entire dataset. We prevent overfitting by optimal n_rounds to keep Test-RMSE low.
 5.  **Aggregate Results:** Run the pipeline 20 times with different seeds. Use the average RMSE and average predictions to evaluate the overall performance.
 
 We do this seperately for all 3 datasets (nearest, closest and score).
