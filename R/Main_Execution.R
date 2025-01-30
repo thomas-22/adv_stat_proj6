@@ -201,6 +201,32 @@ fit_gamm <- function(data, family = gaussian()) {
   )
 }
 
+# -------------------------
+
+extract_coefficients <- function(model, label) {
+  coeff_summary <- summary(model)$p.table
+  data.frame(
+    Dataset = label,
+    Term = rownames(coeff_summary),
+    Estimate = coeff_summary[, "Estimate"],
+    Std_Error = coeff_summary[, "Std. Error"],
+    stringsAsFactors = FALSE
+  )
+}
+
+coeff_closest <- extract_coefficients(m_L, "Closest in Time")
+coeff_nearest <- extract_coefficients(m_N, "Nearest")
+coeff_highest <- extract_coefficients(m_S, "Highest Score")
+
+rownames(coeff_closest) <- NULL
+rownames(coeff_nearest) <- NULL
+rownames(coeff_highest) <- NULL
+saveRDS(coeff_closest, "Data/coeff_closest.RDS")
+saveRDS(coeff_nearest, "Data/coeff_nearest.RDS")
+saveRDS(coeff_highest, "Data/coeff_highest.RDS")
+
+# -------------------------
+
 # fit_gamm_interact <- function(data, family = gaussian()) {
 #   gam(
 #     ng_g ~ te(TimeDiff, Distance, k = 20) +
@@ -233,7 +259,13 @@ ggsave("Figures/p_L_diagnostic.png", p_L_diagnostic, width = 7, height = 7, dpi 
 p_L_TimeDiff <- ggpredict(m_L, terms = c("TimeDiff")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
-  theme_bw(base_size = 16)
+  theme_minimal(base_size = 16) +
+  theme(
+    axis.title.x = element_text(size = 25),  
+    axis.title.y = element_text(size = 25),  
+    axis.text.x = element_text(size = 18),   
+    axis.text.y = element_text(size = 18))
+ggsave("Figures/p_L_TimeDiff.png", p_L_TimeDiff, width = 15, height = 15, dpi = 300)
 # Predicted values of the FCM level for a "typical deer", i.e.,
 # the other covariates are held constant at their mean values or reference category
 # (hasCalf = FALSE).
@@ -257,7 +289,7 @@ p_L_Day <- ggpredict(m_L, terms = c("DefecDay"), title = "") %>%
 
 p_L <- p_L_TimeDiff + p_L_Distance + p_L_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
-ggsave("Figures/p_L.png", p_L, width = 12, height = 6, dpi = 300)
+ggsave("Figures/p_L.png", p_L, width = 15, height = 15, dpi = 300)
 
 # -------------------------
 
@@ -271,12 +303,18 @@ ggsave("Figures/p_N_diagnostic.png", p_N_diagnostic, width = 7, height = 7, dpi 
 p_N_TimeDiff <- ggpredict(m_N, terms = c("TimeDiff")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Time difference [hours]", title = "") +
-  theme_bw(base_size = 16)
+  theme_minimal(base_size = 16) 
 
 p_N_Distance <- ggpredict(m_N, terms = c("Distance")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Distance [km]", title = "") +
-  theme_bw(base_size = 16)
+  theme_minimal(base_size = 16) + 
+  theme(
+    axis.title.x = element_text(size = 25),  
+    axis.title.y = element_text(size = 25),  
+    axis.text.x = element_text(size = 18),   
+    axis.text.y = element_text(size = 18))
+ggsave("Figures/p_N_Distance.png", p_N_Distance, width = 15, height = 15, dpi = 300)
 
 p_N_SampleDelay <- ggpredict(m_N, terms = c("SampleDelay")) %>%
   plot() +
@@ -286,7 +324,7 @@ p_N_SampleDelay <- ggpredict(m_N, terms = c("SampleDelay")) %>%
 p_N_Day <- ggpredict(m_N, terms = c("DefecDay"), title = "") %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Defecation day", title = "") +
-  theme_bw(base_size = 16)
+  theme_minimal(base_size = 16)
 
 p_N <- p_N_TimeDiff + p_N_Distance + p_N_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
@@ -315,7 +353,13 @@ p_S_Distance <- ggpredict(m_S, terms = c("Distance")) %>%
 p_S_SampleDelay <- ggpredict(m_S, terms = c("SampleDelay")) %>%
   plot() +
   labs(y = "FCM level [ng/g]", x = "Sample delay [hours]", title = "") +
-  theme_bw(base_size = 16)
+  theme_minimal(base_size = 16) +
+  theme(
+    axis.title.x = element_text(size = 25),  
+    axis.title.y = element_text(size = 25),  
+    axis.text.x = element_text(size = 18),   
+    axis.text.y = element_text(size = 18))
+ggsave("Figures/p_S_SampleDelay.png", p_S_SampleDelay, width = 15, height =15, dpi = 300)
 
 p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
   plot() +
@@ -325,6 +369,32 @@ p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
 p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
 ggsave("Figures/p_S.png", p_S, width = 12, height = 6, dpi = 300)
+
+# -------------------------
+
+# Create a structured data frame for model results summary
+model_results <- data.frame(
+  Category = c(
+    "Diagnostics", "Diagnostics", "Diagnostics", "Diagnostics",
+    "Random Effects", "Random Effects",
+    "Linear Effects"
+  ),
+  Subcategory = c(
+    "QQ Plot", "Residuals vs Predictor", "Histogram", "Observed vs Fitted",
+    "Time & Space Effects", "Sample Delay",
+    "other hunting events"
+  ),
+  Description = c(
+    "Residuals mostly follow expected distribution",
+    "No major pattern",
+    "Reasonable fit, some variance",
+    "Moderate spread, some unexplained variance",
+    "Weak or inconsistent",
+    "Shows some effect",
+    "No significant impact"
+  )
+)
+saveRDS(model_results, "Data/model_result.RDS")
 
 # -------------------------
 
