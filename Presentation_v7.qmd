@@ -46,9 +46,9 @@ editor: visual
 
 ## Motivation
 
--   Hunting activities have a numerical effect on animal populations.
--   Additionally, hunting can have non-lethal effects.
--   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park.
+-   Hunting activities have a numerical effect on animal populations
+-   Additionally, hunting can have non-lethal effects
+-   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park
 
 <!-- Putting "last" in parentheses, because it is mentioned in the project description, but we know only looking at the last hunting event is not good enough. (We have "nearest" and "score" as well.) -->
 
@@ -56,11 +56,11 @@ editor: visual
 
 ::::: columns
 ::: {.column width="40%"}
--   A deer roams freely in the Bavarian Forest National Park.
--   Its **movement is tracked** by a GPS collar.
--   A **hunting event** happens.
--   After some time, the deer defecates. The **defecation event**.
--   Subsequently, Researchers go to the defecation location and collect a **fecal sample**.
+-   A deer roams freely in the Bavarian Forest National Park
+-   Its **movement is tracked** by a GPS collar
+-   A **hunting event** happens
+-   After some time, the deer defecates. The **defecation event**
+-   Subsequently, Researchers go to the defecation location and collect a **fecal sample**
 :::
 
 ::: {.column width="60%"}
@@ -72,11 +72,11 @@ editor: visual
 
 ::::: columns
 ::: {.column width="50%"}
--   **Faecal Cortisol Metabolites (FCM)** are substances found in feces of animals.
--   The FCM level is used to measure previous stress. Higher Stress $\implies$ Higher FCM level.
--   Stress $\Rightarrow$ secretion of certain hormones $\Rightarrow$ gut retention $\Rightarrow$ FCM.
--   Gut retention time $\approx$ 19 hours.
--   Once defecated, FCM levels **decay over time**.
+-   **Faecal Cortisol Metabolites (FCM)** are substances found in feces of animals
+-   The FCM level is used to measure previous stress. Higher Stress $\implies$ Higher FCM level
+-   Stress $\Rightarrow$ secretion of certain hormones $\Rightarrow$ gut retention $\Rightarrow$ FCM
+-   Gut retention time $\approx$ 19 hours
+-   Once defecated, FCM levels **decay over time**
 :::
 
 ::: {.column width="50%"}
@@ -92,12 +92,12 @@ editor: visual
 
 ## Approach
 
--   Model FCM levels - amongst other covariables - on spatial and temporal distance to hunting activities.
+-   Model FCM levels - amongst other covariables - on spatial and temporal distance to hunting activities
 
 -   **Expectations**:
 
-    -   FCM levels higher when closer in time and space.
-    -   FCM levels lower, the more time passes between defecating and sampling.
+    -   FCM levels higher when closer in time and space
+    -   FCM levels lower, the more time passes between defecating and sampling
 
 # Agenda
 
@@ -157,12 +157,12 @@ editor: visual
 
 ::::: columns
 ::: {.column width="40%"}
-Contains information of **809 faecal samples**, including
+Contains information of **809 faecal samples**, including:
 
--   the FCM level \[ng/g\],
--   the time and location of sampling,
--   to which deer the sample belongs,
--   when the defecation happened.
+-   the FCM level \[ng/g\]
+-   the time and location of sampling
+-   to which deer the sample belongs
+-   when the defecation happened
 :::
 
 ::: {.column width="60%"}
@@ -179,6 +179,7 @@ Contains information of **809 faecal samples**, including
 -   Hunting Events are reported as single timestamp
 -   Location of Deer reported hourly
 -   Collared deer are **not in the proximity** of the reported hunts most of the time
+-   **Curse of high dimension**: Locations of Deer are likely to have a big distance to Hunting Events in one dimension (two spatial, one temporal)
 
 :::
 
@@ -189,7 +190,7 @@ Contains information of **809 faecal samples**, including
 
 ## Distance Approximation {.smaller}
 
-Deer location at the time of hunting event is approximated by linear interpolation.
+Deer location at the time of hunting event is approximated by linear interpolation:
 
 ![](Figures/p_interpolation.png){fig-align="center"}
 
@@ -205,9 +206,9 @@ To identify relevant Hunting Events respective to a given FCM Sample, we introdu
 
 Among the relevant hunting events, the **most relevant** one is defined by one of the three introduced **proximity criteria**:
 
--   the closest in time to GRT = 19 hours ("**closest in time**"),
--   the closest in space ("**nearest**"), or
--   the one with the "highest **score**".
+-   the closest in time to GRT = 19 hours ("**closest in time**")
+-   the closest in space ("**nearest**")
+-   the one with the "highest **score**"
 
 ## Illustration {.smaller}
 
@@ -250,15 +251,59 @@ $$
 
 ## The Scoring Function {.smaller}
 
-::::: columns
-::: {.column width="50%"}
-Scores relative to $t$ and $d$ ![](Figures/score_map.jpg)
-:::
+The marginal effects of **distance** and **elapsed time since challenge** on the score:
+```{r}
+library(ggplot2)
+library(patchwork)
 
-::: {.column width="50%"}
-Effect of $t$ on the Score ![](Figures/Timediff_Function_impact_curve.jpg)
-:::
-:::::
+timediff_evaluation_asym_curve <- function(x, peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1) {
+  ifelse(
+    x <= peak,
+    height * exp(-((x - peak)^2) / (2 * rise_sigma^2)),  # Rising phase (Gaussian)
+    height * exp(-(x - peak) / fall_sigma)              # Falling phase (Exponential decay)
+  )
+}
+
+fun_D <- function(d){
+  1/(d^2)
+}
+
+dist <- data.frame(x = seq(1, 10, length.out = 1000))
+dist$score <- fun_D(dist$x)
+
+tdiff <- data.frame(t = seq(0, 36, length.out = 1000))
+tdiff$score <- timediff_evaluation_asym_curve(tdiff$t)
+
+
+plot_dist <- ggplot(dist, aes(x, score)) +
+  geom_line() +
+  theme_classic() +
+  scale_x_continuous(labels = scales::label_number(suffix = " km")) +
+  labs(x = "Distance", y = "Relative Score") +
+  theme(panel.grid = element_blank())
+
+plot_tdfiff <- ggplot(tdiff, aes(t, score)) +
+  geom_line() +
+  theme_classic() +
+  scale_x_continuous(labels = scales::label_number(suffix = " h")) +
+  labs(x = "Time since challenge", y = "Relative Score") +
+  theme(panel.grid = element_blank())
+
+(plot_dist | plot_tdfiff) + plot_layout(axes = "collect")
+```
+
+
+<!-- ## The Scoring Function {.smaller} -->
+
+<!-- ::::: columns -->
+<!-- ::: {.column width="50%"} -->
+<!-- Scores relative to $t$ and $d$ ![](Figures/score_map.jpg) -->
+<!-- ::: -->
+
+<!-- ::: {.column width="50%"} -->
+<!-- Effect of $t$ on the Score ![](Figures/Timediff_Function_impact_curve.jpg) -->
+<!-- ::: -->
+<!-- ::::: -->
 
 ## The Fused Data
 
@@ -330,9 +375,9 @@ B.  **Statistical Modelling**: a model, which helps to understand the effects of
 
 -   Family: Gamma
 
--   Log link for interpretability.
+-   Log link for interpretability
 
--   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer.
+-   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer
 
 $$
 \begin{eqnarray}
@@ -410,10 +455,9 @@ Linear Effects:
 ## Conclusion
 
 :::{.incremental}
--   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels.
--   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection.
--   With more datapoints, the uncertainty will highly likely shrink.
--   We can see a case of the curse of high dimension.
+-   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels
+-   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection
+-   With more datapoints, the uncertainty will likely shrink
 :::
 
 <!-- ## Conclusion -->
