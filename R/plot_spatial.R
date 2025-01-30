@@ -146,7 +146,7 @@ plot_4_deer_vs_hunts <- ggplot() +
   ) +
   annotation_scale(location = "bl") +
   # annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
-  ggtitle("Hunting Events and 4 Random Deer") +
+  ggtitle("Hunting Events and 3 Random Deer") +
   theme(strip.text = element_blank())
 
 ggsave(plot = plot_overview, filename = "Figures/Maps/overview.png", device = "png", width = 6, height = 6)
@@ -154,6 +154,6 @@ ggsave(plot = plot_Movement, filename = "Figures/Maps/Movement.png", device = "p
 ggsave(plot = plot_Hunts, filename = "Figures/Maps/Hunts.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_samples, filename = "Figures/Maps/Samples.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_deer_vs_hunts, filename = "Figures/Maps/deer_vs_hunts.png", device = "png", width = 6, height = 6)
-ggsave(plot = plot_4_deer_vs_hunts, filename = "Figures/Maps/4_deer_vs_hunts.png", device = "png", width = 6, height = 6)
+ggsave(plot = plot_4_deer_vs_hunts, filename = "Figures/Maps/4_deer_vs_hunts.png", device = "png", width = 8, height = 5)
 
 
