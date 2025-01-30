@@ -2,16 +2,16 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="1311.5917"
-   height="1041.8756"
-   viewBox="0 0 352.87765 280.31179"
+   width="1421.589"
+   height="1058.9039"
+   viewBox="0 0 382.47192 284.89318"
    version="1.1"
    id="svg1"
    inkscape:export-filename="illustration_new.png"
    inkscape:export-xdpi="144"
    inkscape:export-ydpi="144"
    inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
-   sodipodi:docname="relevant_hunts.svg"
+   sodipodi:docname="relevant_hunts0.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -29,8 +29,8 @@
      inkscape:document-units="px"
      inkscape:export-bgcolor="#ffffffff"
      inkscape:zoom="0.64"
-     inkscape:cx="545.3125"
-     inkscape:cy="553.90625"
+     inkscape:cx="664.84375"
+     inkscape:cy="610.9375"
      inkscape:current-layer="layer1"
      showborder="false"
      borderlayer="false" />
@@ -72,19 +72,29 @@
        x2="147.75101"
        y2="19.193064"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(11.703507,3.5090729)" />
+       gradientTransform="translate(11.165415,-1.072318)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#swatch16"
+       id="linearGradient18-3"
+       x1="63.638718"
+       y1="19.193064"
+       x2="147.75101"
+       y2="19.193064"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(11.165412,-1.0723104)" />
   </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-46.635335,5.2772237)">
+     transform="translate(-46.097243,9.8586146)">
     <path
-       style="fill:#000000;stroke:#000000;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;marker-end:url(#Triangle);paint-order:fill markers stroke"
-       d="M 97.194617,259.24551 H 348.22085"
+       style="fill:#000000;stroke:#000000;stroke-width:1.34523;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#Triangle);paint-order:fill markers stroke"
+       d="M 97.21591,259.2455 H 377.31267"
        id="path1" />
     <path
-       style="fill:#000000;stroke:#000000;stroke-width:0.538091;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#Triangle);paint-order:fill markers stroke"
+       style="fill:#000000;stroke:#000000;stroke-width:1.34523;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#Triangle);paint-order:fill markers stroke"
        d="M 97.194617,259.24551 V 6.5279997"
        id="path2" />
     <ellipse
@@ -95,38 +105,52 @@
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff0000;stroke:#1a1a1a;stroke-width:1.64441;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:none;stroke-width:1.64440521;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        id="path3-3"
-       cx="230.52904"
-       cy="213.25833"
+       cx="227.10065"
+       cy="185.73962"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
        style="fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
        id="path3-3-2-2"
-       cx="235.28304"
-       cy="99.128967"
+       cx="227.10065"
+       cy="117.03183"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff0000;stroke:#000000;stroke-width:1.64441;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:none;stroke-width:1.64440521;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        id="path3-3-2-9"
-       cx="150.43567"
-       cy="200.10074"
+       cx="168.18134"
+       cy="156.14583"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
        style="fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
        id="path3-3-2-9-4"
-       cx="331.2168"
-       cy="87.238159"
+       cx="339.20407"
+       cy="127.75336"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
-       style="fill:#ff0000;stroke:#1a1a1a;stroke-width:1.64441;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       style="fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
+       id="path3-3-2-9-4-3"
+       cx="342.65936"
+       cy="34.920444"
+       rx="7.5737772"
+       ry="7.624804" />
+    <ellipse
+       style="fill:#ff0000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
+       id="path3-3-2-9-4-6"
+       cx="346.77786"
+       cy="245.26761"
+       rx="7.5737772"
+       ry="7.624804" />
+    <ellipse
+       style="fill:#ff0000;stroke:none;stroke-width:1.64440521;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
        id="path3-3-0"
-       cx="122.29723"
-       cy="131.56029"
+       cx="124.98769"
+       cy="115.95564"
        rx="7.5737772"
        ry="7.624804" />
     <ellipse
@@ -137,100 +161,95 @@
        rx="7.5737772"
        ry="7.624804" />
     <path
-       style="fill:#ff6600;fill-opacity:1;stroke:#ff6600;stroke-width:1.07618;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:2.15236, 4.30474;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       d="M 345.37484,223.10514 H 97.371117"
+       style="fill:#ff6600;fill-opacity:1;stroke:#ff6600;stroke-width:1.34523;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:2.69045, 5.38093;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 371.18511,176.50301 H 97.377"
        id="path6-3" />
     <path
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.538091;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:1.07618, 2.15237;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       d="M 276.26667,259.24551 V 11.241785"
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.34523;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:2.69045, 5.38092;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 323.61859,259.24551 V 11.241785"
        id="path6-3-1" />
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#1a1a1a;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
-       x="71.841812"
-       y="2.9164677"
+       x="97.824471"
+       y="-1.6495677"
        id="text3"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
          id="tspan3"
          style="fill:#1a1a1a;stroke-width:0.352999"
-         x="71.841812"
-         y="2.9164677">TimeDiff</tspan></text>
+         x="97.824471"
+         y="-1.6495677">Time difference</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#1a1a1a;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;paint-order:fill markers stroke"
-       x="378.336"
+       x="407.48987"
        y="262.19223"
        id="text4"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
          id="tspan4"
          style="stroke-width:0.352999"
-         x="378.336"
+         x="407.48987"
          y="262.19223">Distance</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#ff7f2a;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
        x="71.026718"
-       y="225.15135"
+       y="180.10338"
        id="text5"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
          style="fill:#ff7f2a;stroke:none;stroke-width:0.352999"
          x="71.026718"
-         y="225.15135"
+         y="180.10338"
          id="tspan6">19 hours</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
-       x="277.21259"
-       y="273.95087"
+       x="324.7226"
+       y="271.26944"
        id="text5-9"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
          style="fill:#000000;stroke:none;stroke-width:0.352999"
-         x="277.21259"
-         y="273.95087"
+         x="324.7226"
+         y="271.26944"
          id="tspan6-4">distance threshold</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
-       x="71.636047"
+       x="71.096146"
        y="64.66301"
        id="text5-0"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
          style="fill:#000000;stroke:none;stroke-width:0.352999"
-         x="71.636047"
+         x="71.096146"
          y="64.66301"
          id="tspan16">GRT high</tspan><tspan
          sodipodi:role="line"
          style="fill:#000000;stroke:none;stroke-width:0.352999"
-         x="71.636047"
+         x="71.096146"
          y="78.028633"
          id="tspan5">threshold</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#1a1a1a;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
-       x="344.89557"
-       y="150.10803"
-       id="text5-8-7"
+       style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:1;paint-order:fill markers stroke"
+       x="71.096153"
+       y="220.86499"
+       id="text5-0-5"
        transform="scale(0.99664827,1.003363)"><tspan
          sodipodi:role="line"
-         style="fill:#1a1a1a;stroke:none;stroke-width:0.352999"
-         x="344.89557"
-         y="150.10803"
-         id="tspan1">Number of other</tspan><tspan
+         style="fill:#000000;stroke:none;stroke-width:0.352999"
+         x="71.096153"
+         y="220.86499"
+         id="tspan16-4">GRT low</tspan><tspan
          sodipodi:role="line"
-         style="fill:#1a1a1a;stroke:none;stroke-width:0.352999"
-         x="344.89557"
-         y="163.47366"
-         id="tspan2">relevant hunting</tspan><tspan
-         sodipodi:role="line"
-         style="fill:#1a1a1a;stroke:none;stroke-width:0.352999"
-         x="344.89557"
-         y="176.83928"
-         id="tspan7">event = 3</tspan></text>
+         style="fill:#000000;stroke:none;stroke-width:0.352999"
+         x="71.096153"
+         y="234.23062"
+         id="tspan5-5">threshold</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10.6925px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#008080;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:2.11799, 2.11799;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
@@ -256,56 +275,12 @@
          y="22.733803"
          id="tspan12">Hunting events</tspan></text>
     <path
-       style="fill:url(#linearGradient18);fill-opacity:1;stroke:#1a1a1a;stroke-width:0.538091;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:1.61428, 1.61428;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       d="M 345.19836,67.024707 H 97.194617"
+       style="fill:url(#linearGradient18);fill-opacity:1;stroke:#1a1a1a;stroke-width:1.34523;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:4.0357, 4.0357;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 371.48162,66.604323 H 97.194617"
        id="path14" />
-    <text
-       xml:space="preserve"
-       style="font-size:11.4658px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="121.85495"
-       y="119.59586"
-       id="text18"><tspan
-         sodipodi:role="line"
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="121.85495"
-         y="119.59586"
-         id="tspan11">Nearest</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:11.4658px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="149.99338"
-       y="174.99557"
-       id="text18-20"><tspan
-         sodipodi:role="line"
-         id="tspan18-0"
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="149.99338"
-         y="174.99557">Highest</tspan><tspan
-         sodipodi:role="line"
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="149.99338"
-         y="189.32782"
-         id="tspan8">score</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:11.4658px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
-       x="230.29111"
-       y="172.19089"
-       id="text18-2"><tspan
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="230.29111"
-         y="172.19089"
-         sodipodi:role="line"
-         id="tspan13">Closest</tspan><tspan
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="230.29111"
-         y="186.52313"
-         sodipodi:role="line"
-         id="tspan21">in time</tspan><tspan
-         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.352999;stroke-dasharray:none"
-         x="230.29111"
-         y="200.85539"
-         sodipodi:role="line"
-         id="tspan22">(to 19 hours)</tspan></text>
+    <path
+       style="fill:url(#linearGradient18-3);fill-opacity:1;stroke:#1a1a1a;stroke-width:1.34523;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:4.0357, 4.0357;stroke-dashoffset:0;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 371.51014,228.66403 H 97.194617"
+       id="path14-7" />
   </g>
 </svg>

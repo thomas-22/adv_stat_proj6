@@ -252,32 +252,6 @@ fit_gamm <- function(data, family = gaussian()) {
   )
 }
 
-# -------------------------
-
-extract_coefficients <- function(model, label) {
-  coeff_summary <- summary(model)$p.table
-  data.frame(
-    Dataset = label,
-    Term = rownames(coeff_summary),
-    Estimate = coeff_summary[, "Estimate"],
-    Std_Error = coeff_summary[, "Std. Error"],
-    stringsAsFactors = FALSE
-  )
-}
-
-coeff_closest <- extract_coefficients(m_L, "Closest in Time")
-coeff_nearest <- extract_coefficients(m_N, "Nearest")
-coeff_highest <- extract_coefficients(m_S, "Highest Score")
-
-rownames(coeff_closest) <- NULL
-rownames(coeff_nearest) <- NULL
-rownames(coeff_highest) <- NULL
-saveRDS(coeff_closest, "Data/coeff_closest.RDS")
-saveRDS(coeff_nearest, "Data/coeff_nearest.RDS")
-saveRDS(coeff_highest, "Data/coeff_highest.RDS")
-
-# -------------------------
-
 # fit_gamm_interact <- function(data, family = gaussian()) {
 #   gam(
 #     ng_g ~ te(TimeDiff, Distance, k = 20) +
@@ -420,6 +394,33 @@ p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
 p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
 ggsave("Figures/p_S.png", p_S, width = 12, height = 6, dpi = 300)
+
+# -------------------------
+# Save coefficient tables
+
+extract_coefficients <- function(model, label) {
+  coeff_summary <- summary(model)$p.table
+  data.frame(
+    Dataset = label,
+    Term = rownames(coeff_summary),
+    Estimate = coeff_summary[, "Estimate"],
+    Std_Error = coeff_summary[, "Std. Error"],
+    stringsAsFactors = FALSE
+  )
+}
+
+coeff_closest <- extract_coefficients(m_L, "Closest in Time")
+coeff_nearest <- extract_coefficients(m_N, "Nearest")
+coeff_highest <- extract_coefficients(m_S, "Highest Score")
+
+rownames(coeff_closest) <- NULL
+rownames(coeff_nearest) <- NULL
+rownames(coeff_highest) <- NULL
+saveRDS(coeff_closest, "Data/coeff_closest.RDS")
+saveRDS(coeff_nearest, "Data/coeff_nearest.RDS")
+saveRDS(coeff_highest, "Data/coeff_highest.RDS")
+
+# -------------------------
 
 # -------------------------
 
