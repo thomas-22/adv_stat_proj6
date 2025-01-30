@@ -151,8 +151,7 @@ Samples where taken at irregular time intervals from 2020 to 2022.
 
 ::::: columns
 ::: {.column width="40%"}
-Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
-
+-   Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
 -   **519** hunting events have complete location and time information.
 :::
 
@@ -163,30 +162,22 @@ Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
 
 ## Movement Data {.smaller}
 
-```{=html}
 <!-- ::::: columns ::: {.column width="40%"} -   Contains the location of the **40** collared deer -   Period: Feb 2020 - Feb 2023 -   Movement is tracked in **hourly** intervals :::  ::: {.column width="60%"} ![](Figures/Maps/Movement.png) ::: ::::: -->
-```
 
--   Contains the location of the **40** collared deer from Feb. 2020 to Feb. 2023
--   Movement is tracked at **hourly** intervals
+-   Contains the location of the **40** collared deer from Feb. 2020 to Feb. 2023.
+-   Movement is tracked at **hourly** intervals.
 
 ## Limited Data, Large Uncertainty {.smaller}
 
 <!-- Baisu: Two dimensions (time and space) is not "high dimension." -->
 
-::::: columns
-::: {.column width="40%"}
 -   Hunting events are single points in time and space.
 -   Deer locations at hourly intervals $\Rightarrow$ exact distances unknown $\Rightarrow$ approximate needed, **large uncertainty**!
 -   Each deer only encountered few hunting events.
-:::
-
-::: {.column width="60%"}
-![](Figures/Maps/4_deer_vs_hunts.png)
-:::
-:::::
 
 ##  {.smaller}
+
+![](Figures/Maps/4_deer_vs_hunts.png)
 
 ## Distance Approximation {.smaller}
 
@@ -198,7 +189,7 @@ Deer location at the time of hunting event is approximated by linear interpolati
 
 ::::: columns
 ::: {.column width="40%"}
-A hunting event is considered **relevant** to a FCM sample, if
+A hunting event is considered **relevant** to a faecal sample, if
 
 -   the time difference between hunting and defecation is between the **gut retention time (GRT) thresholds**, and
 -   the distance between the deer and the hunting event is $\leq$ **distance threshold**.
@@ -354,10 +345,10 @@ knitr::kable(data,
 For Modelling, we consider the following covariates, defined for each pair of FCM sample and most relevant hunting event:
 
 ::: incremental
--   **Time Difference**
+-   **Time difference**
 -   **Distance**
--   **Sample Delay**
--   Defecation Day (as Day of Year (1-366))
+-   **Sample delay**
+-   Defecation day (day of year as integer)
 -   Number of other relevant hunting events
 :::
 
@@ -427,19 +418,22 @@ knitr::kable(data,
 
 -   Log link for interpretability
 
--   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of FCM measurements for each deer
+-   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer
 
 $$
 \begin{eqnarray}
-\textup{FCM}_{ij} &\sim& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \\
-\mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}) \\
-\eta_{ij} &=& \beta_0 + \beta_1 \textup{Pregnant}_{ij} + \beta_2 \textup{NumberOtherHunts}_{ij} + \\
-&& f_1(\textup{TimeDiff}_{ij}) + f_2(\textup{Distance}_{ij}) + \\
-&& f_3(\textup{SampleDelay}_{ij}) + f_4(\textup{DefecationDay}_{ij}) + \\
+\textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim}& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
+\mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
+\eta_{ij} &=& \beta_0 + \\
+&& \beta_1 \cdot \textup{number of other relevant hunting events}_{ij} + \\
+&& f_1(\textup{time difference}_{ij}) + f_2(\textup{distance}_{ij}) + \\
+&& f_3(\textup{sample delay}_{ij}) + f_4(\textup{defecation day}_{ij}) + \\
 && \gamma_{i}, \\
-\gamma_i &\overset{\mathrm{iid}}{\sim}& \mathcal{N}(0, \sigma_\gamma^2).
+\gamma_i &\overset{\mathrm{iid}}{\sim}& \mathcal{N}(0, \sigma_\gamma^2) \quad\text{for} i = 1,\dots,N
 \end{eqnarray}
 $$
+
+$f_1, f_2, f_3, f_4$ are penalised cubic regression splines.
 
 ## B Generalized Additive Mixed Model {.smaller}
 
@@ -546,3 +540,29 @@ kable(model_results, format = "html", digits = 3)
 -   How to minimize spatial and temporal distance at the same time?
 
 -   How to use a bigger Part of the Data?
+
+# Appendix
+
+## GAMM Marginal Predictions (REML / closest in time)
+
+![](Figures/p_L_reml.png)
+
+## GAMM Marginal Predictions (REML / nearest)
+
+![](Figures/p_N_reml.png)
+
+## GAMM Marginal Predictions (REML / highest score)
+
+![](Figures/p_S_reml.png)
+
+## GAMM Marginal Predictions (GCV / closest in time)
+
+![](Figures/p_L.png)
+
+## GAMM Marginal Predictions (GCV / nearest)
+
+![](Figures/p_N.png)
+
+## GAMM Marginal Predictions (GCV / highest score)
+
+![](Figures/p_S.png)
