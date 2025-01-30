@@ -136,7 +136,31 @@ p_fcm_hunt_dates <- p_fcm_dates / p_hunt_dates +
 #   summary()
 # ----
 
-
+# Plot number of FCM samples and hunting events over time
+p_fcm_dates <- FCMStress %>%
+  summarise(nSamples = n(), .by = "DefecDate") %>%
+  ggplot() +
+  geom_segment(aes(x = DefecDate, y = nSamples, yend = 0), color = "purple") +
+  labs(x = "", y = "Count", title = "Daily Count of FCM Samples") +
+  scale_x_date(
+    date_breaks = "6 months",
+    limits = as_date(c("2020-04-01", "2022-12-01"))
+  ) +
+  scale_y_continuous(breaks = seq(0, 14, by = 2)) +
+  theme_bw(base_size = 16)
+p_hunt_dates <- HuntEvents %>% drop_na() %>%
+  summarise(nHunts = n(), .by = "HuntDate") %>%
+  ggplot() +
+  geom_segment(aes(x = HuntDate, y = nHunts, yend = 0), color = "red") +
+  labs(x = "", y = "Count", title = "Daily Count of Hunting Events") +
+  scale_x_date(
+    date_breaks = "6 months",
+    limits = as_date(c("2020-04-01", "2022-12-01"))
+  ) +
+  scale_y_continuous(breaks = seq(0, 14, by = 2)) +
+  theme_bw(base_size = 16)
+p_fcm_hunt_dates <- p_fcm_dates / p_hunt_dates
+ggsave("Figures/p_fcm_hunt_dates.png", p_fcm_hunt_dates, width = 10, height = 6, dpi = 300)
 
 # -------------------------
 # Prepare data for modeling
