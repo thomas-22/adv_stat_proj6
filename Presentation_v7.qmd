@@ -15,7 +15,7 @@ format:
     smaller: false
     footer: "Effect of Hunting on Red Deer" 
     logo: "Resources/LMU_Logo.svg"
-editor: visual 
+editor: source 
 ---
 
 # Agenda
@@ -199,6 +199,10 @@ Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
 ## Limited Data, Large Uncertainty {.smaller}
 
 Other sources of uncertainty include:
+
+-   lack of information about hunting events (single time points as start, end, middle?)
+
+<!-- -->
 
 -   unknown characteristics of the deer (e.g., age, health, etc.),
 

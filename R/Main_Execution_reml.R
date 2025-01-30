@@ -191,14 +191,14 @@ fit_gam <- function(data, family = gaussian()) {
   )
 }
 
-fit_gamm <- function(data, family = gaussian()) {
+fit_gamm <- function(data, family = gaussian(), method = "REML") {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr", k = 20) + s(Distance, bs = "cr", k = 10) +
       s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 20) +
       NumOtherHunts + s(Deer.ID, bs = "re"),
     data = data,
     family = family,
-    method = "REML"
+    method = method
   )
 }
 
@@ -226,7 +226,7 @@ cat("Fitting models...\n")
 
 # -------------------------
 # Last
-m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"))
+m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"), method = "REML")
 
 p_L_diagnostic <- appraise(m_L, method = "simulate") & theme_bw()
 ggsave("Figures/p_L_diagnostic_reml.png", p_L_diagnostic, width = 7, height = 7, dpi = 300)
@@ -264,7 +264,8 @@ ggsave("Figures/p_L_reml.png", p_L, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 # Nearest
-m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"))
+m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"), method = "REML")
+draw(m_N, select = 5)
 
 p_N_diagnostic <- appraise(m_N, method = "simulate") & theme_bw()
 ggsave("Figures/p_N_diagnostic_reml.png", p_N_diagnostic, width = 7, height = 7, dpi = 300)
@@ -297,7 +298,8 @@ ggsave("Figures/p_N_reml.png", p_N, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 # Score
-m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"))
+m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"), method = "REML")
+draw(m_S, select = 5)
 # saveRDS(m_S, "Models/m_S.RDS")
 
 p_S_diagnostic <- appraise(m_S, method = "simulate") & theme_bw()
@@ -326,6 +328,14 @@ p_S_Day <- ggpredict(m_S, terms = c("DefecDay"), title = "") %>%
 p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
   plot_layout(ncol = 3, axis_titles = "collect")
 ggsave("Figures/p_S_reml.png", p_S, width = 12, height = 6, dpi = 300)
+
+# -------------------------
+re_L <- variance_comp(m_L)
+re_L
+re_N <- variance_comp(m_N)
+re_N
+re_S <- variance_comp(m_S)
+re_S
 
 # -------------------------
 

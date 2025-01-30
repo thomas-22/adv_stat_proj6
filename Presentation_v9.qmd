@@ -175,9 +175,21 @@ Samples where taken at irregular time intervals from 2020 to 2022.
 -   Deer locations at hourly intervals $\Rightarrow$ exact distances unknown $\Rightarrow$ approximate needed, **large uncertainty**!
 -   Each deer only encountered few hunting events.
 
-##  {.smaller}
+## Limited Data, Large Uncertainty {.smaller}
 
-![](Figures/Maps/4_deer_vs_hunts.png)
+![](Figures/Maps/4_deer_vs_hunts.png){fig-align="center"}
+
+## Limited Data, Large Uncertainty {.smaller}
+
+Other sources of uncertainty include:
+
+-   lack of information about hunting events (single time points as start, end, middle?)
+
+-   unknown characteristics of the deer (e.g., age, health, etc.),
+
+-   other unknown stressors (e.g., predators, human activities, weather, etc.),
+
+-   unknown geographical features (e.g., terrain could affect the propagation of sound).
 
 ## Distance Approximation {.smaller}
 
@@ -356,22 +368,47 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 
 We chose two different approaches to Modelling:
 
-A.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
-B.  **Statistical Modelling**: a model, which helps to understand the effects of our covariables, here a **General Additive Mixed Model**
+A.  **Statistical Modelling**: a model, which helps to understand the effects of our covariables, here a **General Additive Mixed Model**
+B.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
 
-## A. XGBoost Setup {.smaller}
 
-1.  **Split Data:** We divide each dataset into training and testing sets. (75% - 25%)
-2.  **Set Hyperparameter Grid:** We define a range of values for starting hyperparameters.
-3.  **Optimize Hyperparameters:** We then perform a grid search to evaluate different hyperparameter combinations -\> Iteratively readjust the grid based on test RMSE until convergence. Uses CV
-4.  **Train Final Model on Full Data:** We then use the optimized parameters to train on the entire dataset. We prevent overfitting by optimal n_rounds to keep Test-RMSE low.
-5.  **Aggregate Results:** Run the pipeline 40 times with different seeds. Use the average RMSE and average predictions to evaluate the overall performance.
+## A. Generalized Additive Mixed Model {.smaller}
 
-We do this seperately for all 3 datasets (nearest, closest and score).
+-   Family: Gamma
 
-\newpage
+-   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer 
 
-## A. XGBoost Result {.smaller}
+    $$
+    \begin{eqnarray}
+    \textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim}& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
+    \mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
+    \eta_{ij} &=& \beta_0 + \beta_1 \cdot \textup{number of other relevant hunting events}_{ij} + \\
+    && f_1(\textup{time difference}_{ij}) + f_2(\textup{distance}_{ij}) + \\
+    && f_3(\textup{sample delay}_{ij}) + f_4(\textup{defecation day}_{ij}) + \\
+    && \gamma_{i}, \\
+    \gamma_i &\overset{\mathrm{iid}}{\sim}& \mathcal{N}(0, \sigma_\gamma^2)
+    \end{eqnarray}
+    $$
+    
+    $f_1, f_2, f_3, f_4$ are penalised cubic regression splines.
+
+## A. Generalized Additive Mixed Model {.smaller}
+
+-   High uncertainty
+
+    -   about all estimated effects,
+
+    -   across all datasets.
+
+-   Instability with respect to estimation methods.
+
+-   Estimation of random intercepts is sensitive to choice of dataset.
+
+-   Consistent pattern of sample delay effect
+
+    -   Larger sample delay $\Rightarrow$ lower FCM level, as expected.
+
+## B. XGBoost Result {.smaller}
 
 ```{r}
 library(dplyr)
@@ -398,46 +435,8 @@ knitr::kable(data,
   kable_styling(font_size = 16, full_width = FALSE, position = "center")
 ```
 
-:::::: columns
-::: {.column width="33%"}
-<img src="Figures/XGBoost_PredVSActual_last.jpg" width="500"/>
-:::
 
-::: {.column width="33%"}
-<img src="Figures/XGBoost_PredVSActual_nearest.jpg" width="500"/>
-:::
-
-::: {.column width="34%"}
-<img src="Figures/XGBoost_PredVSActual_score.jpg" width="500"/>
-:::
-::::::
-
-## B. Generalized Additive Mixed Model {.smaller}
-
--   Family: Gamma
-
--   Log link for interpretability
-
--   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer
-
-$$
-\begin{eqnarray}
-\textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim}& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
-\mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
-\eta_{ij} &=& \beta_0 + \\
-&& \beta_1 \cdot \textup{number of other relevant hunting events}_{ij} + \\
-&& f_1(\textup{time difference}_{ij}) + f_2(\textup{distance}_{ij}) + \\
-&& f_3(\textup{sample delay}_{ij}) + f_4(\textup{defecation day}_{ij}) + \\
-&& \gamma_{i}, \\
-\gamma_i &\overset{\mathrm{iid}}{\sim}& \mathcal{N}(0, \sigma_\gamma^2) \quad\text{for} i = 1,\dots,N
-\end{eqnarray}
-$$
-
-$f_1, f_2, f_3, f_4$ are penalised cubic regression splines.
-
-## B Generalized Additive Mixed Model {.smaller}
-
-### Closest in time
+<!-- ### Closest in time
 
 ::::: columns
 ::: {.column width="35%"}
@@ -495,7 +494,7 @@ kable(coeff_highest, format = "html", digits = 3)
 library(knitr)
 model_results <- readRDS("Data/model_result.RDS")
 kable(model_results, format = "html", digits = 3)
-```
+``` -->
 
 # Agenda
 
@@ -519,8 +518,7 @@ kable(model_results, format = "html", digits = 3)
 
 ::: incremental
 -   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels.
--   In some of the cases we were able to prove the expected decay of FCM levels with prolonged time between defecation event and sample collection.
--   With more datapoints, the uncertainty will likely shrink.
+-   We can observe the expected decay of FCM levels with prolonged time between defecation event and sample collection.
 :::
 
 <!-- ## Conclusion -->
@@ -534,12 +532,6 @@ kable(model_results, format = "html", digits = 3)
 <!-- -   Modelling Outcomes don't show much difference -->
 
 <!-- -   Trade-off between Complexity and Explainability -->
-
-## Discussion
-
--   How to minimize spatial and temporal distance at the same time?
-
--   How to use a bigger Part of the Data?
 
 # Appendix
 
@@ -566,3 +558,31 @@ kable(model_results, format = "html", digits = 3)
 ## GAMM Marginal Predictions (GCV / highest score)
 
 ![](Figures/p_S.png)
+
+## XGBoost Predicted vs. Actual Plots
+
+### Closest in Time
+
+![](Figures/XGBoost_PredVSActual_last.jpg)
+
+## XGBoost Predicted vs. Actual Plots
+
+### Nearest
+
+![](Figures/XGBoost_PredVSActual_nearest.jpg)
+
+## XGBoost Predicted vs. Actual Plots
+
+### Highest Score
+
+![](Figures/XGBoost_PredVSActual_score.jpg)
+
+## XGBoost Workflow {.smaller}
+
+1.  **Split Data:** We divide each dataset into training and testing sets. (75% - 25%)
+2.  **Set Hyperparameter Grid:** We define a range of values for starting hyperparameters.
+3.  **Optimize Hyperparameters:** We then perform a grid search to evaluate different hyperparameter combinations -\> Iteratively readjust the grid based on test RMSE until convergence. Uses CV
+4.  **Train Final Model on Full Data:** We then use the optimized parameters to train on the entire dataset. We prevent overfitting by optimal n_rounds to keep Test-RMSE low.
+5.  **Aggregate Results:** Run the pipeline 40 times with different seeds. Use the average RMSE and average predictions to evaluate the overall performance.
+
+We do this seperately for all 3 datasets (nearest, closest and score).

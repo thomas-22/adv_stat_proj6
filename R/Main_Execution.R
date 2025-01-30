@@ -242,13 +242,14 @@ fit_gam <- function(data, family = gaussian()) {
   )
 }
 
-fit_gamm <- function(data, family = gaussian()) {
+fit_gamm <- function(data, family = gaussian(), method = "GCV.Cp") {
   gam(
     ng_g ~ s(TimeDiff, bs = "cr", k = 20) + s(Distance, bs = "cr", k = 10) +
       s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 20) +
       NumOtherHunts + s(Deer.ID, bs = "re"),
     data = data,
-    family = family
+    family = family,
+    method = method
   )
 }
 
@@ -276,7 +277,8 @@ cat("Fitting models...\n")
 
 # -------------------------
 # Last
-m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"))
+m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"), method = "GCV.Cp")
+draw(m_L, select = 5)
 
 p_L_diagnostic <- appraise(m_L, method = "simulate") & theme_bw()
 ggsave("Figures/p_L_diagnostic.png", p_L_diagnostic, width = 7, height = 7, dpi = 300)
@@ -320,7 +322,8 @@ ggsave("Figures/p_L.png", p_L, width = 15, height = 15, dpi = 300)
 
 # -------------------------
 # Nearest
-m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"))
+m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"), method = "GCV.Cp")
+draw(m_N, select = 5)
 
 p_N_diagnostic <- appraise(m_N, method = "simulate") & theme_bw()
 ggsave("Figures/p_N_diagnostic.png", p_N_diagnostic, width = 7, height = 7, dpi = 300)
@@ -359,7 +362,8 @@ ggsave("Figures/p_N.png", p_N, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 # Score
-m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"))
+m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"), method = "GCV.Cp")
+draw(m_S, select = 5)
 # saveRDS(m_S, "Models/m_S.RDS")
 
 p_S_diagnostic <- appraise(m_S, method = "simulate") & theme_bw()
