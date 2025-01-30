@@ -65,7 +65,9 @@ theme_set(theme_light() +
 
 plot_overview <- ggplot(BAY) +
   geom_sf() +
-  geom_sf(data = Park$osm_multipolygons[1, ], fill = "lightgreen") +
+  # geom_sf(data = Park$osm_multipolygons[1, ], fill = "lightgreen") +
+  geom_sf(data = Park$osm_multipolygons, fill = c("lightgreen", "lightblue")) +
+  geom_sf_text(data = Park$osm_multipolygons, aes(label = c("GER", "CZE")), nudge_x = c(-.3, .3)) +
   # change color from red to black, because red is used for hunting events
   geom_sf(data = MUC$osm_points, color = "black") +
   geom_sf_text(data = MUC$osm_points, color = "black", aes(label = "Munich"), nudge_y = 0.1) +
@@ -85,7 +87,7 @@ plot_Movement <- ggplot() +
   geom_sf(data = Park$osm_multipolygons[1, ]) +
   # geom_sf_label(data = Park$osm_multipolygons, aes(label = c("DEU", "CZE"))) +
   # blue for movement data -- also used in the interpolation plot
-  geom_sf(data = Movement_sf, color = "blue", alpha = .1, size = .1) +
+  geom_sf(data = Movement_sf_selected, color = "blue", alpha = .1, size = .1) +
   facet_wrap(~Sender.ID) +
   guides(color = "none") +
   annotation_scale(location = "bl") +
@@ -109,10 +111,37 @@ plot_samples <- ggplot() +
   annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
   ggtitle("FCM Sample Locations")
 
+plot_deer_vs_hunts <- ggplot() +
+  geom_sf(data = Park$osm_multipolygons[1, ]) +
+  # geom_sf_label(data = Park$osm_multipolygons, aes(label = c("DEU", "CZE"))) +
+  # blue for movement data -- also used in the interpolation plot
+  geom_sf(data = Movement_sf_selected, color = "blue", alpha = .1, size = .1) +
+  geom_sf(data = HuntEvents_sf, color = "red", alpha = .5, size = .5) +
+  #facet_wrap(~Sender.ID) +
+  guides(color = "none") +
+  annotation_scale(location = "bl") +
+  annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
+  ggtitle("Recorded Hunting Events vs recorded Locations of Deer") +
+  theme(strip.text = element_blank())
+
+plot_4_deer_vs_hunts <- ggplot() +
+  geom_sf(data = Park$osm_multipolygons[1, ]) +
+  # geom_sf_label(data = Park$osm_multipolygons, aes(label = c("DEU", "CZE"))) +
+  # blue for movement data -- also used in the interpolation plot
+  geom_sf(data = Movement_sf_selected, color = "blue", alpha = .1, size = .1) +
+  geom_sf(data = HuntEvents_sf, color = "red", alpha = .5, size = .5) +
+  facet_wrap(~Sender.ID) +
+  guides(color = "none") +
+  annotation_scale(location = "bl") +
+  annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
+  ggtitle("Recorded Hunting Events vs 4 random Deer") +
+  theme(strip.text = element_blank())
+
 ggsave(plot = plot_overview, filename = "Figures/Maps/overview.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_Movement, filename = "Figures/Maps/Movement.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_Hunts, filename = "Figures/Maps/Hunts.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_samples, filename = "Figures/Maps/Samples.png", device = "png", width = 6, height = 6)
+ggsave(plot = plot_deer_vs_hunts, filename = "Figures/Maps/deer_vs_hunts.png", device = "png", width = 6, height = 6)
+ggsave(plot = plot_4_deer_vs_hunts, filename = "Figures/Maps/4_deer_vs_hunts.png", device = "png", width = 6, height = 6)
 
 
-# plot_Movement | plot_Hunts | plot_samples
