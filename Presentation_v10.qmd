@@ -427,10 +427,18 @@ Result 2: Instability with respect to estimation methods. Example:
 
 ## B. XGBoost {.smaller}
 
-XGBoost is a gradient boosting algorithm that builds decision trees sequentially, each one correcting the errors of the previous. It improves accuracy with techniques like regularization, shrinkage, and column subsampling, making it efficient and better at generalization.
+:::: columns
+::: {.column width="50%"}
+-   Gradient Boosting Algorithm
+-   Builds Decision Trees sequentially
+-   Each tree corrects the errors of the previous ones
+-   Uses regularization, shrinkage and other techniques to improve accuracy
+-   Works well with numerical data
 
-It works very well for numerical data and is well implemented which is why we chose it.
 
+:::
+
+::: {.column width="50%"}
 ```{r}
 library(dplyr)
 library(knitr)
@@ -445,13 +453,44 @@ data_filtered <- data %>% select(Model, Mean_RMSE, SD_RMSE, Number_of_Observatio
 # Create the formatted table
 knitr::kable(data_filtered, 
              format = "html", 
-             align = c("c", "c", "c", "c"), 
+             align = c("l", "r", "r", "r"), 
              col.names = c("Model",
                            "Mean RMSE",
                            "SD RMSE",
-                           "Number of Observations")) %>%
-  kable_styling(font_size = 26, full_width = FALSE, position = "center")
+                           "Number of Observations"), 
+             digits = 2) %>%
+  kable_styling(font_size = 28, full_width = FALSE, position = "center")
 ```
+:::
+::::
+
+<!-- ## B. XGBoost {.smaller} -->
+
+<!-- XGBoost is a gradient boosting algorithm that builds decision trees sequentially, each one correcting the errors of the previous. It improves accuracy with techniques like regularization, shrinkage, and column subsampling, making it efficient and better at generalization. -->
+
+<!-- It works very well for numerical data and is well implemented which is why we chose it. -->
+
+<!-- ```{r} -->
+<!-- library(dplyr) -->
+<!-- library(knitr) -->
+<!-- library(kableExtra) -->
+
+<!-- # Read the CSV file -->
+<!-- data <- read.csv("Models/xgboost_models_overview.csv") -->
+
+<!-- # Select only the required columns -->
+<!-- data_filtered <- data %>% select(Model, Mean_RMSE, SD_RMSE, Number_of_Observations) -->
+
+<!-- # Create the formatted table -->
+<!-- knitr::kable(data_filtered,  -->
+<!--              format = "html",  -->
+<!--              align = c("c", "c", "c", "c"),  -->
+<!--              col.names = c("Model", -->
+<!--                            "Mean RMSE", -->
+<!--                            "SD RMSE", -->
+<!--                            "Number of Observations")) %>% -->
+<!--   kable_styling(font_size = 26, full_width = FALSE, position = "center") -->
+<!-- ``` -->
 
 # Agenda
 
@@ -506,7 +545,8 @@ knitr::kable(table_otherHunts,
               "Estimate",
               "exp(Estimate)",
               "Standard error"
-             )) %>%
+             ),
+             digits = 2) %>%
   kableExtra::kable_styling(font_size = 26)
 ```
 
