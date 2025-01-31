@@ -89,7 +89,7 @@ editor: source
 
 ::: incremental
 -   What is the effect of temporal and spatial distance on FCM levels?
--   Does the time between defecation event and sample collection effect FCM levels?
+-   Does the time between defecation event and sample collection affect FCM levels?
 :::
 
 ## Approach
