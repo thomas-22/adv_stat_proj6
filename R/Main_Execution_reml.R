@@ -330,12 +330,12 @@ p_S <- p_S_TimeDiff + p_S_Distance + p_S_SampleDelay +
 ggsave("Figures/p_S_reml.png", p_S, width = 12, height = 6, dpi = 300)
 
 # -------------------------
-re_L <- variance_comp(m_L)
-re_L
-re_N <- variance_comp(m_N)
-re_N
-re_S <- variance_comp(m_S)
-re_S
+# re_L <- variance_comp(m_L)
+# re_L
+# re_N <- variance_comp(m_N)
+# re_N
+# re_S <- variance_comp(m_S)
+# re_S
 
 # -------------------------
 

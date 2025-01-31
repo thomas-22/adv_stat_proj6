@@ -13,9 +13,8 @@ format:
     slide-number: c 
     fig-align: center 
     smaller: false
-    footer: "Effect of Hunting on Red Deer" 
-    logo: "Resources/LMU_Logo.svg"
-editor: source 
+    footer: "Effect of Hunting on Red Deer"
+editor: source
 ---
 
 # Agenda
@@ -335,7 +334,7 @@ knitr::kable(data,
                           #  "GRT high",
                           #  "Distance Threshold",
                            "Proximity Criterion",
-                           "Deers",
+                           "Deer",
                            "Observations")) %>%
   kableExtra::kable_styling(font_size = 26)
 ```
@@ -363,9 +362,9 @@ knitr::kable(data,
 For Modelling, we consider the following covariates, defined for each pair of FCM sample and most relevant hunting event:
 
 ::: incremental
--   **Time difference**
--   **Distance**
--   **Sample delay**
+-   **Time difference**: time of defecation - time of hunting event [hours]
+-   **Distance**: distance between deer and hunting event [km]
+-   **Sample delay**: time of sample collection - time of defecation [hours]
 -   Defecation day (day of year as integer)
 -   Number of other relevant hunting events
 :::
@@ -398,18 +397,15 @@ B.  **Machine Learning**: a model, which focuses on prediction, in our case a **
     $f_1, f_2, f_3, f_4$ are penalized cubic regression splines.
 
 ## A. Generalized Additive Mixed Model {.smaller}
+### Main Results
 
--   High uncertainty
+-   High uncertainty (large standard error) about estimated effects, in particular of time difference and distance, across all datasets.
 
-    -   about all estimated effects,
-
-    -   across all datasets.
+-   Consistent pattern of sample delay effect when using REML method: larger sample delay $\Rightarrow$ lower FCM level, as expected.
 
 -   Instability with respect to estimation methods. GCV tends to yield more wiggly smooth effects than REML.
 
 -   Estimation of random intercepts is sensitive to choice of dataset.
-
--   Consistent pattern of sample delay effect: larger sample delay $\Rightarrow$ lower FCM level, as expected.
 
 <!-- ## A. Generalized Additive Mixed Model {.smaller}
 
@@ -452,7 +448,7 @@ knitr::kable(data_filtered,
                            "Mean RMSE",
                            "SD RMSE",
                            "Number of Observations")) %>%
-  kable_styling(font_size = 16, full_width = FALSE, position = "center")
+  kable_styling(font_size = 26, full_width = FALSE, position = "center")
 ```
 
 # Agenda
@@ -477,7 +473,7 @@ knitr::kable(data_filtered,
 
 ::: incremental
 -   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels.
--   We can observe the expected decay of FCM levels with prolonged time between defecation event and sample collection.
+-   We have observed the expected decay of FCM levels with prolonged time between defecation event and sample collection.
 :::
 
 <!-- ## Conclusion -->
@@ -493,6 +489,24 @@ knitr::kable(data_filtered,
 <!-- -   Trade-off between Complexity and Explainability -->
 
 # Appendix
+
+## GAMM Parametric Effects
+### Number of Other Relevant Hunting Events
+
+```{r}
+table_otherHunts <- readRDS("Data/table_otherHunts.RDS")
+knitr::kable(table_otherHunts, 
+             format = "html", 
+             align = c("r", "r", "r", "r"),
+             col.names = c(
+              "Method",
+              "Dataset",
+              "Estimate",
+              "exp(Estimate)",
+              "Standard error"
+             )) %>%
+  kableExtra::kable_styling(font_size = 26)
+```
 
 ## GAMM Adjusted Predictions
 ### REML / Closest in Time
@@ -524,6 +538,16 @@ knitr::kable(data_filtered,
 
 ![](Figures/p_S.png)
 
+## GAMM Random Intercepts
+### REML
+
+![](Figures/p_re_reml.png)
+
+## GAMM Random Intercepts
+### GCV
+
+![](Figures/p_re_gcv.png)
+
 ## XGBoost Predicted vs. Actual Plots
 
 ### Closest in Time
@@ -551,3 +575,11 @@ knitr::kable(data_filtered,
 5.  **Aggregate Results:** Run the pipeline 40 times with different seeds. Use the average RMSE and average predictions to evaluate the overall performance.
 
 We do this seperately for all 3 datasets (nearest, closest and score).
+
+## Movement and Hunting Events
+
+![](Figures/Maps/deer_vs_hunts.png){fig-align="center"}
+
+## Faecal Samples and Hunting Events Over Time
+
+![](Figures/p_fcm_hunt_dates.png)

@@ -141,7 +141,7 @@ p_fcm_dates <- FCMStress %>%
   summarise(nSamples = n(), .by = "DefecDate") %>%
   ggplot() +
   geom_segment(aes(x = DefecDate, y = nSamples, yend = 0), color = "purple") +
-  labs(x = "", y = "Count", title = "Daily Count of FCM Samples") +
+  labs(x = "", y = "Count", title = "Daily Count of Faecel Samples") +
   scale_x_date(
     date_breaks = "6 months",
     limits = as_date(c("2020-04-01", "2022-12-01"))
@@ -398,17 +398,43 @@ m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"), method = "GCV.Cp")
 m_N <- fit_gamm(res$data[[2]], family = Gamma(link = "log"), method = "GCV.Cp")
 m_S <- fit_gamm(res$data[[3]], family = Gamma(link = "log"), method = "GCV.Cp")
 
-draw(m_L)
-draw(m_N)
-draw(m_S)
+p_L_re_gcv <- draw(m_L, select = 5) +
+  theme_bw(base_size = 16) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_re_gcv <- draw(m_N, select = 5) +
+  theme_bw(base_size = 16) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_re_gcv <- draw(m_S, select = 5) +
+  theme_bw(base_size = 16) +
+  ggtitle("Dataset \"Highest Score\"")
+p_re_gcv <- p_L_re_gcv + p_N_re_gcv + p_S_re_gcv +
+  plot_layout(ncol = 3, axis_titles = "collect") +
+  plot_annotation(
+    caption = "Method = GCV",
+    theme = theme(text = element_text(size = 16))
+  )
+ggsave("Figures/p_re_gcv.png", p_re_gcv, width = 12, height = 6, dpi = 300)
 
 m_L_reml <- fit_gamm(res$data[[1]], family = Gamma(link = "log"), method = "REML")
 m_N_reml <- fit_gamm(res$data[[2]], family = Gamma(link = "log"), method = "REML")
 m_S_reml <- fit_gamm(res$data[[3]], family = Gamma(link = "log"), method = "REML")
 
-draw(m_L_reml)
-draw(m_N_reml)
-draw(m_S_reml)
+p_L_re_reml <- draw(m_L_reml, select = 5) +
+  theme_bw(base_size = 16) +
+  ggtitle("Dataset \"Closest in Time\"")
+p_N_re_reml <- draw(m_N_reml, select = 5) +
+  theme_bw(base_size = 16) +
+  ggtitle("Dataset \"Nearest\"")
+p_S_re_reml <- draw(m_S_reml, select = 5) +
+  theme_bw(base_size = 16) +
+  ggtitle("Dataset \"Highest Score\"")
+p_re_reml <- p_L_re_reml + p_N_re_reml + p_S_re_reml +
+  plot_layout(ncol = 3, axis_titles = "collect") +
+  plot_annotation(
+    caption = "Method = REML",
+    theme = theme(text = element_text(size = 16))
+  )
+ggsave("Figures/p_re_reml.png", p_re_reml, width = 12, height = 6, dpi = 300)
 
 # -------------------------
 p_L_TimeDiff_gcv <- ggpredict(m_L, terms = c("TimeDiff")) %>% plot() +
