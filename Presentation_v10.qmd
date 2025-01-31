@@ -429,6 +429,7 @@ Result 2: Instability with respect to estimation methods. Example:
 
 :::: columns
 ::: {.column width="50%"}
+### What is XGBoost?
 -   Gradient Boosting Algorithm
 -   Builds Decision Trees sequentially
 -   Each tree corrects the errors of the previous ones
@@ -439,6 +440,13 @@ Result 2: Instability with respect to estimation methods. Example:
 :::
 
 ::: {.column width="50%"}
+### Main Results
+
+across all three Models:
+
+-   small values get overestimated
+-   big values get underestimated
+
 ```{r}
 library(dplyr)
 library(knitr)
@@ -461,6 +469,7 @@ knitr::kable(data_filtered,
              digits = 2) %>%
   kable_styling(font_size = 28, full_width = FALSE, position = "center")
 ```
+
 :::
 ::::
 
