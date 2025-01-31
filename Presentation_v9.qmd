@@ -59,7 +59,7 @@ editor: source
 -   Its **movement is tracked** by a GPS collar
 -   A **hunting event** happens
 -   After some time, the deer defecates. The **defecation event**
--   Subsequently, Researchers go to the defecation location and collect a **fecal sample**
+-   Subsequently, Researchers go to the defecation location and collect a **faecal sample**
 :::
 
 ::: {.column width="60%"}
