@@ -1,7 +1,7 @@
 ---
 title: "Effect of Hunting on Red Deer" 
 subtitle: "P15.2 Fortgeschrittenes Praxisprojekt" 
-institute: "Dr. Nicolas Ferry - Bavarian National Forest Park / Daniel Schlichting - StabLab" 
+institute: "Dr. Nicolas Ferry - Bavarian National Forest Park / Daniel Schlichting - StaBLab" 
 author: "Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou" 
 date: 2025-01-31 
 date-format: DD MMM YYYY 
