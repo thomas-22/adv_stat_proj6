@@ -373,7 +373,7 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 
 We chose two different approaches to Modelling:
 
-A.  **Statistical Modelling**: a model, which helps to understand the effects of our covariables, here a **General Additive Mixed Model**
+A.  **Statistical Modelling**: a model, which helps to understand the effects of our covariates, here a **General Additive Mixed Model**
 B.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
 
 ## A. Generalized Additive Mixed Model {.smaller}
