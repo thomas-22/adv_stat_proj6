@@ -1,5 +1,5 @@
 ---
-title: "Effect of Hunting on Red Deer" 
+title: "Hunting Effect on Individual Deer Stress Level" 
 subtitle: "P15.2 Fortgeschrittenes Praxisprojekt" 
 institute: "Dr. Nicolas Ferry - Bavarian National Forest Park / Daniel Schlichting - StaBLab" 
 author: "Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou" 
@@ -94,7 +94,7 @@ editor: source
 
 ## Approach
 
--   Model FCM levels - amongst other covariates - on spatial and temporal distance to hunting activities
+-   Model FCM levels on spatial and temporal distance to hunting activities
 
 -   **Expectations**:
 
@@ -210,7 +210,7 @@ A hunting event is considered **relevant** to a faecal sample, if
 In this presentation:
 
 -   GRT thresholds = (0, 36) hours,
--   distance threshold = 10 hours.
+-   distance threshold = 10 km.
 :::
 
 ::: {.column width="60%"}
@@ -361,6 +361,13 @@ knitr::kable(data,
 
 ## The Models {.smaller}
 
+We chose two different approaches to Modelling:
+
+A.  **Statistical Modelling**: a model, which helps to understand the effects of our covariates, here a **General Additive Mixed Model**
+B.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
+
+## The Covariates {.smaller}
+
 For Modelling, we consider the following covariates, defined for each pair of FCM sample and most relevant hunting event:
 
 ::: incremental
@@ -371,12 +378,6 @@ For Modelling, we consider the following covariates, defined for each pair of FC
 -   Number of other relevant hunting events
 :::
 
-## The Models {.smaller}
-
-We chose two different approaches to Modelling:
-
-A.  **Statistical Modelling**: a model, which helps to understand the effects of our covariates, here a **General Additive Mixed Model**
-B.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
 
 ## A. Generalized Additive Mixed Model {.smaller}
 
@@ -430,12 +431,11 @@ Result 2: Instability with respect to estimation methods. Example:
 :::: columns
 ::: {.column width="50%"}
 ### What is XGBoost?
--   Gradient Boosting Algorithm
--   Builds Decision Trees sequentially
--   Each tree corrects the errors of the previous ones
--   Uses regularization, shrinkage and other techniques to improve accuracy
--   Works well with numerical data
 
+-   Builds Decision Trees sequentially
+-   Uses Newton boosting algorithm
+-   Each tree corrects the errors of the previous ones
+-   Works well with numerical data
 
 :::
 
@@ -445,7 +445,7 @@ Result 2: Instability with respect to estimation methods. Example:
 across all three Models:
 
 -   small values get overestimated
--   big values get underestimated
+-   large values get underestimated
 
 ```{r}
 library(dplyr)
@@ -540,6 +540,11 @@ knitr::kable(data_filtered,
 
 # Appendix
 
+## Scoring Function
+### Values
+![](Figures/score_map.jpg){width=10px}
+
+
 ## GAMM Parametric Effects
 ### Number of Other Relevant Hunting Events
 
@@ -598,6 +603,7 @@ knitr::kable(table_otherHunts,
 ### GCV
 
 ![](Figures/p_re_gcv.png)
+
 
 ## XGBoost Predicted vs. Actual Plots
 
