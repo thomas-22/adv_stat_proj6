@@ -195,6 +195,7 @@ table_datasets$obs <- vapply(table_datasets$data, nrow, numeric(1))
 table_datasets$data <- NULL
 
 saveRDS(table_datasets, "Data/Datasets.RDS")
+saveRDS(res$data, "Data/ModellingData.RDS")
 
 # plot(res[[5]][[3]]$Score, res[[5]][[3]]$ng_g,
 #      main = "Scatter Plot: Score vs ng/g (Log Scale)",
@@ -232,15 +233,16 @@ ggsave("Figures/p_interpolation.png", p_interpolation, width = 9, height = 5, dp
 # -----------------------------------
 # MODELING
 # -----------------------------------
-fit_gam <- function(data, family = gaussian()) {
-  gam(
-    ng_g ~ s(TimeDiff, bs = "cr", k = 20) + s(Distance, bs = "cr", k = 10) +
-      s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 20) +
-      NumOtherHunts,
-    data = data,
-    family = family
-  )
-}
+# fit_gam <- function(data, family = gaussian(), method = "GCV.Cp", sp = NULL) {
+#   gam(
+#     ng_g ~ s(TimeDiff, bs = "cr", k = 20) + s(Distance, bs = "cr", k = 10) +
+#       s(SampleDelay, bs = "cr", k = 20) + s(DefecDay, bs = "cr", k = 20) +
+#       NumOtherHunts,
+#     sp = sp,
+#     data = data,
+#     family = family
+#   )
+# }
 
 fit_gamm <- function(data, family = gaussian(), method = "GCV.Cp") {
   gam(
@@ -278,7 +280,6 @@ cat("Fitting models...\n")
 # -------------------------
 # Last
 m_L <- fit_gamm(res$data[[1]], family = Gamma(link = "log"), method = "GCV.Cp")
-draw(m_L, select = 5)
 
 p_L_diagnostic <- appraise(m_L, method = "simulate") & theme_bw()
 ggsave("Figures/p_L_diagnostic.png", p_L_diagnostic, width = 7, height = 7, dpi = 300)
