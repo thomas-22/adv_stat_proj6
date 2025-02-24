@@ -1,0 +1,49 @@
+#The data is from “data_cleanedup” by Thomas and “FCMStress_gamm” by Ziqi. Both forms are applicable
+#GAMM   Closer to the true hypothesis
+# Building the GAMM Model
+
+```{r}
+gamm_model <- gamm(
+  ng_g ~ s(TimeDiff) + s(Distance) + s(between_time),
+  random = list(Sender.ID = ~1),       # Random effects: individual differences
+  data = merged_data,
+  family = Gamma(link = "log")         # Gamma distribution, log link
+)
+```
+
+
+#GAMM  Lower complexity, better fit
+```{r}
+gamm_model <- gamm(
+  ng_g ~ s(TimeDiff) + s(Distance) + s(between_time),
+  random = list(Sender.ID = ~1),      
+  data = merged_data,
+  family = Gamma(link = "identity")         #  Gamma distribution, identity link
+)
+```
+
+
+#GLMM Easy to understand but difficult to capture nonlinear relationships
+```{r}
+glmm_model <- glmer(
+  ng_g ~ TimeDiff + Distance + (1 | Sender.ID),  # Fixed and random effects
+  data = data_gamm,
+  family = Gamma(link = "log")                
+)
+```
+
+
+#random forest model  More robust to outliers and missing values.
+```{r}
+rf_model <- randomForest(
+  ng_g ~ TimeDiff + Distance + between_time,
+  data = merged_data,
+  ntree = 500,
+  importance = TRUE
+)
+importance(rf_model)
+```
+
+
+#Due to the complexity of the data, we believe that time series models(GAMM-AR or ARIMA) and neural networks are also worth trying.
+

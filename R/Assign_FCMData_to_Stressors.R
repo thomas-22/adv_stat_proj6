@@ -1,50 +1,5 @@
 #RUN "CalcSenderPosDist_new.R" FIRST
-library(dplyr)
-
-transform_time_diff_lognormal <- function(TimeDiff, meanlog = log(20), sdlog = 0.5) {
-  dlnorm(TimeDiff, meanlog = meanlog, sdlog = sdlog)
-}
-
-# Better timediff eval curve for the scoring function:
-timediff_evaluation_asym_curve <- function(x, peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1) {
-  ifelse(
-    x <= peak,
-    height * exp(-((x - peak)^2) / (2 * rise_sigma^2)),  # Rising phase (Gaussian)
-    height * exp(-(x - peak) / fall_sigma)              # Falling phase (Exponential decay)
-  )
-  
-  # To see how it looks:
-  # plot(seq(0, 40, by = 0.1), timediff_evaluation_asym_curve(seq(0, 40, by = 0.1), peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1), type = "l", col = "blue", lwd = 2, 
-  #      xlab = "Time (hours)", ylab = "ng_g Impact", main = "ng_g Impact ~ TimeDiff Curve")
-  # 
-  
-}
-
-save_jpg_timediff_function <- function(){
-  
-  #getwd()
-  
-  output_directory <- "./Figures"
-  output_filename <- "Timediff_Function_impact_curve.jpg"
-  output_path <- file.path(output_directory, output_filename)
-  
-  jpeg(
-    filename = output_path,    # Full path to save the JPEG
-    width = 800,               # Width in pixels
-    height = 600,              # Height in pixels
-    units = "px",              # Units for width and height
-    quality = 100               # Quality of the JPEG (1-100)
-  )
-  
-  plot(seq(0, 40, by = 0.1), timediff_evaluation_asym_curve(seq(0, 40, by = 0.1), peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1), type = "l", col = "blue", lwd = 2,
-       xlab = "Time (hours)", ylab = "Score Impact", main = "Score Impact ~ TimeDiff Curve")
-  
-  
-  dev.off()
-  
-  
-}
-save_jpg_timediff_function()
+# library(dplyr)
 
 # For each FCM sample, find all hunting events within a certain time frame,
 # calculate distance and time diff, and add potential confounders.
