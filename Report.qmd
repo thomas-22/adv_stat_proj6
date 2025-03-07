@@ -1,0 +1,52 @@
+---
+title: "Hunting Effect on Individual Deer Stress Level"
+subtitle: "P15.2 Fortgeschrittenes Praxisprojekt"
+author: "Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou"
+lang: de
+format:
+  pdf:
+    toc: true
+    classoption: [twocolumn]
+    geometry:
+      - top=20mm
+      - left=15mm
+      - right=15mm
+      - bottom=20mm
+      - heightrounded
+    mainfont: Times New Roman
+    colorlinks: true
+    include-in-header: 
+      text: '\pagenumbering{gobble}'
+---
+
+# Summary
+
+# Introduction
+## subtopic 1
+
+## subtopic 2
+
+# Data Analysis
+## subtopic 1
+
+## subtopic 2
+
+# Data Preprocessing
+## subtopic 1
+
+## subtopic 2
+
+# Model Selection
+## subtopic 1
+
+## subtopic 2
+
+# Model Evaluation
+## subtopic 1
+
+## subtopic 2
+
+# Conclusion & Outlook
+## subtopic 1
+
+## subtopic 2
