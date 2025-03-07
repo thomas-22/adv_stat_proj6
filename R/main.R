@@ -48,3 +48,9 @@ datasets <- param_grid %>%
 res <- tibble(param_grid, data = datasets)
 save.model.data(res)
 
+# -------------------------
+# fitting models
+# -------------------------
+
+fit.gamm()
+
