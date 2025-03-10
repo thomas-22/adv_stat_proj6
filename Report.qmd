@@ -6,6 +6,9 @@ lang: en
 format:
   pdf:
     documentclass: scrreprt
+    number-sections: true
+    crossref:
+      chapters: true
     bibliography: references.bib
     classoption: [twocolumn, open=any]
     lof: true
@@ -13,113 +16,117 @@ format:
     toc: true
     geometry:
       - top=20mm
-      - left=20mm
-      - right=20mm
+      - left=15mm
+      - right=15mm
       - bottom=20mm
       - heightrounded
     mainfont: Arial
     colorlinks: true
 ---
+
 # Summary
 
 # Introduction
+
 ## Background
-Hunting activities have long been recognized to have a numerical effect on animal populations
-through individuals removal. 
+Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes. This project aims to investigate the physiological stress response in red deer using non-invasive methods such as the measurement of faecal cortisol metabolites (FCMs). Stress is expected to be higher in proximity to hunting events.
 
-More recently a larger focus was brought on the non-lethal effect
-hunting can have through behaviour change (e.g., space use, vigilance or fleeing behaviour).
-
-
-Numerous studies highlight such process, however, little is known about the physiological
-response preceeding and driving the behaviour changes in wildlife. 
-
-A measurement of faecal cortisol metabolites (FCMs) as a non-invasive, physiological parameter reflecting
-hypothalamus–pituitary–adrenal (HPA) axis activity is a growing method to assess stress
-response towards stimulus. 
-
-In this project, we aim to assess red deer short-term stress response
-towards hunting events at the Bavarian Forest National Park, using FCMs methods, and test the
-effect of spatial and temporal distances on this response. We expect the FCM to be higher when
-being closer in space and time to a hunting event.
+## Data Generating Process
 
 ![Bavarian Forest National Park](Figures/Maps/overview.png)
 
-## Data Generating Process
--   Hunting activities have a numerical effect on animal populations
--   Additionally, hunting can have non-lethal effects
--   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park
-
 -   A deer roams freely in the Bavarian Forest National Park
+
 -   Its **movement is tracked** by a GPS collar
+
 -   A **hunting event** happens
+
 -   After some time, the deer defecates. The **defecation event**
--   Subsequently, Researchers go to the defecation location and collect a **faecal sample**
+
+-   Subsequently, Researchers go to the defecation location and collect
+    a **faecal sample**
 
 @Huber2003 showed the following:
 
 ![FCM Levels](Figures/FCM-levels.png)
 
-
 ## Research Question
--   What is the effect of temporal and spatial distance on FCM levels?
--   Does the time between defecation event and sample collection affect FCM levels?
+-   **Goal**: assess short-term stress response in red deer towards
+    hunting events at the Bavarian Forest National Park
 
--   Model FCM levels on spatial and temporal distance to hunting activities
+-   What is the effect of temporal and spatial distance on FCM levels?
+
+-   Does the time between defecation event and sample collection affect
+    FCM levels?
+
+-   Model FCM levels on spatial and temporal distance to hunting
+    activities
 
 -   **Expectations**:
+
     -   FCM levels higher when closer in time and space
-    -   FCM levels lower, the more time passes between defecating and sampling
+    -   FCM levels lower, the more time passes between defecating and
+        sampling
 
 # Data Analysis
-We were provided with different three Datasets:
 
-  i) Data containing information about the various hunting events
-  ii) Data concerning the location of the collared deer over time
-  iii) Data about the faecal samples, collected by the researchers
-
-In the following three subchapters we are going to describe the main features of each data set and address any anomalies.
+We were provided with four distinct Datasets.\ 
+In the following subchapters we are going to describe the main
+features of each data set, but the reproduction data (see @sec-outlook) and address any anomalies.
 
 ## Hunting Events
--   Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
--   **519** hunting events have complete location and time information.
 
-![Hunting Events](Figures/Maps/Hunts.png)
+```{r include=FALSE}
+# source("R/DataAnalysis.R")
+# plot.hunt.events(save = TRUE)
+```
+
+The dataset contains the location and time of roughly 700 individual
+hunting events, spanning from 2020 to 2022. There are three main
+challenges:
+
+![Hunts - completeness of timestamp](Figures/hunts_incomplete_timestamp.png){#fig-timestamp}
+
+i)  Just a little over 500 of these events have a complete timestamp,
+    consisting of date and time of day (@fig-timestamp).
+ii) The events are not represented as a period of time, but as a as a single moment in time. Additionally,
+as shown in @fig-hunt_dates, there appears to be seasonality in the occurrence of hunts.
+iii) Similiarly to ii), the events are only associated with a single spatial
+     point. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
+
+![Hunts - Daily Count](Figures/hunt_dates.png){#fig-hunt_dates}
+
+![Hunts - Locations](Figures/Maps/Hunts_notitle.png){#fig-hunt_locations}
 
 ## Movement Data
--   Contains the location of the **40** collared deer from Feb. 2020 to Feb. 2023.
--   Movement is tracked at **hourly** intervals.
+There are **40 collared deers** which movements have been tracked completely or partially between February 2020 and February 2023. Some collars stopped working before the end-date, some deers got collared *within* the timespan of interest. The location of each individual deer is **tracked on an hourly basis**. The Movement of four randomly selected deer is visualised in @fig-deers_locations. During the winter months, the deers roam in one of four enclosures within the national park.
 
-![Deer Locations](Figures/Maps/Movement.png)
+![Deers - Locations of four Deer](Figures/Maps/Movement_notitle.png){#fig-deers_locations}
 
 ## Faecal Sample Data
-Contains information of **809 faecal samples**, including:
--   the FCM level \[ng/g\],
--   the time and location of sampling,
--   to which deer the sample belongs,
--   when the defecation happened.
-Samples where taken at irregular time intervals from 2020 to 2022.
+The faecal sample dataset contains information on **809 faecal samples**. Most importantly, the FCM-level (in nanograms per gram [ng/g]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
 
-![Sample Locations](Figures/Maps/Samples.png)
+![Sample - daily count](Figures/fcm_daily_count.png){#fig-samples_daily_count}
+
+![Samples - Locations](Figures/Maps/Samples_notitle.png){#fig-samples_locations}
 
 # Data Preprocessing
+
 ## subtopic 1
 
 ## subtopic 2
 
 # Model Selection
+
 ## subtopic 1
 
 ## subtopic 2
 
 # Model Evaluation
+
 ## subtopic 1
 
 ## subtopic 2
 
-# Conclusion & Outlook
-## subtopic 1
-
-## subtopic 2
-abc
-
+# Conclusion & Outlook {#sec-outlook}
+We deliberately chose not to include the pregnancy data in our model as it only contains information on some deer. As we are not able to label the remainder of the deer as “pregnant”/“not pregnant”, we are convinced that including this information would lead to a huge bias. However, we are strongly in favor of adding additional characteristics that could explain a shift in baseline stress levels.
