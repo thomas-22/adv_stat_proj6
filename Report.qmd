@@ -29,58 +29,38 @@ format:
 # Introduction
 
 ## Background
-Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes. This project aims to investigate the physiological stress response in red deer using non-invasive methods such as the measurement of faecal cortisol metabolites (FCMs). Stress is expected to be higher in proximity to hunting events.
+Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes. This project aims to investigate the physiological stress response in red deer using a non-invasive method, the measurement of faecal cortisol metabolites (FCMs). 
 
 ## Data Generating Process
+The data for the project origins in the *Bavarian Forest National Park*. Its location is highlighted in green in @fig-park_location. Within and on the borders of this area, red deer roam freely. Some of these deer have been **collared with a GPS-device**, which helps to track the movement. At some time, a **hunting event** happens and the deer experiences some amount of stress. Later, the deer defecates ("**defecation event**"). Subsequently, researchers visit the defecation location and collect a **faecal sample**.
 
-![Bavarian Forest National Park](Figures/Maps/overview.png)
+![Location of Bavarian Forest National Park](Figures/Maps/overview_notitle.png){#fig-park_location}
 
--   A deer roams freely in the Bavarian Forest National Park
+**Stress is expected to be higher in proximity^[this includes temporal and spatial proximity] to hunting events**. With higher stress, FCM values are expected to be higher. @Huber2003 showed (@fig-fcm) that the FCM levels peak between 16 and 19 hours after a stress event (called "challenge"). Additionally we expect, that FCM levels are lower, the more time passes between defecation and sampling. 
 
--   Its **movement is tracked** by a GPS collar
-
--   A **hunting event** happens
-
--   After some time, the deer defecates. The **defecation event**
-
--   Subsequently, Researchers go to the defecation location and collect
-    a **faecal sample**
-
-@Huber2003 showed the following:
-
-![FCM Levels](Figures/FCM-levels.png)
+![FCM levels over time](Figures/FCM-levels.png){#fig-fcm}
 
 ## Research Question
--   **Goal**: assess short-term stress response in red deer towards
-    hunting events at the Bavarian Forest National Park
+Therefore our research question is two-fold:
 
--   What is the effect of temporal and spatial distance on FCM levels?
+-   assess the effect of temporal and spatial distance on FCM level
+-   assess if the time between defecation event and sample collection affect
+    the FCM levels
+    
+    
+<!-- -   **Goal**: assess short-term stress response in red deer towards -->
+<!--     hunting events at the Bavarian Forest National Park -->
 
--   Does the time between defecation event and sample collection affect
-    FCM levels?
+<!-- -   Model FCM levels on spatial and temporal distance to hunting -->
+<!--     activities -->
 
--   Model FCM levels on spatial and temporal distance to hunting
-    activities
-
--   **Expectations**:
-
-    -   FCM levels higher when closer in time and space
-    -   FCM levels lower, the more time passes between defecating and
-        sampling
 
 # Data Analysis
-
 We were provided with four distinct Datasets.\ 
 In the following subchapters we are going to describe the main
 features of each data set, but the reproduction data (see @sec-outlook) and address any anomalies.
 
 ## Hunting Events
-
-```{r include=FALSE}
-# source("R/DataAnalysis.R")
-# plot.hunt.events(save = TRUE)
-```
-
 The dataset contains the location and time of roughly 700 individual
 hunting events, spanning from 2020 to 2022. There are three main
 challenges:
@@ -106,15 +86,21 @@ There are **40 collared deers** which movements have been tracked completely or 
 ## Faecal Sample Data
 The faecal sample dataset contains information on **809 faecal samples**. Most importantly, the FCM-level (in nanograms per gram [ng/g]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
 
-![Sample - daily count](Figures/fcm_daily_count.png){#fig-samples_daily_count}
+![Samples - Daily Count](Figures/fcm_daily_count.png){#fig-samples_daily_count}
 
 ![Samples - Locations](Figures/Maps/Samples_notitle.png){#fig-samples_locations}
 
 # Data Preprocessing
 
-## subtopic 1
+## Filtering
 
-## subtopic 2
+## Assumptions
+We had to make several assumptions about the data.\ 
+First, we assumed that the movement of each deer between two points is approximately linear and at a constant speed, i.e. we used linear interpolation to determine the coordinates between two signals from the GPS collar.\  
+We also assumed that each hunting event was actually a sound event (i.e. a shot was fired). Therefore, we weighted the value of our score function by $\frac{1}{d^2}$, where $d$ is the Euclidean distance between a given deer and a given hunting event.\  
+Furthermore we assumed that there is no effect of terrain, weather or vegetation on a deer's perception of a hunting event.
+
+## Uncertainties
 
 # Model Selection
 
@@ -129,4 +115,10 @@ The faecal sample dataset contains information on **809 faecal samples**. Most i
 ## subtopic 2
 
 # Conclusion & Outlook {#sec-outlook}
+Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
+
 We deliberately chose not to include the pregnancy data in our model as it only contains information on some deer. As we are not able to label the remainder of the deer as “pregnant”/“not pregnant”, we are convinced that including this information would lead to a huge bias. However, we are strongly in favor of adding additional characteristics that could explain a shift in baseline stress levels.
+
+We believe that a more rigorous recording of hunting events (i.e. timespans instead of single moments, enforcing complete timestamps) and an overall larger amount of data could lead to less uncertainty and thus a clearer result.
+
+
