@@ -103,9 +103,33 @@ Samples where taken at irregular time intervals from 2020 to 2022.
 ![Sample Locations](Figures/Maps/Samples.png)
 
 # Data Preprocessing
-## subtopic 1
+Data Preprocessing
+The original datasets provided by Dr. Ferry are as follows:
+1.	“FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv” Contains all measured Faecal Cortisol Metabolite (FCM) values (stress levels) from faeces samples collected from GPS-monitored red deer.
+2.	“Movement - CRS=ETRS UTM 33N.csv” Includes all GPS locations for each red deer equipped with GPS collars. Most locations were recorded at 1-hour intervals, with some at 15-minute intervals.
+3.	“Hunt Events - CRS=ETRS UTM 33N.csv” Lists hunting events recorded between 2020 and 2022.
+A few weeks into the project, Dr. Ferry provided an updated Hunt Events dataset. This updated dataset was corrected by Dr. Ferry and his colleagues after we expressed concerns about data validity.
+Additionally, Dr. Ferry provided another dataset, “Reproduction Success Results.xlsx,” containing pregnancy status data for certain deer at specific times. The initial idea was to include this information in our analysis, as pregnancy might affect stress levels. However, we did not find a meaningful way to incorporate this data. Reasons included uncertainties about the pregnancy status of deer not listed, sparse data points and unclear entries.
+The three main datasets underwent several preprocessing steps to facilitate analysis:
+1.	Timestamps were parsed and standardized to a uniform format.
+2.	Columns were renamed for clarity; for example, in the FCM dataset, Sample_ID remained as Sample_ID, and X and Y coordinates were renamed to DefecX and DefecY.
+3.	Pregnancy data was initially merged into the FCM dataset but later omitted, as mentioned previously.
+4.	“Collar_day” and “Collar_time” were combined into a single “DefecTime” variable.
+5.	Coordinates were converted from geographic to UTM format. Entries with missing values, zeros, or other highly implausible data were filtered out.
+6.	The cleaned datasets were saved as .rds files in the ./Data directory.
+Since our primary goal is to investigate the relationship between deer stress levels and hunting events, we needed relevant variables. A hunting event and a deer are separated by both space and time, especially since stress levels are measured via faecal samples collected after the event. Essential variables include the spatial distance between a deer and the hunting event at the exact time of the event, as well as the time difference between the hunting event and the subsequent defecation.
+Given that movement data primarily have 1-hour intervals and hunting events occur at arbitrary times, we needed to approximate the exact deer positions at hunting event times. 
+We first interpolated deer positions at the precise times of all hunting events:
+1.	Duplicate entries and records with missing timestamps were removed from hunting events.
+2.	For each hunting event, we identified the closest movement data point before and after the event.
+3.	Assuming constant velocity and linear movement between these two points, we calculated the exact position of the deer at the hunting event time. This interpolation involved computing the fraction of time elapsed between the first movement point and the hunting event relative to the total interval between the two movement points. This fraction was then multiplied by the movement vector, resulting in an interpolated position.
+Next, we paired FCM samples with hunting events. Knowing the exact deer associated with each sample allowed a many-to-many pairing. Each FCM sample was associated with all hunting events occurring before the sample was produced. Calculated distances became associated with these sample-event pairs, and the time difference between the defecation event and the hunting event was computed. The resulting dataset contained samples linked to all prior hunting events, creating multiple pairings per sample. This posed a problem: samples collected later had disproportionately many associated hunting events.
 
-## subtopic 2
+#Filtering
+To prevent collinearity between observations, we decided to retain at most one assignment per FCM sample. Three versions of the reduced dataset were proposed:
+1.	Retaining the observation with the time difference between hunting and defecation closest to 19 hours, as suggested by Dr. Ferry and literature (e.g., Huber et al.), since cortisol metabolite concentrations peak around 19 hours post-stress event.
+2.	Retaining the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position.
+3.	Introducing a scoring system to consider both distance and time difference simultaneously. Recognizing the importance of both factors, we designed a score proportional to the inverse square of the distance and a "spike" function based on time difference. The inverse square component was inspired by physical dynamics (such as the inverse square law for sound intensity), while the spike function was inspired by pharmacokinetics. Multiplying these two components resulted in a combined score, and the observation with the highest score was selected. A minimum score threshold was also established to ensure plausibility regarding the stress level impact.
 
 # Model Selection
 ## subtopic 1
