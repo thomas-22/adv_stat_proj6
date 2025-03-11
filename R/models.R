@@ -55,3 +55,11 @@ fit_gam_tp <- function(data, family = gaussian()) {
     family = family
   )
 }
+
+fig_glm <- function(data, family = gaussian()) {
+  lme4::lmer(
+    ng_g ~ TimeDiff + Distance + SampleDelay + DefecDay + NumOtherHunts + (1 | Deer.ID),
+    data = data,
+    family = family
+  )
+}
