@@ -55,3 +55,17 @@ fit_gam_tp <- function(data, family = gaussian()) {
     family = family
   )
 }
+
+fit_models <- function(df, fit.fn) {
+  checkmate::assertDataFrame(df)
+  checkmate::assertSubset(c("data", "method"), choices = names(df))
+  checkmate::assertFunction(fit.fn)
+  models <- list()
+  for (i in seq_len(nrow(df))) {
+    mod <- fit.fn(df[i, ]$data[[1]],  family = Gamma(link = "log"), method = as.character(df[i, ]$method))
+    models[[i]] <- mod
+  }
+  df$fit <- models
+  return(df)
+}
+
