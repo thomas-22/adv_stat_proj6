@@ -6,6 +6,9 @@ lang: en
 format:
   pdf:
     documentclass: scrreprt
+    number-sections: true
+    crossref:
+      chapters: true
     bibliography: references.bib
     classoption: [twocolumn, open=any]
     lof: true
@@ -13,96 +16,82 @@ format:
     toc: true
     geometry:
       - top=20mm
-      - left=20mm
-      - right=20mm
+      - left=15mm
+      - right=15mm
       - bottom=20mm
       - heightrounded
     mainfont: Arial
     colorlinks: true
 ---
+
 # Summary
 
 # Introduction
+
 ## Background
-Hunting activities have long been recognized to have a numerical effect on animal populations
-through individuals removal. 
-
-More recently a larger focus was brought on the non-lethal effect
-hunting can have through behaviour change (e.g., space use, vigilance or fleeing behaviour).
-
-
-Numerous studies highlight such process, however, little is known about the physiological
-response preceeding and driving the behaviour changes in wildlife. 
-
-A measurement of faecal cortisol metabolites (FCMs) as a non-invasive, physiological parameter reflecting
-hypothalamus–pituitary–adrenal (HPA) axis activity is a growing method to assess stress
-response towards stimulus. 
-
-In this project, we aim to assess red deer short-term stress response
-towards hunting events at the Bavarian Forest National Park, using FCMs methods, and test the
-effect of spatial and temporal distances on this response. We expect the FCM to be higher when
-being closer in space and time to a hunting event.
-
-![Bavarian Forest National Park](Figures/Maps/overview.png)
+Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes. This project aims to investigate the physiological stress response in red deer using a non-invasive method, the measurement of faecal cortisol metabolites (FCMs). 
 
 ## Data Generating Process
--   Hunting activities have a numerical effect on animal populations
--   Additionally, hunting can have non-lethal effects
--   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park
+The data for the project origins in the *Bavarian Forest National Park*. Its location is highlighted in green in @fig-park_location. Within and on the borders of this area, red deer roam freely. Some of these deer have been **collared with a GPS-device**, which helps to track the movement. At some time, a **hunting event** happens and the deer experiences some amount of stress. Later, the deer defecates ("**defecation event**"). Subsequently, researchers visit the defecation location and collect a **faecal sample**.
 
--   A deer roams freely in the Bavarian Forest National Park
--   Its **movement is tracked** by a GPS collar
--   A **hunting event** happens
--   After some time, the deer defecates. The **defecation event**
--   Subsequently, Researchers go to the defecation location and collect a **faecal sample**
+![Location of Bavarian Forest National Park](Figures/sp_park_location.png){#fig-park_location}
 
-@Huber2003 showed the following:
+**Stress is expected to be higher in proximity^[this includes temporal and spatial proximity] to hunting events**. With higher stress, FCM values are expected to be higher. @Huber2003 showed (@fig-fcm) that the FCM levels peak between 16 and 19 hours after a stress event (called "challenge"). Additionally we expect, that FCM levels are lower, the more time passes between defecation and sampling. 
 
-![FCM Levels](Figures/FCM-levels.png)
-
+![FCM levels over time](Figures/Huber_et_al_FCM_levels.png){#fig-fcm}
 
 ## Research Question
--   What is the effect of temporal and spatial distance on FCM levels?
--   Does the time between defecation event and sample collection affect FCM levels?
+Therefore our research question is two-fold:
 
--   Model FCM levels on spatial and temporal distance to hunting activities
+-   assess the effect of temporal and spatial distance on FCM level
+-   assess if the time between defecation event and sample collection affect
+    the FCM levels
+    
+    
+<!-- -   **Goal**: assess short-term stress response in red deer towards -->
+<!--     hunting events at the Bavarian Forest National Park -->
 
--   **Expectations**:
-    -   FCM levels higher when closer in time and space
-    -   FCM levels lower, the more time passes between defecating and sampling
+<!-- -   Model FCM levels on spatial and temporal distance to hunting -->
+<!--     activities -->
+
 
 # Data Analysis
-We were provided with different three Datasets:
-
-  i) Data containing information about the various hunting events
-  ii) Data concerning the location of the collared deer over time
-  iii) Data about the faecal samples, collected by the researchers
-
-In the following three subchapters we are going to describe the main features of each data set and address any anomalies.
+We were provided with four distinct Datasets.\ 
+In the following subchapters we are going to describe the main
+features of each data set, but the reproduction data (see @sec-outlook) and address any anomalies.
 
 ## Hunting Events
--   Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
--   **519** hunting events have complete location and time information.
+The dataset contains the location and time of roughly 700 individual
+hunting events, spanning from 2020 to 2022. There are three main
+challenges:
 
-![Hunting Events](Figures/Maps/Hunts.png)
+![Hunts - completeness of timestamp](Figures/hunts_incomplete_timestamp.png){#fig-timestamp}
+
+i)  Just a little over 500 of these events have a complete timestamp,
+    consisting of date and time of day (@fig-timestamp).
+ii) The events are not represented as a period of time, but as a as a single moment in time. Additionally,
+as shown in @fig-hunts_dates, there appears to be seasonality in the occurrence of hunts.
+iii) Similiarly to ii), the events are only associated with a single spatial
+     point. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
+
+![Hunts - Daily Count](Figures/hunts_dates.png){#fig-hunts_dates}
+
+![Hunts - Locations](Figures/sp_hunts.png){#fig-hunt_locations}
 
 ## Movement Data
--   Contains the location of the **40** collared deer from Feb. 2020 to Feb. 2023.
--   Movement is tracked at **hourly** intervals.
+There are **40 collared deers** which movements have been tracked completely or partially between February 2020 and February 2023. Some collars stopped working before the end-date, some deers got collared *within* the timespan of interest. The location of each individual deer is **tracked on an hourly basis**. The Movement of four randomly selected deer is visualised in @fig-deers_locations. During the winter months, the deers roam in one of four enclosures within the national park.
 
-![Deer Locations](Figures/Maps/Movement.png)
+![Deers - Locations of four Deer](Figures/sp_movement_4.png){#fig-deers_locations}
 
 ## Faecal Sample Data
-Contains information of **809 faecal samples**, including:
--   the FCM level \[ng/g\],
--   the time and location of sampling,
--   to which deer the sample belongs,
--   when the defecation happened.
-Samples where taken at irregular time intervals from 2020 to 2022.
+The faecal sample dataset contains information on **809 faecal samples**. Most importantly, the FCM-level (in nanograms per gram [ng/g]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
 
-![Sample Locations](Figures/Maps/Samples.png)
+![Samples - Daily Count](Figures/samples_daily_count.png){#fig-samples_daily_count}
+
+![Samples - Locations](Figures/sp_samples.png){#fig-samples_locations}
 
 # Data Preprocessing
+<<<<<<< HEAD
 Data Preprocessing
 The original datasets provided by Dr. Ferry are as follows:
 1.	“FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv” Contains all measured Faecal Cortisol Metabolite (FCM) values (stress levels) from faeces samples collected from GPS-monitored red deer.
@@ -130,20 +119,73 @@ To prevent collinearity between observations, we decided to retain at most one a
 1.	Retaining the observation with the time difference between hunting and defecation closest to 19 hours, as suggested by Dr. Ferry and literature (e.g., Huber et al.), since cortisol metabolite concentrations peak around 19 hours post-stress event.
 2.	Retaining the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position.
 3.	Introducing a scoring system to consider both distance and time difference simultaneously. Recognizing the importance of both factors, we designed a score proportional to the inverse square of the distance and a "spike" function based on time difference. The inverse square component was inspired by physical dynamics (such as the inverse square law for sound intensity), while the spike function was inspired by pharmacokinetics. Multiplying these two components resulted in a combined score, and the observation with the highest score was selected. A minimum score threshold was also established to ensure plausibility regarding the stress level impact.
+=======
+
+## Filtering
+
+## Assumptions
+We had to make several assumptions about the data.\ 
+First, we assumed that the movement of each deer between two points is approximately linear and at a constant speed, i.e. we used linear interpolation to determine the coordinates between two signals from the GPS collar.\  
+We also assumed that each hunting event was actually a sound event (i.e. a shot was fired). Therefore, we weighted the value of our score function by $\frac{1}{d^2}$, where $d$ is the Euclidean distance between a given deer and a given hunting event.\  
+<!-- Furthermore we assumed that there is no effect of terrain, weather or vegetation on a deer's perception of a hunting event. -->
+
+## Uncertainties
+
+A major challenge in our analysis is the large uncertainty in data which propogates through the pre-processing steps into our models.
+
+First, the uncertainty about spatial distances between deer and hunting events is large. While the movement of deer was tracked at hourly intervals, hunting events occurred irregularly. In our interpolation-based approximation of a deer's location at the time of hunting event, the approximation error is unknown.
+
+Second, we have very limited information for addressing the short-term stress response of the deer. On the one hand, the available data contain only 500 hunting events with complete time and location information scattered across a 30km $\times$ 30km area in the span of two years. The observed hunting events only populate the space-time scarcely. On the other hand, we observe in @fig-deers_locations that the deer tended to roam around within a small area. As a result, each deer is likely to have only encountered very few hunting events at small spatial and temporal distances.
+
+Third, there could be a large number of confounders for which we possess no information. Based on GPS coordinates, we can compute Euclidean distances between deer and hunting events. However, we cannot account for terrain and vegetation which could affect the propagation of sound and therefore contaminate the potential effect of hunting events. Furthermore, there could be unobserved stress stimuli, such as weather conditions, predators, and human activities other than hunting.
+>>>>>>> 8060ca6b18917253cd48143b893dd63a493b113c
 
 # Model Selection
+
+To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration. In this section, we present details on model specification.
+
+## Statistical modeling approach
+
+For each dataset resulted from TBD, we consider the following variables as covariates:
+
+- Time Difference between defaction and the most relevant hunting event;
+- Distance (in space) between the deer and the most relevant hunting event;
+- Sample Delay, i.e., the time difference between sample collection and defecation;
+- Defecation Day, i.e., the day of year on which the defecation event occurred;
+- Number of Other Relevant Hunting Events within the specified spatiotemporal frame.
+
+The first two covariates are of main interest for our first research question. The effect of sample delay is the subject of our second research question. We consider the day of defecation as a potential confounder, as the deer's stress level exhibits seasonal patterns [@Vilela2020]. The number of other relevant hunting events reflects the intensity of recent hunting activity. In time periods of frequent hunting events, a deer might have a generally higher stress level, or adaptation might occur which dampens the stress response towards new hunting events.
+
+We propose a generalized additive mixed model (GAMM) to account for potentially non-linear effects of covariates and potential individual differences between the observed deer. We use the R package `mgcv` [@mgcv] to fit the models. The covariates Time Difference, Distance, Sample Delay, and Defecation Day are encoded by penalized cubic regression splines. We do not use a cyclical spline for Defecation Day, because faecal samples were not collected during winter and therefore Defecation Day is not a cyclical variable. The Number of Other Relevant Hunting Events is adopted as a linear effect. We further introduce a random intercept for each deer.
+
+For the distributional assumption, we use the Gamma family with a log link. Since the FCM level is non-negative, we expect the Gamma assumption to more appropriate than Gaussian. A full specification of our GAMM model is as follows. Let $i = 1,\dots,N$ be the indices of the deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer
+\begin{align*}
+\textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim} \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
+\mu_{ij} &= \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
+\eta_{ij} &= \beta_0 \\
+&+ \beta_1 \textup{Number of Other Relevant Hunting Events}_{ij} \\
+&+ f_1(\textup{Time Difference}_{ij}) + f_2(\textup{Distance}_{ij}) \\
+&+ f_3(\textup{Sample Delay}_{ij}) + f_4(\textup{Defecation Day}_{ij}) \\
+&+ \gamma_{i}, \\
+\gamma_i &\overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_\gamma^2),
+\end{align*}
+where $f_1, f_2, f_3, f_4$ are penalized cubic regression splines, $\sigma_\gamma^2 > 0$, and $\nu > 0$.
+
+Our model has two major limitations. First, it does not account for potential interactions between the covariates. Second, the random intercept term can only capture different base stress levels, but not differences in stress response. However, given the limited data, one must trade off between model complexity and stability in estimation. In fact, our current model already exhibits instability with respect to estimation procedures, which we discuss in @sec-results.
+
+## Machine learning approach
+
+# Model Evaluation {#sec-results}
+
 ## subtopic 1
 
 ## subtopic 2
 
-# Model Evaluation
-## subtopic 1
+# Conclusion & Outlook {#sec-outlook}
+Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
 
-## subtopic 2
+We deliberately chose not to include the pregnancy data in our model as it only contains information on some deer. As we are not able to label the remainder of the deer as “pregnant”/“not pregnant”, we are convinced that including this information would lead to a huge bias. However, we are strongly in favor of adding additional characteristics that could explain a shift in baseline stress levels.
 
-# Conclusion & Outlook
-## subtopic 1
+We believe that a more rigorous recording of hunting events (i.e. timespans instead of single moments, enforcing complete timestamps) and an overall larger amount of data could lead to less uncertainty and thus a clearer result.
 
-## subtopic 2
-abc
 

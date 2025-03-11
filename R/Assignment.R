@@ -1,6 +1,3 @@
-#RUN "CalcSenderPosDist_new.R" FIRST
-# library(dplyr)
-
 # For each FCM sample, find all hunting events within a certain time frame,
 # calculate distance and time diff, and add potential confounders.
 assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
