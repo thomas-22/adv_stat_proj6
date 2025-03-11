@@ -58,6 +58,7 @@ save.model.data(res)
 
 # -------------------------
 # fitting models
+# see models.R
 # -------------------------
 cat("Fitting Models...\n")
 fits <- fit_models(df = res %>% left_join(
@@ -66,14 +67,17 @@ fits <- fit_models(df = res %>% left_join(
 
 # -------------------------
 # diagnosing models
+# for the used functions, see ModelAnalysis.R
 # -------------------------
-cat("Model diagnostics (gratia)...\n")
-plot_diagnostics_gratia(fits)
-cat("Model diagnostics (custom)...\n")
-plot_diagnostics_custom(fits)
-cat("Model partial effects...\n")
-plot_partial_effects(fits)
+cat("saving Model diagnostics (gratia)...\n")
+# plot_diagnostics_gratia(fits)
+plot_diagnostics_gratia(fits, method = "save")
 
-# plot_diagnostics_gratia(fits, method = "save")
-# plot_diagnostics_custom(fits, method = "save")
-# plot_partial_effects(fits, method = "save")
+cat("saving Model diagnostics (custom)...\n")
+# plot_diagnostics_custom(fits)
+plot_diagnostics_custom(fits, method = "save")
+
+cat("saving Model partial effects plots...\n")
+# plot_partial_effects(fits)
+plot_partial_effects(fits, method = "save")
+

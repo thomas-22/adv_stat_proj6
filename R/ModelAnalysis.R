@@ -33,6 +33,10 @@ plot_diagnostics_gratia <- function(data, method = "show") {
   }
 }
 
+# -------------------------
+# generates custom-diagnostics for multiple models
+# methods: show / return / save
+# -------------------------
 plot_diagnostics_custom <- function(data, method = "show") {
   checkmate::assertDataFrame(data)
   checkmate::assertSubset(c("fit", "filter_criterion", "method"), choices = names(data))
@@ -97,6 +101,10 @@ plot_diagnostics_custom <- function(data, method = "show") {
   }
 }
 
+# -------------------------
+# generates partial effect plots for multiple models
+# methods: show / return / save
+# -------------------------
 plot_partial_effects <- function(data, features = NULL, method = "show") {
   checkmate::assertDataFrame(data)
   checkmate::assertSubset(c("fit", "filter_criterion", "method"), choices = names(data))
@@ -130,6 +138,7 @@ plot_partial_effects <- function(data, features = NULL, method = "show") {
   }
 }
 
+#----------------------------------#
 
 # Plot effects
 # plot marginal predictions
