@@ -1,11 +1,6 @@
-# library(readr)
-# library(readxl)
-# library(stringr)
-# library(lubridate)
-# library(purrr)
-# library(gamm4)
-# library(gratia)
-
+# -------------------------
+# load neccessary libraries
+# -------------------------
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -17,7 +12,20 @@ library(sf)
 library(osmdata)
 library(mgcv)
 
+# -------------------------
+# the following libraries get accessed via the :: operator
+# -------------------------
+# library(readr)
+# library(readxl)
+# library(stringr)
+# library(lubridate)
+# library(purrr)
+# library(gamm4)
+# library(gratia)
 
+# -------------------------
+# set paths to raw data
+# -------------------------
 path.FCMStress <- "Data/raw/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
 path.ReproductionSuccess <- "Data/raw/Reproduction Success Results.xlsx"
 path.Movement <- "Data/raw/Movement - CRS=ETRS UTM 33N.csv"

@@ -1,3 +1,7 @@
+# -------------------------
+# generates plots for descriptive analytics
+# methods: show / return / save
+# -------------------------
 analytics <- function(data, method = "show") {
   checkmate::assertList(data)
   lapply(data, checkmate::assertDataFrame)
