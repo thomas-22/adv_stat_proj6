@@ -34,11 +34,11 @@ Apart from the change in populations size, the effects of hunting on wildlife ha
 ## Data Generating Process
 The data for the project origins in the *Bavarian Forest National Park*. Its location is highlighted in green in @fig-park_location. Within and on the borders of this area, red deer roam freely. Some of these deer have been **collared with a GPS-device**, which helps to track the movement. At some time, a **hunting event** happens and the deer experiences some amount of stress. Later, the deer defecates ("**defecation event**"). Subsequently, researchers visit the defecation location and collect a **faecal sample**.
 
-![Location of Bavarian Forest National Park](Figures/Maps/overview_notitle.png){#fig-park_location}
+![Location of Bavarian Forest National Park](Figures/sp_park_location.png){#fig-park_location}
 
 **Stress is expected to be higher in proximity^[this includes temporal and spatial proximity] to hunting events**. With higher stress, FCM values are expected to be higher. @Huber2003 showed (@fig-fcm) that the FCM levels peak between 16 and 19 hours after a stress event (called "challenge"). Additionally we expect, that FCM levels are lower, the more time passes between defecation and sampling. 
 
-![FCM levels over time](Figures/FCM-levels.png){#fig-fcm}
+![FCM levels over time](Figures/Huber_et_al_FCM_levels.png){#fig-fcm}
 
 ## Research Question
 Therefore our research question is two-fold:
@@ -70,25 +70,25 @@ challenges:
 i)  Just a little over 500 of these events have a complete timestamp,
     consisting of date and time of day (@fig-timestamp).
 ii) The events are not represented as a period of time, but as a as a single moment in time. Additionally,
-as shown in @fig-hunt_dates, there appears to be seasonality in the occurrence of hunts.
+as shown in @fig-hunts_dates, there appears to be seasonality in the occurrence of hunts.
 iii) Similiarly to ii), the events are only associated with a single spatial
      point. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
 
-![Hunts - Daily Count](Figures/hunt_dates.png){#fig-hunt_dates}
+![Hunts - Daily Count](Figures/hunts_dates.png){#fig-hunts_dates}
 
-![Hunts - Locations](Figures/Maps/Hunts_notitle.png){#fig-hunt_locations}
+![Hunts - Locations](Figures/sp_hunts.png){#fig-hunt_locations}
 
 ## Movement Data
 There are **40 collared deers** which movements have been tracked completely or partially between February 2020 and February 2023. Some collars stopped working before the end-date, some deers got collared *within* the timespan of interest. The location of each individual deer is **tracked on an hourly basis**. The Movement of four randomly selected deer is visualised in @fig-deers_locations. During the winter months, the deers roam in one of four enclosures within the national park.
 
-![Deers - Locations of four Deer](Figures/Maps/Movement_notitle.png){#fig-deers_locations}
+![Deers - Locations of four Deer](Figures/sp_movement_4.png){#fig-deers_locations}
 
 ## Faecal Sample Data
 The faecal sample dataset contains information on **809 faecal samples**. Most importantly, the FCM-level (in nanograms per gram [ng/g]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
 
-![Samples - Daily Count](Figures/fcm_daily_count.png){#fig-samples_daily_count}
+![Samples - Daily Count](Figures/samples_daily_count.png){#fig-samples_daily_count}
 
-![Samples - Locations](Figures/Maps/Samples_notitle.png){#fig-samples_locations}
+![Samples - Locations](Figures/sp_samples.png){#fig-samples_locations}
 
 # Data Preprocessing
 
