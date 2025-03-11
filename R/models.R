@@ -56,6 +56,14 @@ fit_gam_tp <- function(data, family = gaussian()) {
   )
 }
 
+fig_glm <- function(data, family = gaussian()) {
+  lme4::lmer(
+    ng_g ~ TimeDiff + Distance + SampleDelay + DefecDay + NumOtherHunts + (1 | Deer.ID),
+    data = data,
+    family = family
+  )
+}
+
 fit_models <- function(df, fit.fn) {
   checkmate::assertDataFrame(df)
   checkmate::assertSubset(c("data", "method"), choices = names(df))
@@ -68,4 +76,3 @@ fit_models <- function(df, fit.fn) {
   df$fit <- models
   return(df)
 }
-

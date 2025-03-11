@@ -98,17 +98,54 @@ The faecal sample dataset contains information on **809 faecal samples**. Most i
 We had to make several assumptions about the data.\ 
 First, we assumed that the movement of each deer between two points is approximately linear and at a constant speed, i.e. we used linear interpolation to determine the coordinates between two signals from the GPS collar.\  
 We also assumed that each hunting event was actually a sound event (i.e. a shot was fired). Therefore, we weighted the value of our score function by $\frac{1}{d^2}$, where $d$ is the Euclidean distance between a given deer and a given hunting event.\  
-Furthermore we assumed that there is no effect of terrain, weather or vegetation on a deer's perception of a hunting event.
+<!-- Furthermore we assumed that there is no effect of terrain, weather or vegetation on a deer's perception of a hunting event. -->
 
 ## Uncertainties
 
+A major challenge in our analysis is the large uncertainty in data which propogates through the pre-processing steps into our models.
+
+First, the uncertainty about spatial distances between deer and hunting events is large. While the movement of deer was tracked at hourly intervals, hunting events occurred irregularly. In our interpolation-based approximation of a deer's location at the time of hunting event, the approximation error is unknown.
+
+Second, we have very limited information for addressing the short-term stress response of the deer. On the one hand, the available data contain only 500 hunting events with complete time and location information scattered across a 30km $\times$ 30km area in the span of two years. The observed hunting events only populate the space-time scarcely. On the other hand, we observe in @fig-deers_locations that the deer tended to roam around within a small area. As a result, each deer is likely to have only encountered very few hunting events at small spatial and temporal distances.
+
+Third, there could be a large number of confounders for which we possess no information. Based on GPS coordinates, we can compute Euclidean distances between deer and hunting events. However, we cannot account for terrain and vegetation which could affect the propagation of sound and therefore contaminate the potential effect of hunting events. Furthermore, there could be unobserved stress stimuli, such as weather conditions, predators, and human activities other than hunting.
+
 # Model Selection
 
-## subtopic 1
+To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration. In this section, we present details on model specification.
 
-## subtopic 2
+## Statistical modeling approach
 
-# Model Evaluation
+For each dataset resulted from TBD, we consider the following variables as covariates:
+
+- Time Difference between defaction and the most relevant hunting event;
+- Distance (in space) between the deer and the most relevant hunting event;
+- Sample Delay, i.e., the time difference between sample collection and defecation;
+- Defecation Day, i.e., the day of year on which the defecation event occurred;
+- Number of Other Relevant Hunting Events within the specified spatiotemporal frame.
+
+The first two covariates are of main interest for our first research question. The effect of sample delay is the subject of our second research question. We consider the day of defecation as a potential confounder, as the deer's stress level exhibits seasonal patterns [@Vilela2020]. The number of other relevant hunting events reflects the intensity of recent hunting activity. In time periods of frequent hunting events, a deer might have a generally higher stress level, or adaptation might occur which dampens the stress response towards new hunting events.
+
+We propose a generalized additive mixed model (GAMM) to account for potentially non-linear effects of covariates and potential individual differences between the observed deer. We use the R package `mgcv` [@mgcv] to fit the models. The covariates Time Difference, Distance, Sample Delay, and Defecation Day are encoded by penalized cubic regression splines. We do not use a cyclical spline for Defecation Day, because faecal samples were not collected during winter and therefore Defecation Day is not a cyclical variable. The Number of Other Relevant Hunting Events is adopted as a linear effect. We further introduce a random intercept for each deer.
+
+For the distributional assumption, we use the Gamma family with a log link. Since the FCM level is non-negative, we expect the Gamma assumption to more appropriate than Gaussian. A full specification of our GAMM model is as follows. Let $i = 1,\dots,N$ be the indices of the deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer
+\begin{align*}
+\textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim} \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
+\mu_{ij} &= \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
+\eta_{ij} &= \beta_0 \\
+&+ \beta_1 \textup{Number of Other Relevant Hunting Events}_{ij} \\
+&+ f_1(\textup{Time Difference}_{ij}) + f_2(\textup{Distance}_{ij}) \\
+&+ f_3(\textup{Sample Delay}_{ij}) + f_4(\textup{Defecation Day}_{ij}) \\
+&+ \gamma_{i}, \\
+\gamma_i &\overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_\gamma^2),
+\end{align*}
+where $f_1, f_2, f_3, f_4$ are penalized cubic regression splines, $\sigma_\gamma^2 > 0$, and $\nu > 0$.
+
+Our model has two major limitations. First, it does not account for potential interactions between the covariates. Second, the random intercept term can only capture different base stress levels, but not differences in stress response. However, given the limited data, one must trade off between model complexity and stability in estimation. In fact, our current model already exhibits instability with respect to estimation procedures, which we discuss in @sec-results.
+
+## Machine learning approach
+
+# Model Evaluation {#sec-results}
 
 ## subtopic 1
 
