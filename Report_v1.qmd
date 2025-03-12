@@ -1,0 +1,385 @@
+---
+title: "Hunting Effect on Individual Deer Stress Level"
+subtitle: "P15.2 Fortgeschrittenes Praxisprojekt"
+author: "Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou"
+lang: en
+format:
+  pdf:
+    documentclass: scrreprt
+    number-sections: true
+    crossref:
+      chapters: true
+    bibliography: references.bib
+    classoption: [twocolumn, open=any]
+    lof: true
+    header-includes: \counterwithout{figure}{chapter}
+    toc: true
+    geometry:
+      - top=20mm
+      - left=15mm
+      - right=15mm
+      - bottom=20mm
+      - heightrounded
+    mainfont: Arial
+    colorlinks: true
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+# Summary
+
+# Introduction
+
+## Background
+
+Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes.
+This project aims to investigate the physiological stress response in red deer using a non-invasive method, the measurement of faecal cortisol metabolites (FCMs).
+
+## Data Generating Process
+
+The data for the project origins in the *Bavarian Forest National Park*.
+Its location is highlighted in green in @fig-park_location.
+Within and on the borders of this area, red deer roam freely.
+Some of these deer have been **collared with a GPS-device**, which helps to track the movement.
+At some time, a **hunting event** happens and the deer experiences some amount of stress.
+Later, the deer defecates ("**defecation event**").
+Subsequently, researchers visit the defecation location and collect a **faecal sample**.
+
+![Location of Bavarian Forest National Park](Figures/sp_park_location.png){#fig-park_location}
+
+**Stress is expected to be higher in proximity**[^1] to hunting events.
+With higher stress, FCM values are expected to be higher.
+@Huber2003 showed (@fig-fcm) that the FCM levels peak between 16 and 19 hours after a stress event (called "challenge").
+Additionally we expect, that FCM levels are lower, the more time passes between defecation and sampling.
+
+[^1]: **this includes temporal and spatial proximity**
+
+![FCM levels over time](Figures/Huber_et_al_FCM_levels.png){#fig-fcm}
+
+## Research Question
+
+Therefore our research question is two-fold:
+
+-   assess the effect of temporal and spatial distance on FCM level
+-   assess if the time between defecation event and sample collection affect the FCM levels
+
+<!-- -   **Goal**: assess short-term stress response in red deer towards -->
+
+<!--     hunting events at the Bavarian Forest National Park -->
+
+<!-- -   Model FCM levels on spatial and temporal distance to hunting -->
+
+<!--     activities -->
+
+# Data Analysis
+
+We were provided with four distinct Datasets. 
+In the following subchapters we are going to describe the main features of each data set, but the reproduction data (see @sec-outlook) and address any anomalies.
+
+## Hunting Events
+
+The dataset contains the location and time of roughly 700 individual hunting events, spanning from 2020 to 2022.
+There are three main challenges:
+
+![Hunts - completeness of timestamp](Figures/hunts_incomplete_timestamp.png){#fig-timestamp}
+
+i)  Just a little over 500 of these events have a complete timestamp, consisting of date and time of day (@fig-timestamp).
+ii) The events are not represented as a period of time, but as a as a single moment in time. Additionally, as shown in @fig-hunts_dates, there appears to be seasonality in the occurrence of hunts.
+iii) Similiarly to ii), the events are only associated with a single spatial point. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
+
+![Hunts - Daily Count](Figures/hunts_dates.png){#fig-hunts_dates}
+
+![Hunts - Locations](Figures/sp_hunts.png){#fig-hunt_locations}
+
+## Movement Data
+
+There are **40 collared deers** which movements have been tracked completely or partially between February 2020 and February 2023.
+Some collars stopped working before the end-date, some deers got collared *within* the timespan of interest.
+The location of each individual deer is **tracked on an hourly basis**.
+The Movement of four randomly selected deer is visualised in @fig-deers_locations.
+During the winter months, the deers roam in one of four enclosures within the national park.
+
+![Deers - Locations of four Deer](Figures/sp_movement_4.png){#fig-deers_locations}
+
+## Faecal Sample Data
+
+The faecal sample dataset contains information on **809 faecal samples**.
+Most importantly, the FCM-level (in nanograms per gram \[ng/g\]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling.
+The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
+
+![Samples - Daily Count](Figures/samples_daily_count.png){#fig-samples_daily_count}
+
+![Samples - Locations](Figures/sp_samples.png){#fig-samples_locations}
+
+# Data Preprocessing
+
+The original datasets provided by Dr. Ferry are as follows: 1.
+“FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv” Contains all measured Faecal Cortisol Metabolite (FCM) values (stress levels) from faeces samples collected from GPS-monitored red deer.
+2.
+“Movement - CRS=ETRS UTM 33N.csv” Includes all GPS locations for each red deer equipped with GPS collars.
+Most locations were recorded at 1-hour intervals, with some at 15-minute intervals.
+3.
+“Hunt Events - CRS=ETRS UTM 33N.csv” Lists hunting events recorded between 2020 and 2022.
+A few weeks into the project, Dr. Ferry provided an updated Hunt Events dataset.
+This updated dataset was corrected by Dr. Ferry and his colleagues after we expressed concerns about data validity.
+Additionally, Dr. Ferry provided another dataset, “Reproduction Success Results.xlsx,” containing pregnancy status data for certain deer at specific times.
+The initial idea was to include this information in our analysis, as pregnancy might affect stress levels.
+However, we did not find a meaningful way to incorporate this data.
+Reasons included uncertainties about the pregnancy status of deer not listed, sparse data points and unclear entries.
+The three main datasets underwent several preprocessing steps to facilitate analysis: 1.
+Timestamps were parsed and standardized to a uniform format.
+2.
+Columns were renamed for clarity; for example, in the FCM dataset, Sample_ID remained as Sample_ID, and X and Y coordinates were renamed to DefecX and DefecY.
+3.
+Pregnancy data was initially merged into the FCM dataset but later omitted, as mentioned previously.
+4.
+“Collar_day” and “Collar_time” were combined into a single “DefecTime” variable.
+5.
+Coordinates were converted from geographic to UTM format.
+Entries with missing values, zeros, or other highly implausible data were filtered out.
+6.
+The cleaned datasets were saved as .rds files in the ./Data directory.
+Since our primary goal is to investigate the relationship between deer stress levels and hunting events, we needed relevant variables.
+A hunting event and a deer are separated by both space and time, especially since stress levels are measured via faecal samples collected after the event.
+Essential variables include the spatial distance between a deer and the hunting event at the exact time of the event, as well as the time difference between the hunting event and the subsequent defecation.
+Given that movement data primarily have 1-hour intervals and hunting events occur at arbitrary times, we needed to approximate the exact deer positions at hunting event times.
+We first interpolated deer positions at the precise times of all hunting events: 1.
+Duplicate entries and records with missing timestamps were removed from hunting events.
+2.
+For each hunting event, we identified the closest movement data point before and after the event.
+3.
+Assuming constant velocity and linear movement between these two points, we calculated the exact position of the deer at the hunting event time.
+This interpolation involved computing the fraction of time elapsed between the first movement point and the hunting event relative to the total interval between the two movement points.
+This fraction was then multiplied by the movement vector, resulting in an interpolated position.
+Next, we paired FCM samples with hunting events.
+Knowing the exact deer associated with each sample allowed a many-to-many pairing.
+Each FCM sample was associated with all hunting events occurring before the sample was produced.
+Calculated distances became associated with these sample-event pairs, and the time difference between the defecation event and the hunting event was computed.
+The resulting dataset contained samples linked to all prior hunting events, creating multiple pairings per sample.
+This posed a problem: samples collected later had disproportionately many associated hunting events.
+
+## Filtering
+
+To prevent collinearity between observations, we decided to retain at most one assignment per FCM sample.
+Three versions of the reduced dataset were proposed: 1.
+Retaining the observation with the time difference between hunting and defecation closest to 19 hours, as suggested by Dr. Ferry and literature (e.g., Huber et al.), since cortisol metabolite concentrations peak around 19 hours post-stress event.
+2.
+Retaining the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position.
+3.
+Introducing a scoring system to consider both distance and time difference simultaneously.
+Recognizing the importance of both factors, we designed a score proportional to the inverse square of the distance and a "spike" function based on time difference.
+The inverse square component was inspired by physical dynamics (such as the inverse square law for sound intensity), while the spike function was inspired by pharmacokinetics.
+Multiplying these two components resulted in a combined score, and the observation with the highest score was selected.
+A minimum score threshold was also established to ensure plausibility regarding the stress level impact.
+
+## Assumptions
+
+We had to make several assumptions about the data. 
+First, we assumed that the movement of each deer between two points is approximately linear and at a constant speed, i.e. we used linear interpolation to determine the coordinates between two signals from the GPS collar. 
+We also assumed that each hunting event was actually a sound event (i.e. a shot was fired).
+Therefore, we weighted the value of our score function by $\frac{1}{d^2}$, where $d$ is the Euclidean distance between a given deer and a given hunting event. 
+
+## Uncertainties
+
+A major challenge in our analysis is the large uncertainty in data which propogates through the pre-processing steps into our models.
+
+First, the uncertainty about spatial distances between deer and hunting events is large.
+While the movement of deer was tracked at hourly intervals, hunting events occurred irregularly.
+In our interpolation-based approximation of a deer's location at the time of hunting event, the approximation error is unknown.
+
+Second, we have very limited information for addressing the short-term stress response of the deer.
+On the one hand, the available data contain only 500 hunting events with complete time and location information scattered across a 30km $\times$ 30km area in the span of two years.
+The observed hunting events only populate the space-time scarcely.
+On the other hand, we observe in @fig-deers_locations that the deer tended to roam around within a small area.
+As a result, each deer is likely to have only encountered very few hunting events at small spatial and temporal distances.
+
+Third, there could be a large number of confounders for which we possess no information.
+Based on GPS coordinates, we can compute Euclidean distances between deer and hunting events.
+However, we cannot account for terrain and vegetation which could affect the propagation of sound and therefore contaminate the potential effect of hunting events.
+Furthermore, there could be unobserved stress stimuli, such as weather conditions, predators, and human activities other than hunting.
+
+# Model Selection
+
+To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration.
+In this section, we present details on model specification.
+
+## Statistical modeling approach
+
+For each dataset resulted from TBD, we consider the following variables as covariates:
+
+-   Time Difference between defaction and the most relevant hunting event;
+-   Distance (in space) between the deer and the most relevant hunting event;
+-   Sample Delay, i.e., the time difference between sample collection and defecation;
+-   Defecation Day, i.e., the day of year on which the defecation event occurred;
+-   Number of Other Relevant Hunting Events within the specified spatiotemporal frame.
+
+The first two covariates are of main interest for our first research question.
+The effect of sample delay is the subject of our second research question.
+We consider the day of defecation as a potential confounder, as the deer's stress level exhibits seasonal patterns [@Vilela2020].
+The number of other relevant hunting events reflects the intensity of recent hunting activity.
+In time periods of frequent hunting events, a deer might have a generally higher stress level, or adaptation might occur which dampens the stress response towards new hunting events.
+
+We propose a generalized additive mixed model (GAMM) to account for potentially non-linear effects of covariates and potential individual differences between the observed deer.
+We use the R package `mgcv` [@mgcv] to fit the models.
+The covariates Time Difference, Distance, Sample Delay, and Defecation Day are encoded by penalized cubic regression splines.
+We do not use a cyclical spline for Defecation Day, because faecal samples were not collected during winter and therefore Defecation Day is not a cyclical variable.
+The Number of Other Relevant Hunting Events is adopted as a linear effect.
+We further introduce a random intercept for each deer.
+
+For the distributional assumption, we use the Gamma family with a log link.
+Since the FCM level is non-negative, we expect the Gamma assumption to more appropriate than Gaussian.
+A full specification of our GAMM model is as follows.
+Let $i = 1,\dots,N$ be the indices of the deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer \begin{align*}
+\textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim} \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
+\mu_{ij} &= \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
+\eta_{ij} &= \beta_0 \\
+&+ \beta_1 \textup{Number of Other Relevant Hunting Events}_{ij} \\
+&+ f_1(\textup{Time Difference}_{ij}) + f_2(\textup{Distance}_{ij}) \\
+&+ f_3(\textup{Sample Delay}_{ij}) + f_4(\textup{Defecation Day}_{ij}) \\
+&+ \gamma_{i}, \\
+\gamma_i &\overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_\gamma^2),
+\end{align*} where $f_1, f_2, f_3, f_4$ are penalized cubic regression splines, $\sigma_\gamma^2 > 0$, and $\nu > 0$.
+
+Our model has two major limitations.
+First, it does not account for potential interactions between the covariates.
+Second, the random intercept term can only capture different base stress levels, but not differences in stress response.
+However, given the limited data, one must trade off between model complexity and stability in estimation.
+In fact, our current model already exhibits instability with respect to estimation procedures, which we discuss in @sec-results.
+
+## Machine learning approach
+
+# Model Evaluation {#sec-results}
+
+## Parametric Effects of GAMM
+
+**Description**
+
+This table shows the **Parametric** effects of variable "Number of other relevant hunting events" across different datasets and estimation methods (REML and GCV), including estimate, exponentiation of estimate (exp(Estimate)), and standard error.
+
+**Interpretation**
+
+-   Negative estimates indicate that with the rising number of other hunting events, the FCM level tends to be lower, while the effect size is relatively small.
+-   Difference resulted from datasets and estimation methods reflect the model’s different sensitivities to data uncertainty.
+
+## REML Smooth Effects Analysis
+
+**i) REML / Closest in Time**
+
+![](Figures/archive/p_L_reml.png)
+
+*Time difference*:
+
+-   Generally the trend is slightly downwards, which indicates that the FCM levels goes down over the time.
+-   The confidence interval is pretty wide, reflecting high uncertainty of such effect, which may be resulted by the limited sample or huge individual difference.
+
+*Distance*:
+
+-   An upward trend indicates that the FCM level will rise with the rising distance.
+
+*Sample delay*:
+
+-   It shows a downward trend with a moderate confidence interval.
+-   It indicates that the FCM level goes down with rising sample delay.
+
+**ii) REML / Nearest**
+
+![](Figures/archive/p_N_reml.png)
+
+-   The trend of this set of images is similar to that of Closest in Time, but the confidence intervals of distance and sample delay are relatively larger.
+
+**iii) REML / Highest Score**
+
+![](Figures/archive/p_S_reml.png)
+
+-   The effect of distance tend to be very significant, with the same rising trend.
+-   With the rising sample delay, the FCM level goes down at first and then shows a slight increase, but after that drop rapidly, indicating that High Score has a more significant long-term impact on FCM levels.
+
+**Generally the smooth effects estimated by REML tend to be stable, which aligns with biological expectations.**
+
+## GCV Smooth Effects Analysis
+
+**i) GCV / Closest in Time**
+
+![](Figures/archive/p_L.png)
+
+-   The curves of time and sample delay fluctuate largely with extremely wide confidence interval.
+    But generally, the effect of time difference shows first an upward then an downward trend over time, which aligns with the expectation.
+
+-   Such result indicates that GCV holds a strong risk of overfitting, it may be sensitive to subtle fluctuations in the data, consequently overlooking the general trend.
+
+-   The effect of distance is similar to that of REML.
+
+**ii) GCV / Nearest**
+
+![](Figures/archive/p_N.png)
+
+-   Compare with closest in time, the fluctuation of the time difference becomes weaker, but the risk of overfitting for sample delay is still very high.
+-   The confidence interval of distance becomes extremely wide.
+-   This indicates that GCV may perform well when dealing with simple variables like distance, but the stability goes down rapidly when faced with variables involving temporal characteristics.
+
+**iii) GCV / Highest Score**
+
+![](Figures/archive/p_S.png)
+
+-   the fluctuation of the time difference becomes stronger and loses its trend. While the curve of sample delay becomes smooth, after a downward and slightly upward trend, the effect goes down rapidly over time. And the confidence interval becomes narrower over time.
+
+**GCV is pretty sensitive to local outlier, resulting in excessively complex smooth curves.**
+
+## Random Intercept Analysis
+
+**1. REML**
+
+![](Figures/archive/p_re_reml.png)
+
+-   The Q-Q shows，the random effects of REML estimation basically aligns with gaussian distribution.
+-   It indicates that the model has a reasonable residual structure when dealing with individual differences(Deer ID).
+-   The linear trend is clear, indicating a robust assumption of random effects, which further explain good stability of REML in estimating individual-level differences.
+
+**2. GCV**
+
+![](Figures/archive/p_re_gcv.png)
+
+-   The Q-Q also indicates the gaussian distribution of the random effects, but the tail shows apparent deviations, especially in the datasets “Closest in Time” and “Nearest” .
+-   This may be resulted by the overfitting of GCV, leading to the random effects for some individuals being strongly influenced by outlier observations.
+-   The random effects estimated by GCV shows anomalies in scale(either extreme big or small), reflecting that the stability of GCV on the estimation of random effect tend to be not so good compared with REML.
+
+## GAMM Model Evaluation and Results Summary
+
+In the whole analysis, we fitted and evaluated GAMM models across three different matching strategies using two smoothing parameter estimation methods: **REML** and **GCV**.
+The evaluation involved assessing the interpretability of smooth effects and the validity of random effects.
+
+**Main findings**
+
+**1. analysis**
+
+-   **With the methods of REML**,the curves of smooth effects are basically stable, with the trend aligning with the biological logic. For all of the time difference, distance and sample delay, REML shows relatively stable mode of effects.
+-   **With the methods of GCV**, the curves of smooth effects fluctuate strongly, especially in the datasets of “Closest in Time” and “Nearest”, with fluctuations which are hard to be explained and extremely wide confidence interval, showing apparent characteristic of overfitting.
+
+**2. Analysis of random effects**
+
+-   The distribution of random effects under the REML was generally consistent with Gaussian distribution, indicating that the model described individual differences more reasonably.
+-   The distribution of random effects under GCV is significantly skewed, with significant tail bias, reflecting the high sensitivity of GCV to outliers and the relatively poor stability of random effects.
+
+**3. Key notes and reflections To be especially annotated:The fitting of GAMM model and the evaluation were generally unsatisfactory.**
+
+-   Both the fluctuation of the smooth effect and the instability of parameter estimation reveals huge risk of the model.
+-   Such phenomenon may be resulted from factors like the lack of the samples, instability of data matching strategies, incomplete selection of variables and so on.
+-   As a result, the main goal of the evaluation is to represent a complete analytical processes and ideas, rather than give a biological conclusion directly.
+
+**4. The significance of process demonstrations**
+
+*Although the result is not so ideal, the integrity of the process and the reproducibility of the ideas are still of significant value:*
+
+-   Such structured processes include data integration, variable screening, matching strategy, model construction, smoothing parameter selection, model fitting, and effectiveness evaluation, providing standardized templates and space for reflection for further analysis.
+
+# Conclusion & Outlook {#sec-outlook}
+
+Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels.
+However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
+
+We deliberately chose not to include the pregnancy data in our model as it only contains information on some deer.
+As we are not able to label the remainder of the deer as “pregnant”/“not pregnant”, we are convinced that including this information would lead to a huge bias.
+However, we are strongly in favor of adding additional characteristics that could explain a shift in baseline stress levels.
+
+We believe that a more rigorous recording of hunting events (i.e. timespans instead of single moments, enforcing complete timestamps) and an overall larger amount of data could lead to less uncertainty and thus a clearer result.
