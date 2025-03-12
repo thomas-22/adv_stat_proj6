@@ -27,7 +27,6 @@ format:
 # Summary
 
 # Introduction
-
 ## Background
 Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes. This project aims to investigate the physiological stress response in red deer using a non-invasive method, the measurement of faecal cortisol metabolites (FCMs). 
 
@@ -91,8 +90,6 @@ The faecal sample dataset contains information on **809 faecal samples**. Most i
 ![Samples - Locations](Figures/sp_samples.png){#fig-samples_locations}
 
 # Data Preprocessing
-<<<<<<< HEAD
-Data Preprocessing
 The original datasets provided by Dr. Ferry are as follows:
 1.	“FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv” Contains all measured Faecal Cortisol Metabolite (FCM) values (stress levels) from faeces samples collected from GPS-monitored red deer.
 2.	“Movement - CRS=ETRS UTM 33N.csv” Includes all GPS locations for each red deer equipped with GPS collars. Most locations were recorded at 1-hour intervals, with some at 15-minute intervals.
@@ -114,23 +111,18 @@ We first interpolated deer positions at the precise times of all hunting events:
 3.	Assuming constant velocity and linear movement between these two points, we calculated the exact position of the deer at the hunting event time. This interpolation involved computing the fraction of time elapsed between the first movement point and the hunting event relative to the total interval between the two movement points. This fraction was then multiplied by the movement vector, resulting in an interpolated position.
 Next, we paired FCM samples with hunting events. Knowing the exact deer associated with each sample allowed a many-to-many pairing. Each FCM sample was associated with all hunting events occurring before the sample was produced. Calculated distances became associated with these sample-event pairs, and the time difference between the defecation event and the hunting event was computed. The resulting dataset contained samples linked to all prior hunting events, creating multiple pairings per sample. This posed a problem: samples collected later had disproportionately many associated hunting events.
 
-#Filtering
+## Filtering
 To prevent collinearity between observations, we decided to retain at most one assignment per FCM sample. Three versions of the reduced dataset were proposed:
 1.	Retaining the observation with the time difference between hunting and defecation closest to 19 hours, as suggested by Dr. Ferry and literature (e.g., Huber et al.), since cortisol metabolite concentrations peak around 19 hours post-stress event.
 2.	Retaining the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position.
 3.	Introducing a scoring system to consider both distance and time difference simultaneously. Recognizing the importance of both factors, we designed a score proportional to the inverse square of the distance and a "spike" function based on time difference. The inverse square component was inspired by physical dynamics (such as the inverse square law for sound intensity), while the spike function was inspired by pharmacokinetics. Multiplying these two components resulted in a combined score, and the observation with the highest score was selected. A minimum score threshold was also established to ensure plausibility regarding the stress level impact.
-=======
-
-## Filtering
 
 ## Assumptions
 We had to make several assumptions about the data.\ 
 First, we assumed that the movement of each deer between two points is approximately linear and at a constant speed, i.e. we used linear interpolation to determine the coordinates between two signals from the GPS collar.\  
 We also assumed that each hunting event was actually a sound event (i.e. a shot was fired). Therefore, we weighted the value of our score function by $\frac{1}{d^2}$, where $d$ is the Euclidean distance between a given deer and a given hunting event.\  
-<!-- Furthermore we assumed that there is no effect of terrain, weather or vegetation on a deer's perception of a hunting event. -->
 
 ## Uncertainties
-
 A major challenge in our analysis is the large uncertainty in data which propogates through the pre-processing steps into our models.
 
 First, the uncertainty about spatial distances between deer and hunting events is large. While the movement of deer was tracked at hourly intervals, hunting events occurred irregularly. In our interpolation-based approximation of a deer's location at the time of hunting event, the approximation error is unknown.
@@ -138,14 +130,11 @@ First, the uncertainty about spatial distances between deer and hunting events i
 Second, we have very limited information for addressing the short-term stress response of the deer. On the one hand, the available data contain only 500 hunting events with complete time and location information scattered across a 30km $\times$ 30km area in the span of two years. The observed hunting events only populate the space-time scarcely. On the other hand, we observe in @fig-deers_locations that the deer tended to roam around within a small area. As a result, each deer is likely to have only encountered very few hunting events at small spatial and temporal distances.
 
 Third, there could be a large number of confounders for which we possess no information. Based on GPS coordinates, we can compute Euclidean distances between deer and hunting events. However, we cannot account for terrain and vegetation which could affect the propagation of sound and therefore contaminate the potential effect of hunting events. Furthermore, there could be unobserved stress stimuli, such as weather conditions, predators, and human activities other than hunting.
->>>>>>> 8060ca6b18917253cd48143b893dd63a493b113c
 
 # Model Selection
-
 To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration. In this section, we present details on model specification.
 
 ## Statistical modeling approach
-
 For each dataset resulted from TBD, we consider the following variables as covariates:
 
 - Time Difference between defaction and the most relevant hunting event;
