@@ -26,11 +26,11 @@ set.seed(42)
 Movement_sf_selected <- Movement %>%
   dplyr::select(Sender.ID, x_, y_) %>%
   # select randomly 3 deer to prevent overplotting
-  filter(Sender.ID %in% sample(unique(Movement$Sender.ID), 4)) %>%
+  filter(Sender.ID %in% sample(unique(Movement$Sender.ID), 3)) %>%
   st_as_sf(coords = c("x_", "y_"), crs = 25833)
 
 HuntEvents_sf <- HuntEvents %>%
-  drop_na(HuntX, HuntY) %>%
+  drop_na() %>%
   dplyr::select(HuntX, HuntY) %>%
   st_as_sf(coords = c("HuntX", "HuntY"), crs = 25833)
   
@@ -109,39 +109,51 @@ plot_samples <- ggplot() +
   geom_sf(data = FCM_Samples_sf, color = "purple", alpha = .5) +
   annotation_scale(location = "bl") +
   annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
-  ggtitle("FCM Sample Locations")
+  ggtitle("Faecal Sample Locations")
 
 plot_deer_vs_hunts <- ggplot() +
   geom_sf(data = Park$osm_multipolygons[1, ]) +
   # geom_sf_label(data = Park$osm_multipolygons, aes(label = c("DEU", "CZE"))) +
   # blue for movement data -- also used in the interpolation plot
-  geom_sf(data = Movement_sf_selected, color = "blue", alpha = .1, size = .1) +
-  geom_sf(data = HuntEvents_sf, color = "red", alpha = .5, size = .5) +
+  geom_sf(data = Movement_sf, aes(color = "deer"), alpha = .1, size = .1) +
+  geom_sf(data = HuntEvents_sf, aes(color = "hunting event"), alpha = .5, size = .5) +
   #facet_wrap(~Sender.ID) +
-  guides(color = "none") +
+  scale_color_manual(
+    values = c("blue", "red"),
+    labels = c("deer", "hunting event")
+  ) +
+  guides(
+    color = guide_legend(override.aes = list(alpha = 1, size = 2), title = "")
+  ) +
   annotation_scale(location = "bl") +
   annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
-  ggtitle("Recorded Hunting Events vs recorded Locations of Deer") +
-  theme(strip.text = element_blank())
+  ggtitle("Locations of Hunting Events and Deer") +
+  theme(strip.text = element_blank(), legend.position = c(.9, .8))
 
 plot_4_deer_vs_hunts <- ggplot() +
   geom_sf(data = Park$osm_multipolygons[1, ]) +
   # geom_sf_label(data = Park$osm_multipolygons, aes(label = c("DEU", "CZE"))) +
   # blue for movement data -- also used in the interpolation plot
-  geom_sf(data = Movement_sf_selected, color = "blue", alpha = .1, size = .1) +
-  geom_sf(data = HuntEvents_sf, color = "red", alpha = .5, size = .5) +
+  geom_sf(data = Movement_sf_selected, aes(color = "Deer"), alpha = .1, size = .1) +
+  geom_sf(data = HuntEvents_sf, aes(color = "Hunting Event"), alpha = .5, size = .5) +
   facet_wrap(~Sender.ID) +
-  guides(color = "none") +
+  scale_color_manual(
+    values = c("blue", "red"),
+    labels = c("deer", "hunting event")
+  ) +
+  guides(
+    color = guide_legend(override.aes = list(alpha = 1, size = 2), title = "")
+  ) +
   annotation_scale(location = "bl") +
-  annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
-  ggtitle("Recorded Hunting Events vs 4 random Deer") +
-  theme(strip.text = element_blank())
+  # annotation_north_arrow(location = "tr", which_north = "true", style = north_arrow_fancy_orienteering()) +
+  ggtitle("Hunting Events and 3 Random Deer") +
+  theme(strip.text = element_blank(), legend.position = "bottom")
 
 ggsave(plot = plot_overview, filename = "Figures/Maps/overview.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_Movement, filename = "Figures/Maps/Movement.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_Hunts, filename = "Figures/Maps/Hunts.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_samples, filename = "Figures/Maps/Samples.png", device = "png", width = 6, height = 6)
 ggsave(plot = plot_deer_vs_hunts, filename = "Figures/Maps/deer_vs_hunts.png", device = "png", width = 6, height = 6)
-ggsave(plot = plot_4_deer_vs_hunts, filename = "Figures/Maps/4_deer_vs_hunts.png", device = "png", width = 6, height = 6)
+ggsave(plot = plot_4_deer_vs_hunts, filename = "Figures/Maps/4_deer_vs_hunts.png", device = "png", width = 8, height = 5)
 
 

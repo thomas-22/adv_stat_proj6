@@ -638,23 +638,23 @@ XGBoost_run_default_pipeline <- function(data_cleanedup,
   cat("RMSE (Random Permutation, Full Predictions):", comparisons$mean_rmse_full_random, "\n")
   cat("RMSE (Trained on Permuted Labels):", comparisons$fm_trainedon_permute_data_test_rmse, "\n")
   
-  # 6) Plot results
-  plotly_fig <- plot_results(
-    final_model           = final_model,
-    X_test                = X_test,
-    y_test                = y_test,
-    rmse_test_final       = comparisons$rmse_test_final,
-    gamma_fit_eval_full_mean = comparisons$gamma_fit_rmse_full,
-    upper_difftime        = max(as.integer(data_cleanedup$TimeDiff)),
-    upper_distance        = max(as.integer(data_cleanedup$Distance)),
-    data_cleanedup        = data_cleanedup
-  )
+  # # 6) Plot results
+  # plotly_fig <- plot_results(
+  #   final_model           = final_model,
+  #   X_test                = X_test,
+  #   y_test                = y_test,
+  #   rmse_test_final       = comparisons$rmse_test_final,
+  #   gamma_fit_eval_full_mean = comparisons$gamma_fit_rmse_full,
+  #   upper_difftime        = max(as.integer(data_cleanedup$TimeDiff)),
+  #   upper_distance        = max(as.integer(data_cleanedup$Distance)),
+  #   data_cleanedup        = data_cleanedup
+  # )
   
   # Return a list of main results
   list(
     final_model  = final_model,
     comparisons  = comparisons,
-    plotly_fig   = plotly_fig,
+    # plotly_fig   = plotly_fig,
     X_full = X_full,
     predictions_full = predict(final_model, X_full)
   )

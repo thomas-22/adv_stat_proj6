@@ -1,0 +1,642 @@
+---
+title: "Hunting Effect on Individual Deer Stress Level" 
+subtitle: "P15.2 Fortgeschrittenes Praxisprojekt" 
+institute: "Dr. Nicolas Ferry - Bavarian National Forest Park / Daniel Schlichting - StaBLab" 
+author: "Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou" 
+date: 2025-01-31 
+date-format: DD MMM YYYY 
+lang: en 
+format:
+  revealjs:
+    html-math-method: mathjax
+    embed-resources: true 
+    slide-number: c 
+    fig-align: center 
+    smaller: false
+    footer: "Effect of Hunting on Red Deer"
+    logo: "Resources/LMU_Logo.svg"
+    theme: white
+editor: source
+---
+
+# Agenda
+
+:::: {.fragment .fade-in fragment-index="1"}
+::: {.fragment .highlight-blue fragment-index="5"}
+1.  The Background
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="2"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+2.  The Data
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="3"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+3.  The Models
+:::
+::::
+
+:::: {.fragment .fade-in fragment-index="4"}
+::: {.fragment .semi-fade-out fragment-index="5"}
+4.  The Wrap-up
+:::
+::::
+
+## Motivation
+
+-   Hunting activities have a numerical effect on animal populations
+-   Additionally, hunting can have non-lethal effects
+-   **Goal**: assess short-term stress response in red deer towards hunting events at the Bavarian Forest National Park
+
+<!-- Putting "last" in parentheses, because it is mentioned in the project description, but we know only looking at the last hunting event is not good enough. (We have "nearest" and "score" as well.) -->
+
+## Data-Generating Process {.smaller}
+
+::::: columns
+::: {.column width="40%"}
+-   A deer roams freely in the Bavarian Forest National Park
+-   Its **movement is tracked** by a GPS collar
+-   A **hunting event** happens
+-   After some time, the deer defecates. The **defecation event**
+-   Subsequently, Researchers go to the defecation location and collect a **faecal sample**
+:::
+
+::: {.column width="60%"}
+![](Figures/Maps/overview.png)
+:::
+:::::
+
+## FCMs as a Measure of Stress {.smaller}
+
+::::: columns
+::: {.column width="50%"}
+-   **Faecal Cortisol Metabolites (FCM)** are substances found in feces of animals
+-   The FCM level is used to measure previous stress. Higher Stress $\Rightarrow$ Higher FCM level
+-   Stress $\Rightarrow$ secretion of certain hormones $\Rightarrow$ gut retention $\Rightarrow$ FCM
+-   Gut retention time $\approx$ 19 hours
+-   Once defecated, FCM levels **decay over time**
+:::
+
+::: {.column width="50%"}
+![Huber et al (2003)](Figures/FCM-levels.png)
+:::
+:::::
+
+## Research Questions
+
+::: incremental
+-   What is the effect of temporal and spatial distance on FCM levels?
+-   Does the time between defecation event and sample collection affect FCM levels?
+:::
+
+## Approach
+
+-   Model FCM levels on spatial and temporal distance to hunting activities
+
+-   **Expectations**:
+
+    -   FCM levels higher when closer in time and space
+    -   FCM levels lower, the more time passes between defecating and sampling
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## The Datasets
+
+::: incremental
+-   **FCM Data**
+-   **Hunting Events**
+-   **Movement Data**
+:::
+
+## FCM Data {.smaller}
+
+::::: columns
+::: {.column width="40%"}
+Contains information of **809 faecal samples**, including:
+
+-   the FCM level \[ng/g\],
+-   the time and location of sampling,
+-   to which deer the sample belongs,
+-   when the defecation happened.
+
+Samples where taken at irregular time intervals from 2020 to 2022.
+:::
+
+::: {.column width="60%"}
+![](Figures/Maps/Samples.png)
+:::
+:::::
+
+## Hunting Events {.smaller}
+
+<!-- Run `HuntEvents %>% na.omit() %>% nrow()` gives 519. Previously I wrote 532, but that included hunting events with missing location. 519 is the number of hunting events that we can use for distance computation. So I'd say we report this number. -->
+
+::::: columns
+::: {.column width="40%"}
+-   Contains location and time of $\geq$ 700 hunting events from 2020 to 2022.
+-   **519** hunting events have complete location and time information.
+:::
+
+::: {.column width="60%"}
+![](Figures/Maps/Hunts.png)
+:::
+:::::
+
+## Movement Data {.smaller}
+
+<!-- ::::: columns ::: {.column width="40%"} -   Contains the location of the **40** collared deer -   Period: Feb 2020 - Feb 2023 -   Movement is tracked in **hourly** intervals :::  ::: {.column width="60%"} ![](Figures/Maps/Movement.png) ::: ::::: -->
+
+-   Contains the location of the **40** collared deer from Feb. 2020 to Feb. 2023.
+-   Movement is tracked at **hourly** intervals.
+
+## Limited Data, Large Uncertainty {.smaller}
+
+<!-- Baisu: Two dimensions (time and space) is not "high dimension." -->
+
+-   Hunting events are single points in time and space.
+-   Deer locations at hourly intervals $\Rightarrow$ exact distances unknown $\Rightarrow$ approximate needed, **large uncertainty**!
+-   Each deer only encountered few hunting events.
+
+## Limited Data, Large Uncertainty {.smaller}
+
+![](Figures/Maps/4_deer_vs_hunts.png){fig-align="center"}
+
+## Limited Data, Large Uncertainty {.smaller}
+
+Other sources of uncertainty include:
+
+-   lack of information about hunting events (single time points as start, end, middle?)
+
+-   unknown characteristics of the deer (e.g., age, health, etc.),
+
+-   other unknown stressors (e.g., predators, human activities, weather, etc.),
+
+-   unknown geographical features (e.g., terrain could affect the propagation of sound).
+
+## Distance Approximation {.smaller}
+
+Deer location at the time of hunting event is approximated by linear interpolation:
+
+![](Figures/p_interpolation.png){fig-align="center"}
+
+## Relevant Hunting Events {.smaller}
+
+::::: columns
+::: {.column width="40%"}
+A hunting event is considered **relevant** to a faecal sample, if
+
+-   the time difference between hunting and defecation is between the **gut retention time (GRT) thresholds**, and
+-   the distance between the deer and the hunting event is $\leq$ **distance threshold**.
+
+In this presentation:
+
+-   GRT thresholds = (0, 36) hours,
+-   distance threshold = 10 km.
+:::
+
+::: {.column width="60%"}
+![](Figures/relevant_hunts0.svg){fig-align="center" width="630" height="630"}
+:::
+:::::
+
+## The Most Relevant Hunting Event {.smaller}
+
+::::: columns
+::: {.column width="40%"}
+Among the relevant hunting events, the **most relevant** one is defined by one the three proximity criteria:
+
+-   **closest in time** (to the GRT target of 19 hours),
+-   **nearest** (smallest spatial distance),
+-   highest **score**.
+:::
+
+::: {.column width="60%"}
+![](Figures/relevant_hunts1.svg){fig-align="center" width="630" height="630"}
+:::
+:::::
+
+## The Scoring Function {.smaller}
+
+we define the Scoring function as following:
+
+$$ 
+S(d, t) \propto \begin{cases}
+\frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{N}(\mu, \sigma^2) &|t \leq \mu \\
+\frac{1}{d^2} \cdot f_\textbf{t}(t), t \sim \mathcal{Laplace}(\mu, b) &|t > \mu
+\end{cases}
+$$ where:
+
+$$
+\begin{align*}
+d & \text{: Distance } \\
+t & \text{: Time Difference } \\
+\mu & \text{: GRT target = 19 hours }
+\end{align*} 
+$$
+
+## The Scoring Function {.smaller}
+
+The marginal effects of **distance** and **elapsed time since challenge** on the score:
+
+```{r}
+library(ggplot2)
+library(patchwork)
+
+timediff_evaluation_asym_curve <- function(x, peak = 19, rise_sigma = 2, fall_sigma = 2.5, height = 1) {
+  ifelse(
+    x <= peak,
+    height * exp(-((x - peak)^2) / (2 * rise_sigma^2)),  # Rising phase (Gaussian)
+    height * exp(-(x - peak) / fall_sigma)              # Falling phase (Exponential decay)
+  )
+}
+
+fun_D <- function(d){
+  1/(d^2)
+}
+
+dist <- data.frame(x = seq(1, 10, length.out = 1000))
+dist$score <- fun_D(dist$x)
+
+tdiff <- data.frame(t = seq(0, 36, length.out = 1000))
+tdiff$score <- timediff_evaluation_asym_curve(tdiff$t)
+
+
+plot_dist <- ggplot(dist, aes(x, score)) +
+  geom_line() +
+  theme_classic() +
+  scale_x_continuous(labels = scales::label_number(suffix = " km")) +
+  labs(x = "Distance", y = "Relative Score") +
+  theme(panel.grid = element_blank())
+
+plot_tdfiff <- ggplot(tdiff, aes(t, score)) +
+  geom_line() +
+  theme_classic() +
+  scale_x_continuous(labels = scales::label_number(suffix = " h")) +
+  labs(x = "Time since challenge", y = "Relative Score") +
+  theme(panel.grid = element_blank())
+
+(plot_dist | plot_tdfiff) + plot_layout(axes = "collect")
+```
+
+<!-- ## The Scoring Function {.smaller} -->
+
+<!-- ::::: columns -->
+
+<!-- ::: {.column width="50%"} -->
+
+<!-- Scores relative to $t$ and $d$ ![](Figures/score_map.jpg) -->
+
+<!-- ::: -->
+
+<!-- ::: {.column width="50%"} -->
+
+<!-- Effect of $t$ on the Score ![](Figures/Timediff_Function_impact_curve.jpg) -->
+
+<!-- ::: -->
+
+<!-- ::::: -->
+
+## The Fused Data {.smaller}
+
+<!-- ### Finish Datasets -->
+
+We report models fitted on the following datasets:
+
+```{r}
+library(dplyr)
+data <- readRDS("Data/Datasets.RDS")
+
+data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
+data <- dplyr::select(data, set, filter_criterion, unique_deers, obs)
+
+knitr::kable(data, 
+             format = "html", 
+             align = c("r", "r", "r", "r"), 
+             col.names = c("DataSet",
+                          #  "GRT low",
+                          #  "GRT high",
+                          #  "Distance Threshold",
+                           "Proximity Criterion",
+                           "Deer",
+                           "Observations")) %>%
+  kableExtra::kable_styling(font_size = 26)
+```
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## The Models {.smaller}
+
+We chose two different approaches to Modelling:
+
+A.  **Statistical Modelling**: a model, which helps to understand the effects of our covariates, here a **General Additive Mixed Model**
+B.  **Machine Learning**: a model, which focuses on prediction, in our case a **XGBoost** Model
+
+## The Covariates {.smaller}
+
+For Modelling, we consider the following covariates, defined for each pair of FCM sample and most relevant hunting event:
+
+::: incremental
+-   **Time difference**: time of defecation - time of hunting event [hours]
+-   **Distance**: distance between deer and hunting event [km]
+-   **Sample delay**: time of sample collection - time of defecation [hours]
+-   Defecation day (day of year as integer)
+-   Number of other relevant hunting events
+:::
+
+
+## A. Generalized Additive Mixed Model {.smaller}
+
+-   Family: Gamma
+
+-   Let $i = 1,\dots,N$ be the indices of deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer
+
+    $$
+    \begin{eqnarray}
+    \textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim}& \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
+    \mu_{ij} &=& \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
+    \eta_{ij} &=& \beta_0 + \beta_1 \cdot \textup{number of other relevant hunting events}_{ij} + \\
+    && f_1(\textup{time difference}_{ij}) + f_2(\textup{distance}_{ij}) + \\
+    && f_3(\textup{sample delay}_{ij}) + f_4(\textup{defecation day}_{ij}) + \\
+    && \gamma_{i}, \\
+    \gamma_i &\overset{\mathrm{iid}}{\sim}& \mathcal{N}(0, \sigma_\gamma^2)
+    \end{eqnarray}
+    $$
+
+    $f_1, f_2, f_3, f_4$ are penalized cubic regression splines.
+
+## A. Generalized Additive Mixed Model {.smaller}
+### Main Results
+
+-   High uncertainty (large standard error) about estimated effects, in particular of time difference and distance, across all datasets.
+
+-   Consistent pattern of sample delay effect when using REML method: larger sample delay $\Rightarrow$ lower FCM level, as expected.
+
+-   Instability with respect to estimation methods. GCV tends to yield more wiggly smooth effects than REML.
+
+-   Estimation of random intercepts is sensitive to choice of dataset.
+
+<!-- ## A. Generalized Additive Mixed Model {.smaller}
+
+### Example:
+
+High uncertainty, strong penalty.
+
+![](Figures/p_Distance_reml.png){fig-align="center"}
+
+## A. Generalized Additive Mixed Model {.smaller}
+
+## A. Generalized Additive Mixed Model {.smaller}
+
+Result 2: Instability with respect to estimation methods. Example:
+
+![](Figures/p_instable.png){fig-align="center"} -->
+
+## B. XGBoost {.smaller}
+
+:::: columns
+::: {.column width="50%"}
+### What is XGBoost?
+
+-   Builds Decision Trees sequentially
+-   Uses Newton boosting algorithm
+-   Each tree corrects the errors of the previous ones
+-   Works well with numerical data
+
+:::
+
+::: {.column width="50%"}
+### Main Results
+
+across all three Models:
+
+-   small values get overestimated
+-   large values get underestimated
+
+```{r}
+library(dplyr)
+library(knitr)
+library(kableExtra)
+
+# Read the CSV file
+data <- read.csv("Models/xgboost_models_overview.csv")
+
+# Select only the required columns
+data_filtered <- data %>% select(Model, Mean_RMSE, SD_RMSE, Number_of_Observations)
+
+# Create the formatted table
+knitr::kable(data_filtered, 
+             format = "html", 
+             align = c("l", "r", "r", "r"), 
+             col.names = c("Model",
+                           "Mean RMSE",
+                           "SD RMSE",
+                           "Number of Observations"), 
+             digits = 2) %>%
+  kable_styling(font_size = 28, full_width = FALSE, position = "center")
+```
+
+:::
+::::
+
+<!-- ## B. XGBoost {.smaller} -->
+
+<!-- XGBoost is a gradient boosting algorithm that builds decision trees sequentially, each one correcting the errors of the previous. It improves accuracy with techniques like regularization, shrinkage, and column subsampling, making it efficient and better at generalization. -->
+
+<!-- It works very well for numerical data and is well implemented which is why we chose it. -->
+
+<!-- ```{r} -->
+<!-- library(dplyr) -->
+<!-- library(knitr) -->
+<!-- library(kableExtra) -->
+
+<!-- # Read the CSV file -->
+<!-- data <- read.csv("Models/xgboost_models_overview.csv") -->
+
+<!-- # Select only the required columns -->
+<!-- data_filtered <- data %>% select(Model, Mean_RMSE, SD_RMSE, Number_of_Observations) -->
+
+<!-- # Create the formatted table -->
+<!-- knitr::kable(data_filtered,  -->
+<!--              format = "html",  -->
+<!--              align = c("c", "c", "c", "c"),  -->
+<!--              col.names = c("Model", -->
+<!--                            "Mean RMSE", -->
+<!--                            "SD RMSE", -->
+<!--                            "Number of Observations")) %>% -->
+<!--   kable_styling(font_size = 26, full_width = FALSE, position = "center") -->
+<!-- ``` -->
+
+# Agenda
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+1.  The Background
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+2.  The Data
+:::
+
+::: {.fragment .semi-fade-out fragment-index="1"}
+3.  The Models
+:::
+
+::: {.fragment .highlight-blue fragment-index="1"}
+4.  The Wrap-up
+:::
+
+## Conclusion
+
+::: incremental
+-   Due to the high uncertainties, we were not able to detect a relevant effect of spatial or temporal distance on FCM levels.
+-   We have observed the expected decay of FCM levels with prolonged time between defecation event and sample collection.
+:::
+
+<!-- ## Conclusion -->
+
+<!-- -   Not many observations after datafusion left for robust modelling -->
+
+<!-- -   Trade-off between spatial and temporal distance -->
+
+<!-- -   Sample Delay seems to be significant -->
+
+<!-- -   Modelling Outcomes don't show much difference -->
+
+<!-- -   Trade-off between Complexity and Explainability -->
+
+# Appendix
+
+## Scoring Function
+### Values
+![](Figures/score_map.jpg){width=10px}
+
+
+## GAMM Parametric Effects
+### Number of Other Relevant Hunting Events
+
+```{r}
+table_otherHunts <- readRDS("Data/table_otherHunts.RDS")
+knitr::kable(table_otherHunts, 
+             format = "html", 
+             align = c("r", "r", "r", "r"),
+             col.names = c(
+              "Method",
+              "Dataset",
+              "Estimate",
+              "exp(Estimate)",
+              "Standard error"
+             ),
+             digits = 2) %>%
+  kableExtra::kable_styling(font_size = 26)
+```
+
+## GAMM Adjusted Predictions
+### REML / Closest in Time
+
+![](Figures/p_L_reml.png)
+
+## GAMM Adjusted Predictions
+### REML / Nearest
+
+![](Figures/p_N_reml.png)
+
+## GAMM Adjusted Predictions
+### REML / Highest Score
+
+![](Figures/p_S_reml.png)
+
+## GAMM Adjusted Predictions
+### GCV / Closest in Time
+
+![](Figures/p_L.png)
+
+## GAMM Adjusted Predictions
+### GCV / Nearest
+
+![](Figures/p_N.png)
+
+## GAMM Adjusted Predictions
+### GCV / Highest Score
+
+![](Figures/p_S.png)
+
+## GAMM Random Intercepts
+### REML
+
+![](Figures/p_re_reml.png)
+
+## GAMM Random Intercepts
+### GCV
+
+![](Figures/p_re_gcv.png)
+
+
+## XGBoost Predicted vs. Actual Plots
+
+### Closest in Time
+
+![](Figures/XGBoost_PredVSActual_last.jpg)
+
+## XGBoost Predicted vs. Actual Plots
+
+### Nearest
+
+![](Figures/XGBoost_PredVSActual_nearest.jpg)
+
+## XGBoost Predicted vs. Actual Plots
+
+### Highest Score
+
+![](Figures/XGBoost_PredVSActual_score.jpg)
+
+## XGBoost Workflow {.smaller}
+
+1.  **Split Data:** We divide each dataset into training and testing sets. (75% - 25%)
+2.  **Set Hyperparameter Grid:** We define a range of values for starting hyperparameters.
+3.  **Optimize Hyperparameters:** We then perform a grid search to evaluate different hyperparameter combinations -\> Iteratively readjust the grid based on test RMSE until convergence. Uses CV
+4.  **Train Final Model on Full Data:** We then use the optimized parameters to train on the entire dataset. We prevent overfitting by optimal n_rounds to keep Test-RMSE low.
+5.  **Aggregate Results:** Run the pipeline 40 times with different seeds. Use the average RMSE and average predictions to evaluate the overall performance.
+
+We do this seperately for all 3 datasets (nearest, closest and score).
+
+## Movement and Hunting Events
+
+![](Figures/Maps/deer_vs_hunts.png){fig-align="center"}
+
+## Faecal Samples and Hunting Events Over Time
+
+![](Figures/p_fcm_hunt_dates.png)
