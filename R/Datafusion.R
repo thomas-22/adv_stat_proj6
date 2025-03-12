@@ -1,45 +1,23 @@
 run_datafusion <- function(save = FALSE, remove_outlers = TRUE) {
   # Read FCM data
-  path.FCMStress <- "Data/FCM Stress - Collared Deer - CRS=ETRS UTM 33N.csv"
-  FCMStress <- read.csv(path.FCMStress, header = TRUE, sep = ",") %>%
-    as_tibble() %>%
-    mutate(DefecTime = str_c(Collar_day, Collar_time, sep = " ") %>%
-             parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
-           DefecDate = as_date(DefecTime),
-           SampleTime = str_c(Waypoint_day, Waypoint_time, sep = " ") %>%
-             parse_date_time(orders = c("%d/%m/%Y %h:%M:%s", "%d/%m/%Y %h:%M")),
-            SampleDate = dmy(Waypoint_day),
-           Sender.ID = as.factor(Sender.ID),
-           Deer.ID = as.factor(HairID)) %>%
-    rename(Sample.ID = Sample_ID,
-           DefecX = X,
-           DefecY = Y) %>%
-    # Filter out error
-    filter(ng_g > 0) %>%
-    # If there are multiple FCM measurements from the same sample, take the mean
-    # (only affects 2 samples)
-    group_by(Sample.ID, Sender.ID) %>%
-    mutate(ng_g = mean(ng_g)) %>%
-    ungroup() %>%
-    distinct(
-      Sample.ID, Sender.ID, Deer.ID,
-      # FCM level (our response variable)
-      ng_g,
-      # info about defecation event
-      DefecTime, DefecDate, DefecX, DefecY,
-      # info about sample collection
-      SampleDate, SampleTime
-    )
-  
-  sender_ids = levels(FCMStress$Sender.ID)
-  deer_ids = levels(FCMStress$Deer.ID)
-  
-  # Add pregnancy information
-  path.ReproductionSuccess <- "Data/Reproduction Success Results.xlsx"
-  ReproductionSuccess <- readxl::read_excel(path.ReproductionSuccess) %>%
-    mutate(Deer.ID = factor(`Genetic_id`, levels = deer_ids)) %>%
-    distinct(Deer.ID, preg_year, calf)
-  
+  FCMStress <- read.FCMStress(path = path.FCMStress)
+  # ------------
+  #
+  # Read pregnancy information
+  ReproductionSuccess <- read.Reproduction(path = path.ReproductionSuccess,
+                                           deer.id.levels = levels(FCMStress$Deer.ID))
+  # ------------
+  #
+  # Read movement data
+  Movement <- read.Movement(path = path.Movement,
+                            sender.id.levels = levels(FCMStress$Sender.ID))
+  # ------------
+  #
+  # Read hunting events data
+  HuntEvents <- read.HuntEvents(path = path.HuntEvents)
+  # ------------
+  #
+  # add pregnancy to hunt events data
   FCMStress <- FCMStress %>%
     left_join(ReproductionSuccess, by = "Deer.ID") %>%
     mutate(
@@ -48,49 +26,8 @@ run_datafusion <- function(save = FALSE, remove_outlers = TRUE) {
       hasCalf = ifelse(preg_year != year(DefecTime), FALSE, hasCalf),
       hasCalf = factor(hasCalf, levels = c(FALSE, TRUE, NA))
     )
-
-  # Read movement data
-  path.Movement <- "Data/Movement - CRS=ETRS UTM 33N.csv"
-  Movement <- read.csv(path.Movement, header = TRUE, sep = ";") %>%
-    as_tibble() %>%
-    mutate(Sender.ID = factor(Sender.ID, levels = sender_ids),
-           t_ = parse_date_time(t_, orders = "%d/%m/%Y %h:%M")) %>%
-    group_by(Sender.ID) %>%
-    mutate(DistanceTraveled = sqrt((x_ - lag(x_))^2 + (y_ - lag(y_))^2)) %>%
-    mutate(DistanceTraveled = ifelse(is.na(DistanceTraveled), 0, DistanceTraveled)) %>%
-    ungroup()
-  
-  # Read hunting events data
-  path.HuntEvents <- "Data/HuntingEvents_NEW.csv"
-  HuntEvents <- read.csv(path.HuntEvents, header = TRUE, sep = ";") %>%
-    as_tibble() %>%
-    mutate(HuntTime = stringr::str_c(Datum, Zeit, sep = " ") %>%
-            parse_date_time(orders = "%d/%m/%Y %h:%M"),
-           HuntDate = dmy(Datum)) %>%
-    arrange(HuntDate) %>%
-    mutate(
-      lon = as.numeric(Laengengrad_wgs), # one entry is "13.NA", i.e., NA
-      lat = as.numeric(Breitengrad_wgs),
-    ) %>%
-    # Remove wrong entries
-    mutate(
-      lon = ifelse(lon == 0, NA, lon),
-      lat = ifelse(lat == 0, NA, lat)
-    ) %>%
-    # Load coordinates
-    st_as_sf(coords = c("lon", "lat"), crs = 4326, na.fail = FALSE, remove = FALSE) %>%
-    # Transform to UTM (ETRS89 / UTM zone 33N - EPSG:25833)
-    st_transform(crs = 25833) %>%
-    mutate(
-      HuntX = st_coordinates(.)[, 1],
-      HuntY = st_coordinates(.)[, 2]
-    ) %>%
-    # Drop sf related information. We only need X, Y coordinates.
-    st_drop_geometry() %>%
-    distinct(HuntDate, HuntTime, HuntX, HuntY) %>%
-    mutate(Hunt.ID = row_number()) %>%
-    dplyr::select(Hunt.ID, HuntDate, HuntTime, HuntX, HuntY)
-  
+  # ------------
+  #
   # remove spatial outliers  
   if (remove_outlers) {
     FCMStress <- FCMStress %>%
@@ -98,16 +35,17 @@ run_datafusion <- function(save = FALSE, remove_outlers = TRUE) {
     HuntEvents <- HuntEvents %>%
       filter(HuntY > 5400000, HuntY < 5460000, HuntX > 365000)
   }
-
+  # ------------
+  #
   # save as RDS
   if (save) {
-    saveRDS(Movement, "data/Movement.RDS")
-    saveRDS(FCMStress, "data/FCMStress.RDS")
-    saveRDS(HuntEvents, "data/Hunts.RDS")
-    # saveRDS(HuntEventsreduced, "data/HuntsReduced.RDS")
-    # saveRDS(HuntEvents_Reduced_UTM_New, "data/HuntEvents_Reduced_UTM_New.RDS")
+    saveRDS(Movement, "data/intermediate/Movement.RDS")
+    saveRDS(FCMStress, "data/intermediate/FCMStress.RDS")
+    saveRDS(HuntEvents, "data/intermediate/Hunts.RDS")
   }  
-
+  # ------------
+  #
+  # return datasets
   return(list(
     Movement = Movement,
     FCMStress = FCMStress,

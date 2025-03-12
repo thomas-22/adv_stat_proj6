@@ -1,0 +1,8 @@
+source("R/Utils.R")
+source("R/ReadData.R")
+source("R/Interpolation.R")
+source("R/Assignment.R")
+source("R/Datafusion.R")
+source("R/DataAnalysis.R")
+source("R/models.R")
+source("R/ModelAnalysis.R")
