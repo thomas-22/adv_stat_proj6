@@ -334,7 +334,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 -   The Q-Q shows，the random effects of REML estimation basically aligns with gaussian distribution.
 -   It indicates that the model has a reasonable residual structure when dealing with individual differences(Deer ID).
--   The linear trend is clear, indicating a robust assumption of random effects, which further explain good stability of REML in estimating individual-level differences.
+-   The linear trend is clear, indicating a robust assumption of random effects, which further explain REML's good stability in estimating individual-level differences.
 
 **2. GCV**
 
