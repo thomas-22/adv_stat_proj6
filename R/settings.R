@@ -34,6 +34,9 @@ path.HuntEvents <- "Data/raw/HuntingEvents_NEW.csv"
 # ----------------------
 # construct theme for spatial plots
 # ----------------------
+theme_set(theme_light() + 
+            theme(plot.title = element_text(hjust = 0.5, size = 14)))
+
 theme_spatial <- function() {
   theme_light() +
     theme(

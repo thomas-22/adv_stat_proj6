@@ -35,7 +35,6 @@ score_curve <- function(save = FALSE) {
   }
 }
 
-
 # -------------------------
 # Calculuate the distances between deer and hunting events
 # The function interpolates the position of the deer at the time of the hunting

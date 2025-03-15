@@ -112,7 +112,9 @@ This takes the findings of @Huber2003 into account, that cortisol metabolite con
 
 2.	**Nearest**: Choosing the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position at the time of the hunting event.
 
-3.	**Highest score**: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on time difference. The inverse square component is inspired by physical dynamics^[such as the inverse square law for sound intensity], while the spike function was inspired by pharmacokinetics. The observation with the highest score was selected.
+3.	**Highest score**: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on time difference (see @fig-score). The inverse square component is inspired by physical dynamics^[such as the inverse square law for sound intensity], while the spike function was inspired by pharmacokinetics. The observation with the highest score was selected.
+
+![Score Function](Figures/Timediff_Function_impact_curve.png){#fig-score}
 
 $$ 
 S(d, t) \propto \frac{1}{d^2} \cdot \begin{cases}
