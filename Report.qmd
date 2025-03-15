@@ -49,7 +49,7 @@ Therefore our research question is two-fold:
 # Data Analysis
 We were provided with four distinct Datasets.\ 
 In the following subchapters we are going to describe the main
-features of each data set, but the reproduction data (see @sec-outlook) and address any anomalies.
+features of each data set, but the reproduction data (see @sec-feature_selection) and address any anomalies.
 
 ## Hunting Events
 The dataset contains the location and time of roughly 697 individual
@@ -170,7 +170,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 **i) REML / Closest in Time**
 
-![](Figures/archive/p_L_reml.png)
+![GAMM: Closest in Time - REML](Figures/archive/p_L_reml.png)
 
 *Time difference*:
 
@@ -188,13 +188,13 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 **ii) REML / Nearest**
 
-![](Figures/archive/p_N_reml.png)
+![GAMM: Nearest - REML](Figures/archive/p_N_reml.png)
 
 -   The trend of this set of images is similar to that of Closest in Time, but the confidence intervals of distance and sample delay are relatively larger.
 
 **iii) REML / Highest Score**
 
-![](Figures/archive/p_S_reml.png)
+![GAMM: Highest Score - REML](Figures/archive/p_S_reml.png)
 
 -   The effect of distance tend to be very significant, with the same rising trend.
 -   With the rising sample delay, the FCM level goes down at first and then shows a slight increase, but after that drop rapidly, indicating that High Score has a more significant long-term impact on FCM levels.
@@ -205,7 +205,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 **i) GCV / Closest in Time**
 
-![](Figures/archive/p_L.png)
+![GAMM: Closest in Time - GCV](Figures/archive/p_L.png)
 
 -   The curves of time and sample delay fluctuate largely with extremely wide confidence interval.
     But generally, the effect of time difference shows first an upward then an downward trend over time, which aligns with the expectation.
@@ -216,7 +216,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 **ii) GCV / Nearest**
 
-![](Figures/archive/p_N.png)
+![GAMM: Nearest - GCV](Figures/archive/p_N.png)
 
 -   Compare with closest in time, the fluctuation of the time difference becomes weaker, but the risk of overfitting for sample delay is still very high.
 -   The confidence interval of distance becomes extremely wide.
@@ -224,7 +224,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 **iii) GCV / Highest Score**
 
-![](Figures/archive/p_S.png)
+![GAMM: Highest Score - GCV](Figures/archive/p_S.png)
 
 -   the fluctuation of the time difference becomes stronger and loses its trend. While the curve of sample delay becomes smooth, after a downward and slightly upward trend, the effect goes down rapidly over time. And the confidence interval becomes narrower over time.
 
@@ -234,7 +234,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 **1. REML**
 
-![](Figures/archive/p_re_reml.png)
+![GAMM: Random Intercept - REML](Figures/archive/p_re_reml.png)
 
 -   The Q-Q shows，the random effects of REML estimation basically aligns with gaussian distribution.
 -   It indicates that the model has a reasonable residual structure when dealing with individual differences(Deer ID).
@@ -242,7 +242,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 **2. GCV**
 
-![](Figures/archive/p_re_gcv.png)
+![GAMM: Random Intercept - GCV](Figures/archive/p_re_gcv.png)
 
 -   The Q-Q also indicates the gaussian distribution of the random effects, but the tail shows apparent deviations, especially in the datasets “Closest in Time” and “Nearest” .
 -   This may be resulted by the overfitting of GCV, leading to the random effects for some individuals being strongly influenced by outlier observations.
@@ -280,11 +280,27 @@ The evaluation involved assessing the interpretability of smooth effects and the
 # Conclusion & Outlook {#sec-outlook}
 Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
 
-We deliberately chose not to include the pregnancy data in our model as it only contains information on some deer. As we are not able to label the remainder of the deer as “pregnant”/“not pregnant”, we are convinced that including this information would lead to a huge bias. However, we are strongly in favor of adding additional characteristics that could explain a shift in baseline stress levels.
-
 We believe that a more rigorous recording of hunting events (i.e. timespans instead of single moments, enforcing complete timestamps) and an overall larger amount of data could lead to less uncertainty and thus a clearer result.
- 
-# References
+
+# Appendix {.appendix}
+## Acknowledgements
+We would like to express our deepest gratitude to *Dr. Nicolas Ferry* for providing us with the opportunity to work on this project.
+
+*Daniel Schlichting*'s mentorship throughout the project was invaluable. We thank him for his guidance and patience.
+
+## References
 
 ::: {#refs}
 :::
+
+## Feature selection {#sec-feature_selection}
+As the reproductive data only contain information on a subset of the deer, we were faced with the decision of how to label the rest of the deer ("pregnant"/"not pregnant"/NA). We are convinced that imputing this information would introduce a huge bias. 
+For this reason, we deliberately chose not to include pregnancy data in our model. 
+However, we are strongly in favour of including additional characteristics that could explain a shift in baseline stress levels.
+
+## REML vs. GCV estimation
+
+## Additional diagnostic plots
+
+## Deviance explained by random intercept
+
