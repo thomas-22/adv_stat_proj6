@@ -46,32 +46,21 @@ Therefore our research question is two-fold:
 -   assess if the time between defecation event and sample collection affect
     the FCM levels
     
-    
-<!-- -   **Goal**: assess short-term stress response in red deer towards -->
-<!--     hunting events at the Bavarian Forest National Park -->
-
-<!-- -   Model FCM levels on spatial and temporal distance to hunting -->
-<!--     activities -->
-
-
 # Data Analysis
 We were provided with four distinct Datasets.\ 
 In the following subchapters we are going to describe the main
 features of each data set, but the reproduction data (see @sec-outlook) and address any anomalies.
 
 ## Hunting Events
-The dataset contains the location and time of roughly 700 individual
+The dataset contains the location and time of roughly 697 individual
 hunting events, spanning from 2020 to 2022. There are three main
 challenges:
 
-![Hunts - completeness of timestamp](Figures/hunts_incomplete_timestamp.png){#fig-timestamp}
-
-i)  Just a little over 500 of these events have a complete timestamp,
-    consisting of date and time of day (@fig-timestamp).
-ii) The events are not represented as a period of time, but as a as a single moment in time. Additionally,
+i)  Just a **519 of these 697 events have a complete timestamp**,
+    consisting of date and time of day. The remainder of 178 events only reported the date of the event.
+ii) The events are not represented as a period of time, but as a as a **single moment in time**. Additionally,
 as shown in @fig-hunts_dates, there appears to be seasonality in the occurrence of hunts.
-iii) Similiarly to ii), the events are only associated with a single spatial
-     point. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
+iii) Similiarly to ii), the events are only associated with a **single spatial point**. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
 
 ![Hunts - Daily Count](Figures/hunts_dates.png){#fig-hunts_dates}
 
@@ -166,10 +155,127 @@ Our model has two major limitations. First, it does not account for potential in
 Upon investigating the prepared data, we struggled to find an obvious relationship between the stress response and the covariates. Since traditional statistical modeling approaches require a rough specification of the relationship between Y and X_i, we decided to use a machine learning method that does not. We chose XGBoost because it works well on numerical tabular data like ours, offers high predictive performance, and is well implemented in the R package "xgboost." The hyperparameters have been tuned rigorously through extensive trial and error using randomized grid search, ensuring that the parameters stayed within ranges that do not lead to overfitting. The training/test split ratio was 0.75. Hyperparameter tuning is not part of the Main_Execution.R file since it takes multiple hours to run and ultimately only needs to be done once. We saved the parameters for the XGBoost models that minimized the test RMSE in the ./Models directory. We also provide a 3D visualization of the models, which works well because we have two covariates: Distance and TimeDiff. Each of the three datasets has its own model. After comparing the models with those trained on randomized labels, we concluded that there is some relationship between the covariates and the response, as our models significantly outperformed those trained on randomized labels. However, this relationship was very weak and not obvious or intuitive. After reviewing the hyperparameters we concluded that this was likely not noise. Although the predictive power of the XGBoost models was better than that of all other models, it was still not particularly good.
 
 # Model Evaluation {#sec-results}
+## Parametric Effects of GAMM
 
-## subtopic 1
+**Description**
 
-## subtopic 2
+This table shows the **Parametric** effects of variable "Number of other relevant hunting events" across different datasets and estimation methods (REML and GCV), including estimate, exponentiation of estimate (exp(Estimate)), and standard error.
+
+**Interpretation**
+
+-   Negative estimates indicate that with the rising number of other hunting events, the FCM level tends to be lower, while the effect size is relatively small.
+-   Difference resulted from datasets and estimation methods reflect the model’s different sensitivities to data uncertainty.
+
+## REML Smooth Effects Analysis
+
+**i) REML / Closest in Time**
+
+![](Figures/archive/p_L_reml.png)
+
+*Time difference*:
+
+-   Generally the trend is slightly downwards, which indicates that the FCM levels goes down over the time.
+-   The confidence interval is pretty wide, reflecting high uncertainty of such effect, which may be resulted by the limited sample or huge individual difference.
+
+*Distance*:
+
+-   An upward trend indicates that the FCM level will rise with the rising distance.
+
+*Sample delay*:
+
+-   It shows a downward trend with a moderate confidence interval.
+-   It indicates that the FCM level goes down with rising sample delay.
+
+**ii) REML / Nearest**
+
+![](Figures/archive/p_N_reml.png)
+
+-   The trend of this set of images is similar to that of Closest in Time, but the confidence intervals of distance and sample delay are relatively larger.
+
+**iii) REML / Highest Score**
+
+![](Figures/archive/p_S_reml.png)
+
+-   The effect of distance tend to be very significant, with the same rising trend.
+-   With the rising sample delay, the FCM level goes down at first and then shows a slight increase, but after that drop rapidly, indicating that High Score has a more significant long-term impact on FCM levels.
+
+**Generally the smooth effects estimated by REML tend to be stable, which aligns with biological expectations.**
+
+## GCV Smooth Effects Analysis
+
+**i) GCV / Closest in Time**
+
+![](Figures/archive/p_L.png)
+
+-   The curves of time and sample delay fluctuate largely with extremely wide confidence interval.
+    But generally, the effect of time difference shows first an upward then an downward trend over time, which aligns with the expectation.
+
+-   Such result indicates that GCV holds a strong risk of overfitting, it may be sensitive to subtle fluctuations in the data, consequently overlooking the general trend.
+
+-   The effect of distance is similar to that of REML.
+
+**ii) GCV / Nearest**
+
+![](Figures/archive/p_N.png)
+
+-   Compare with closest in time, the fluctuation of the time difference becomes weaker, but the risk of overfitting for sample delay is still very high.
+-   The confidence interval of distance becomes extremely wide.
+-   This indicates that GCV may perform well when dealing with simple variables like distance, but the stability goes down rapidly when faced with variables involving temporal characteristics.
+
+**iii) GCV / Highest Score**
+
+![](Figures/archive/p_S.png)
+
+-   the fluctuation of the time difference becomes stronger and loses its trend. While the curve of sample delay becomes smooth, after a downward and slightly upward trend, the effect goes down rapidly over time. And the confidence interval becomes narrower over time.
+
+**GCV is pretty sensitive to local outlier, resulting in excessively complex smooth curves.**
+
+## Random Intercept Analysis
+
+**1. REML**
+
+![](Figures/archive/p_re_reml.png)
+
+-   The Q-Q shows，the random effects of REML estimation basically aligns with gaussian distribution.
+-   It indicates that the model has a reasonable residual structure when dealing with individual differences(Deer ID).
+-   The linear trend is clear, indicating a robust assumption of random effects, which further explain REML's good stability in estimating individual-level differences.
+
+**2. GCV**
+
+![](Figures/archive/p_re_gcv.png)
+
+-   The Q-Q also indicates the gaussian distribution of the random effects, but the tail shows apparent deviations, especially in the datasets “Closest in Time” and “Nearest” .
+-   This may be resulted by the overfitting of GCV, leading to the random effects for some individuals being strongly influenced by outlier observations.
+-   The random effects estimated by GCV shows anomalies in scale(either extreme big or small), reflecting that the stability of GCV on the estimation of random effect tend to be not so good compared with REML.
+
+## GAMM Model Evaluation and Results Summary
+
+In the whole analysis, we fitted and evaluated GAMM models across three different matching strategies using two smoothing parameter estimation methods: **REML** and **GCV**.
+The evaluation involved assessing the interpretability of smooth effects and the validity of random effects.
+
+**Main findings**
+
+**1. analysis**
+
+-   **With the methods of REML**,the curves of smooth effects are basically stable, with the trend aligning with the biological logic. For all of the time difference, distance and sample delay, REML shows relatively stable mode of effects.
+-   **With the methods of GCV**, the curves of smooth effects fluctuate strongly, especially in the datasets of “Closest in Time” and “Nearest”, with fluctuations which are hard to be explained and extremely wide confidence interval, showing apparent characteristic of overfitting.
+
+**2. Analysis of random effects**
+
+-   The distribution of random effects under the REML was generally consistent with Gaussian distribution, indicating that the model described individual differences more reasonably.
+-   The distribution of random effects under GCV is significantly skewed, with significant tail bias, reflecting the high sensitivity of GCV to outliers and the relatively poor stability of random effects.
+
+**3. Key notes and reflections To be especially annotated:The fitting of GAMM model and the evaluation were generally unsatisfactory.**
+
+-   Both the fluctuation of the smooth effect and the instability of parameter estimation reveals huge risk of the model.
+-   Such phenomenon may be resulted from factors like the lack of the samples, instability of data matching strategies, incomplete selection of variables and so on.
+-   As a result, the main goal of the evaluation is to represent a complete analytical processes and ideas, rather than give a biological conclusion directly.
+
+**4. The significance of process demonstrations**
+
+*Although the result is not so ideal, the integrity of the process and the reproducibility of the ideas are still of significant value:*
+
+-   Such structured processes include data integration, variable screening, matching strategy, model construction, smoothing parameter selection, model fitting, and effectiveness evaluation, providing standardized templates and space for reflection for further analysis.
 
 # Conclusion & Outlook {#sec-outlook}
 Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
@@ -177,5 +283,8 @@ Due to the high level of uncertainty in the data, we were not able to show an ef
 We deliberately chose not to include the pregnancy data in our model as it only contains information on some deer. As we are not able to label the remainder of the deer as “pregnant”/“not pregnant”, we are convinced that including this information would lead to a huge bias. However, we are strongly in favor of adding additional characteristics that could explain a shift in baseline stress levels.
 
 We believe that a more rigorous recording of hunting events (i.e. timespans instead of single moments, enforcing complete timestamps) and an overall larger amount of data could lead to less uncertainty and thus a clearer result.
+ 
+# References
 
-
+::: {#refs}
+:::
