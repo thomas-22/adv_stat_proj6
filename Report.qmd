@@ -12,7 +12,10 @@ format:
     bibliography: references.bib
     classoption: [twocolumn, open=any]
     lof: true
-    header-includes: \counterwithout{figure}{chapter}
+    lot: true
+    header-includes: 
+      \counterwithout{figure}{chapter}
+      \counterwithout{table}{chapter}
     toc: true
     geometry:
       - top=20mm
@@ -98,9 +101,8 @@ iii)  time difference between defecation and sampling (*Sample Delay*)
 iv) day of year [1-365] (*Defecation Day*)
 v)  Number of hunts a deer experiences before defecation (*Number of other Hunts*)
 
-As each sample is associated with one or more hunting event, the main challenge is to identify the most relevant hunting event. If we successfully do so, feature i) can be calculated easily as the time difference of the hunting event and the defecation event. To obtain feature ii) we have to take in account, that the movement data is recorded in 1-hour intervals, while the hunting events occur at arbitrary times. Therefore we need to approximate the exact deer positions at hunting event times. We interpolate deer positions at the timestamp of each hunting event, assuming constant velocity and linear movement between the closest two recordings before and after the respective hunting event. Features iii) and iv) are again easy to obtain. For feature v), we need to define a cutoff point in time and space, to identify which other hunting events could have affected a deer as well.
-
-We propose three different ways to identify which hunting event is the most relevant one:
+As each sample is associated with one or more hunting event, the main challenge is to identify the most relevant hunting event. 
+We propose three different criterions to identify which hunting event is the most relevant one:
 
 1.	**Closest in time**: Choosing the hunting event, which happened closest to 19 hours prior to the defecation event:
 $$
@@ -121,10 +123,49 @@ $$
 
 Where $d$ is the spatial distance, $t$ the time difference between hunting and defecation event, while $\mu = 19$, once again incoporates @Huber2003 findings. $\sigma = 2$ and $b = 2.5$ are shape paramters.
 
-## Assumptions
-We had to make several assumptions about the data.\ 
-First, we assumed that the movement of each deer between two points is approximately linear and at a constant speed, i.e. we used linear interpolation to determine the coordinates between two signals from the GPS collar.\  
-We also assumed that each hunting event was actually a sound event (i.e. a shot was fired). Therefore, we weighted the value of our score function by $\frac{1}{d^2}$, where $d$ is the Euclidean distance between a given deer and a given hunting event.\  
+Having identified the most relevant hunting event, feature i) can be calculated easily as the time difference of the hunting event and the defecation event. To obtain feature ii) we have to take in account, that the movement data is recorded in 1-hour intervals, while the hunting events occur at arbitrary times. Therefore we need to approximate the exact deer positions at hunting event times. We interpolate deer positions at the timestamp of each hunting event, assuming constant velocity and linear movement. Features iii) and iv) are again easy to obtain. For feature v), we need to define a cutoff point in time and space, to identify which other hunting events could have affected a deer as well (see @tbl-thresholds).
+
+```{r include=TRUE, echo=FALSE}
+#| label: tbl-thresholds
+#| tbl-cap: "Thresholds"
+data <- readRDS("Data/intermediate/param_grid.RDS")
+
+data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
+data$filter_criterion[data$filter_criterion == "score"] <- "highest score"
+data <- dplyr::select(data, filter_criterion, gut_retention_time_upper, distance_threshold)
+
+tab <- knitr::kable(data, 
+             format = "latex", 
+             align = c("l", "r", "r"), 
+             col.names = c("criterion",
+                          "temporal [h]",
+                          "spatial [km]"
+                          ))
+
+kableExtra::kable_styling(tab, font_size = 10)
+```
+
+<!-- ```{r include=TRUE, echo=FALSE} -->
+<!-- #| label: tbl-example -->
+<!-- #| tbl-cap: "Example" -->
+<!-- data <- readRDS("Data/processed/Datasets.RDS") -->
+
+<!-- data$filter_criterion[data$filter_criterion == "last"] <- "closest in time" -->
+<!-- data <- dplyr::select(data, set, filter_criterion, unique_deers, obs) -->
+
+<!-- tab <- knitr::kable(data,  -->
+<!--              format = "latex",  -->
+<!--              align = c("r", "r", "r", "r"),  -->
+<!--              col.names = c("DataSet", -->
+<!--                           #  "GRT low", -->
+<!--                           #  "GRT high", -->
+<!--                           #  "Distance Threshold", -->
+<!--                            "Proximity Criterion", -->
+<!--                            "Deer", -->
+<!--                            "Observations")) -->
+
+<!-- kableExtra::kable_styling(tab, font_size = 10) -->
+<!-- ``` -->
 
 ## Uncertainties
 A major challenge in our analysis is the large uncertainty in data which propogates through the pre-processing steps into our models.
@@ -134,6 +175,8 @@ First, the uncertainty about spatial distances between deer and hunting events i
 Second, we have very limited information for addressing the short-term stress response of the deer. On the one hand, the available data contain only 500 hunting events with complete time and location information scattered across a 30km $\times$ 30km area in the span of two years. The observed hunting events only populate the space-time scarcely. On the other hand, we observe in @fig-deers_locations that the deer tended to roam around within a small area. As a result, each deer is likely to have only encountered very few hunting events at small spatial and temporal distances.
 
 Third, there could be a large number of confounders for which we possess no information. Based on GPS coordinates, we can compute Euclidean distances between deer and hunting events. However, we cannot account for terrain and vegetation which could affect the propagation of sound and therefore contaminate the potential effect of hunting events. Furthermore, there could be unobserved stress stimuli, such as weather conditions, predators, and human activities other than hunting.
+
+Fourth, we assumed that each hunting event was actually a sound event (i.e. a shot was fired). Therefore, we weighted the value of our score function by the inverse square distance.
 
 # Model Selection
 To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration. In this section, we present details on model specification.
