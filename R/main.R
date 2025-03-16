@@ -40,7 +40,7 @@ param_grid <- purrr::list_rbind(list(
              filter_criterion = "score")
 ))
 
-expand.grid(filter_criterion = c("last", "nearest", "score"), method = c("GCV.Cp", "REML"))
+saveRDS(param_grid, "Data/intermediate/param_grid.RDS")
 
 datasets <- param_grid %>%
   purrr::pmap(

@@ -11,8 +11,8 @@ format:
       chapters: true
     bibliography: references.bib
     classoption: [twocolumn, open=any]
-    lof: true
-    lot: true
+    lof: false
+    lot: false
     header-includes: 
       \counterwithout{figure}{chapter}
       \counterwithout{table}{chapter}
@@ -27,42 +27,43 @@ format:
     colorlinks: true
 ---
 
-# Summary
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
 
 # Introduction
 ## Background
-Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes. This project aims to investigate the physiological stress response in red deer using a non-invasive method, the measurement of faecal cortisol metabolites (FCMs). 
+
+Apart from the change in populations size, the effects of hunting on wildlife have so far been studied mainly on the basis of behavioral changes. This project aims to investigate the physiological stress response in red deer using a non-invasive method, the measurement of faecal cortisol metabolites (FCMs).
 
 ## Data Generating Process
+
 The data for the project origins in the *Bavarian Forest National Park*. Its location is highlighted in green in @fig-park_location. Within and on the borders of this area, red deer roam freely. Some of these deer have been **collared with a GPS-device**, which helps to track the movement. At some time, a **hunting event** happens and the deer experiences some amount of stress. Later, the deer defecates ("**defecation event**"). Subsequently, researchers visit the defecation location and collect a **faecal sample**.
 
 ![Location of Bavarian Forest National Park](Figures/sp_park_location.png){#fig-park_location}
 
-**Stress is expected to be higher in proximity^[this includes temporal and spatial proximity] to hunting events**. With higher stress, FCM values are expected to be higher. @Huber2003 showed (@fig-fcm) that the FCM levels peak between 16 and 19 hours after a stress event (called "challenge"). Additionally we expect, that FCM levels are lower, the more time passes between defecation and sampling. 
+**Stress is expected to be higher in proximity**[^1] to hunting events. With higher stress, FCM values are expected to be higher. @Huber2003 showed (@fig-fcm) that the FCM levels peak between 16 and 19 hours after a stress event (called "challenge"). Additionally we expect, that FCM levels are lower, the more time passes between defecation and sampling.
+
+[^1]: **this includes temporal and spatial proximity**
 
 ![FCM levels over time](Figures/Huber_et_al_FCM_levels.png){#fig-fcm}
 
 ## Research Question
+
 Therefore our research question is two-fold:
 
 -   assess the effect of temporal and spatial distance on FCM level
--   assess if the time between defecation event and sample collection affect
-    the FCM levels
-    
+-   assess if the time between defecation event and sample collection affect the FCM levels
+
 # Data Analysis
-We were provided with four distinct Datasets.\ 
-In the following subchapters we are going to describe the main
-features of each data set, but the reproduction data (see @sec-feature_selection) and address any anomalies.
+
+We were provided with four distinct Datasets.  In the following subchapters we are going to describe the main features of each data set, but the reproduction data (see @sec-feature_selection) and address any anomalies.
 
 ## Hunting Events
-The dataset contains the location and time of roughly 697 individual
-hunting events, spanning from 2020 to 2022. There are three main
-challenges:
 
-i)  Just a **519 of these 697 events have a complete timestamp**,
-    consisting of date and time of day. The remainder of 178 events only reported the date of the event.
-ii) The events are not represented as a period of time, but as a as a **single moment in time**. Additionally,
-as shown in @fig-hunts_dates, there appears to be seasonality in the occurrence of hunts.
+The dataset contains the location and time of roughly 697 individual hunting events, spanning from 2020 to 2022. There are three main challenges:
+
+i)  Just a **519 of these 697 events have a complete timestamp**, consisting of date and time of day. The remainder of 178 events only reported the date of the event.
+ii) The events are not represented as a period of time, but as a as a **single moment in time**. Additionally, as shown in @fig-hunts_dates, there appears to be seasonality in the occurrence of hunts.
 iii) Similiarly to ii), the events are only associated with a **single spatial point**. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
 
 ![Hunts - Daily Count](Figures/hunts_dates.png){#fig-hunts_dates}
@@ -70,49 +71,52 @@ iii) Similiarly to ii), the events are only associated with a **single spatial p
 ![Hunts - Locations](Figures/sp_hunts.png){#fig-hunt_locations}
 
 ## Movement Data
+
 There are **40 collared deers** which movements have been tracked completely or partially between February 2020 and February 2023. Some collars stopped working before the end-date, some deers got collared *within* the timespan of interest. The location of each individual deer is **tracked on an hourly basis**. The Movement of four randomly selected deer is visualised in @fig-deers_locations. During the winter months, the deers roam in one of four enclosures within the national park.
 
 ![Deers - Locations of four Deer](Figures/sp_movement_4.png){#fig-deers_locations}
 
 ## Faecal Sample Data
-The faecal sample dataset contains information on **809 faecal samples**. Most importantly, the FCM-level (in nanograms per gram [ng/g]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
+
+The faecal sample dataset contains information on **809 faecal samples**. Most importantly, the FCM-level (in nanograms per gram \[ng/g\]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
 
 ![Samples - Daily Count](Figures/samples_daily_count.png){#fig-samples_daily_count}
 
 ![Samples - Locations](Figures/sp_samples.png){#fig-samples_locations}
 
 # Data Preprocessing
+
 The datasets undergo preprocessing steps to facilitate analysis and modelling:
 
--	Convertion of Timestamps and Coordinates to a uniform format
--	Removal of entries with missing values (especially timestamps), zeros, or highly implausible data
+-   Convertion of Timestamps and Coordinates to a uniform format
+-   Removal of entries with missing values (especially timestamps), zeros, or highly implausible data
 
 Each FCM sample gets associated with all hunting events occurring before the sample was produced. The resulting dataset containes samples linked to all prior hunting events, creating multiple pairings per sample.
 
 ## Filtering
+
 A hunting event and a deer are separated by both space and time. Therefore we define the **essential features** to be:
 
-i) *time difference* between the hunting event and the subsequent defecation
-ii)  *spatial distance* between a deer and the hunting event at the exact time of the event
+i)  *time difference* between the hunting event and the subsequent defecation
+ii) *spatial distance* between a deer and the hunting event at the exact time of the event
 
 Additionally we identify **other features**:
 
-iii)  time difference between defecation and sampling (*Sample Delay*)
-iv) day of year [1-365] (*Defecation Day*)
+iii) time difference between defecation and sampling (*Sample Delay*)
+iv) day of year \[1-365\] (*Defecation Day*)
 v)  Number of hunts a deer experiences before defecation (*Number of other Hunts*)
 
-As each sample is associated with one or more hunting event, the main challenge is to identify the most relevant hunting event. 
-We propose three different criterions to identify which hunting event is the most relevant one:
+As each sample is associated with one or more hunting event, the main challenge is to identify the most relevant hunting event. We propose three different criterions to identify which hunting event is the most relevant one:
 
-1.	**Closest in time**: Choosing the hunting event, which happened closest to 19 hours prior to the defecation event:
-$$
-\underset{t_{Hunt}}{arg\hspace{.1cm}min} \hspace{.3cm} |(t_{Defecation} - 19h) - t_{Hunt}|
-$$
-This takes the findings of @Huber2003 into account, that cortisol metabolite concentrations peak around 19 hours post-stress event (see @fig-fcm).
+1.  **Closest in time**: Choosing the hunting event, which happened closest to 19 hours prior to the defecation event: $$
+    \underset{t_{Hunt}}{arg\hspace{.1cm}min} \hspace{.3cm} |(t_{Defecation} - 19h) - t_{Hunt}|
+    $$ This takes the findings of @Huber2003 into account, that cortisol metabolite concentrations peak around 19 hours post-stress event (see @fig-fcm).
 
-2.	**Nearest**: Choosing the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position at the time of the hunting event.
+2.  **Nearest**: Choosing the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position at the time of the hunting event.
 
-3.	**Highest score**: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on time difference (see @fig-score). The inverse square component is inspired by physical dynamics^[such as the inverse square law for sound intensity], while the spike function was inspired by pharmacokinetics. The observation with the highest score was selected.
+3.  **Highest score**: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on time difference (see @fig-score). The inverse square component is inspired by physical dynamics[^2], while the spike function was inspired by pharmacokinetics. The observation with the highest score was selected.
+
+[^2]: such as the inverse square law for sound intensity
 
 ![Score Function](Figures/Timediff_Function_impact_curve.png){#fig-score}
 
@@ -121,7 +125,7 @@ S(d, t) \propto \frac{1}{d^2} \cdot \begin{cases}
 f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{N}(\mu, \sigma^2) &|t \leq \mu \\
 f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{Laplace}(\mu, b) &|t > \mu
 \end{cases}
-$$ 
+$$
 
 Where $d$ is the spatial distance, $t$ the time difference between hunting and defecation event, while $\mu = 19$, once again incoporates @Huber2003 findings. $\sigma = 2$ and $b = 2.5$ are shape paramters.
 
@@ -148,28 +152,43 @@ kableExtra::kable_styling(tab, font_size = 10)
 ```
 
 <!-- ```{r include=TRUE, echo=FALSE} -->
+
 <!-- #| label: tbl-example -->
+
 <!-- #| tbl-cap: "Example" -->
+
 <!-- data <- readRDS("Data/processed/Datasets.RDS") -->
 
 <!-- data$filter_criterion[data$filter_criterion == "last"] <- "closest in time" -->
+
 <!-- data <- dplyr::select(data, set, filter_criterion, unique_deers, obs) -->
 
 <!-- tab <- knitr::kable(data,  -->
+
 <!--              format = "latex",  -->
+
 <!--              align = c("r", "r", "r", "r"),  -->
+
 <!--              col.names = c("DataSet", -->
+
 <!--                           #  "GRT low", -->
+
 <!--                           #  "GRT high", -->
+
 <!--                           #  "Distance Threshold", -->
+
 <!--                            "Proximity Criterion", -->
+
 <!--                            "Deer", -->
+
 <!--                            "Observations")) -->
 
 <!-- kableExtra::kable_styling(tab, font_size = 10) -->
+
 <!-- ``` -->
 
 ## Uncertainties
+
 A major challenge in our analysis is the large uncertainty in data which propogates through the pre-processing steps into our models.
 
 First, the uncertainty about spatial distances between deer and hunting events is large. While the movement of deer was tracked at hourly intervals, hunting events occurred irregularly. In our interpolation-based approximation of a deer's location at the time of hunting event, the approximation error is unknown.
@@ -181,23 +200,24 @@ Third, there could be a large number of confounders for which we possess no info
 Fourth, we assumed that each hunting event was actually a sound event (i.e. a shot was fired). Therefore, we weighted the value of our score function by the inverse square distance.
 
 # Model Selection
+
 To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration. In this section, we present details on model specification.
 
 ## Statistical modeling approach
+
 For each dataset resulted from TBD, we consider the following variables as covariates:
 
-- Time Difference between defaction and the most relevant hunting event;
-- Distance (in space) between the deer and the most relevant hunting event;
-- Sample Delay, i.e., the time difference between sample collection and defecation;
-- Defecation Day, i.e., the day of year on which the defecation event occurred;
-- Number of Other Relevant Hunting Events within the specified spatiotemporal frame.
+-   Time Difference between defaction and the most relevant hunting event;
+-   Distance (in space) between the deer and the most relevant hunting event;
+-   Sample Delay, i.e., the time difference between sample collection and defecation;
+-   Defecation Day, i.e., the day of year on which the defecation event occurred;
+-   Number of Other Relevant Hunting Events within the specified spatiotemporal frame.
 
 The first two covariates are of main interest for our first research question. The effect of sample delay is the subject of our second research question. We consider the day of defecation as a potential confounder, as the deer's stress level exhibits seasonal patterns [@Vilela2020]. The number of other relevant hunting events reflects the intensity of recent hunting activity. In time periods of frequent hunting events, a deer might have a generally higher stress level, or adaptation might occur which dampens the stress response towards new hunting events.
 
 We propose a generalized additive mixed model (GAMM) to account for potentially non-linear effects of covariates and potential individual differences between the observed deer. We use the R package `mgcv` [@mgcv] to fit the models. The covariates Time Difference, Distance, Sample Delay, and Defecation Day are encoded by penalized cubic regression splines. We do not use a cyclical spline for Defecation Day, because faecal samples were not collected during winter and therefore Defecation Day is not a cyclical variable. The Number of Other Relevant Hunting Events is adopted as a linear effect. We further introduce a random intercept for each deer.
 
-For the distributional assumption, we use the Gamma family with a log link. Since the FCM level is non-negative, we expect the Gamma assumption to more appropriate than Gaussian. A full specification of our GAMM model is as follows. Let $i = 1,\dots,N$ be the indices of the deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer
-\begin{align*}
+For the distributional assumption, we use the Gamma family with a log link. Since the FCM level is non-negative, we expect the Gamma assumption to more appropriate than Gaussian. A full specification of our GAMM model is as follows. Let $i = 1,\dots,N$ be the indices of the deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer \begin{align*}
 \textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim} \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
 \mu_{ij} &= \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
 \eta_{ij} &= \beta_0 \\
@@ -206,15 +226,18 @@ For the distributional assumption, we use the Gamma family with a log link. Sinc
 &+ f_3(\textup{Sample Delay}_{ij}) + f_4(\textup{Defecation Day}_{ij}) \\
 &+ \gamma_{i}, \\
 \gamma_i &\overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_\gamma^2),
-\end{align*}
-where $f_1, f_2, f_3, f_4$ are penalized cubic regression splines, $\sigma_\gamma^2 > 0$, and $\nu > 0$.
+\end{align*} where $f_1, f_2, f_3, f_4$ are penalized cubic regression splines, $\sigma_\gamma^2 > 0$, and $\nu > 0$.
 
 Our model has two major limitations. First, it does not account for potential interactions between the covariates. Second, the random intercept term can only capture different base stress levels, but not differences in stress response. However, given the limited data, one must trade off between model complexity and stability in estimation. In fact, our current model already exhibits instability with respect to estimation procedures, which we discuss in @sec-results.
 
 ## Machine learning approach
+
+@Chen2016 introduced XGBoost as a ....
+
 Upon investigating the prepared data, we struggled to find an obvious relationship between the stress response and the covariates. Since traditional statistical modeling approaches require a rough specification of the relationship between Y and X_i, we decided to use a machine learning method that does not. We chose XGBoost because it works well on numerical tabular data like ours, offers high predictive performance, and is well implemented in the R package "xgboost." The hyperparameters have been tuned rigorously through extensive trial and error using randomized grid search, ensuring that the parameters stayed within ranges that do not lead to overfitting. The training/test split ratio was 0.75. Hyperparameter tuning is not part of the Main_Execution.R file since it takes multiple hours to run and ultimately only needs to be done once. We saved the parameters for the XGBoost models that minimized the test RMSE in the ./Models directory. We also provide a 3D visualization of the models, which works well because we have two covariates: Distance and TimeDiff. Each of the three datasets has its own model. After comparing the models with those trained on randomized labels, we concluded that there is some relationship between the covariates and the response, as our models significantly outperformed those trained on randomized labels. However, this relationship was very weak and not obvious or intuitive. After reviewing the hyperparameters we concluded that this was likely not noise. Although the predictive power of the XGBoost models was better than that of all other models, it was still not particularly good.
 
 # Model Evaluation {#sec-results}
+
 ## Parametric Effects of GAMM
 
 **Description**
@@ -267,8 +290,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 ![GAMM: Closest in Time - GCV](Figures/archive/p_L.png)
 
--   The curves of time and sample delay fluctuate largely with extremely wide confidence interval.
-    But generally, the effect of time difference shows first an upward then an downward trend over time, which aligns with the expectation.
+-   The curves of time and sample delay fluctuate largely with extremely wide confidence interval. But generally, the effect of time difference shows first an upward then an downward trend over time, which aligns with the expectation.
 
 -   Such result indicates that GCV holds a strong risk of overfitting, it may be sensitive to subtle fluctuations in the data, consequently overlooking the general trend.
 
@@ -310,8 +332,7 @@ This table shows the **Parametric** effects of variable "Number of other relevan
 
 ## GAMM Model Evaluation and Results Summary
 
-In the whole analysis, we fitted and evaluated GAMM models across three different matching strategies using two smoothing parameter estimation methods: **REML** and **GCV**.
-The evaluation involved assessing the interpretability of smooth effects and the validity of random effects.
+In the whole analysis, we fitted and evaluated GAMM models across three different matching strategies using two smoothing parameter estimation methods: **REML** and **GCV**. The evaluation involved assessing the interpretability of smooth effects and the validity of random effects.
 
 **Main findings**
 
@@ -338,29 +359,34 @@ The evaluation involved assessing the interpretability of smooth effects and the
 -   Such structured processes include data integration, variable screening, matching strategy, model construction, smoothing parameter selection, model fitting, and effectiveness evaluation, providing standardized templates and space for reflection for further analysis.
 
 # Conclusion & Outlook {#sec-outlook}
+
 Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
 
 We believe that a more rigorous recording of hunting events (i.e. timespans instead of single moments, enforcing complete timestamps) and an overall larger amount of data could lead to less uncertainty and thus a clearer result.
 
-# Appendix {.appendix}
-## Acknowledgements
+
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+
 We would like to express our deepest gratitude to *Dr. Nicolas Ferry* for providing us with the opportunity to work on this project.
 
 *Daniel Schlichting*'s mentorship throughout the project was invaluable. We thank him for his guidance and patience.
 
-## References
+\chapter*{References}
+\addcontentsline{toc}{chapter}{References}
 
 ::: {#refs}
 :::
 
+
+# Appendix
+
 ## Feature selection {#sec-feature_selection}
-As the reproductive data only contain information on a subset of the deer, we were faced with the decision of how to label the rest of the deer ("pregnant"/"not pregnant"/NA). We are convinced that imputing this information would introduce a huge bias. 
-For this reason, we deliberately chose not to include pregnancy data in our model. 
-However, we are strongly in favour of including additional characteristics that could explain a shift in baseline stress levels.
+
+As the reproductive data only contain information on a subset of the deer, we were faced with the decision of how to label the rest of the deer ("pregnant"/"not pregnant"/NA). We are convinced that imputing this information would introduce a huge bias. For this reason, we deliberately chose not to include pregnancy data in our model. However, we are strongly in favour of including additional characteristics that could explain a shift in baseline stress levels.
 
 ## REML vs. GCV estimation
 
 ## Additional diagnostic plots
 
 ## Deviance explained by random intercept
-
