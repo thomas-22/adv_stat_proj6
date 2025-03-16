@@ -25,7 +25,7 @@ score_curve <- function(save = FALSE) {
   plot <- tibble(x = seq(0, 40, .1)) %>%
     mutate(y = timediff_evaluation_asym_curve(x)) %>%
     ggplot(aes(x, y)) +
-    geom_line(color = "blue") +
+    geom_line(color = "black") +
     labs(x = "Time (hours)", y = "Score", title = "Time Difference vs. Score") 
   if(save) {
     ggsave(plot = plot, 
