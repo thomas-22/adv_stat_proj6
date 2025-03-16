@@ -69,9 +69,9 @@ We were provided with four distinct Datasets.  In the following subchapters we 
 
 ## Hunting Events
 
-The dataset contains the location and time of roughly 697 individual hunting events, spanning from 2020 to 2022. There are three main challenges:
+The dataset contains the location and time of 697 individual hunting events, spanning from 2020 to 2022. There are three main challenges:
 
-i)  Just a **519 of these 697 events have a complete timestamp**, consisting of date and time of day. The remainder of 178 events only reported the date of the event.
+i)  Just **519 of these 697 events have a complete timestamp**, consisting of date and time of day. The remainder of 178 events only reported the date of the event.
 ii) The events are not represented as a period of time, but as a as a **single moment in time**. Additionally, as shown in @fig-hunts_dates, there appears to be seasonality in the occurrence of hunts.
 iii) Similiarly to ii), the events are only associated with a **single spatial point**. The locations of the events with complete timestamps are illustrated in @fig-hunt_locations.
 
