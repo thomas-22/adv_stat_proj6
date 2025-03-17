@@ -176,7 +176,7 @@ Fourth, we assumed that each hunting event was actually a sound event (i.e. a sh
 
 To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration. In this section, we present details on model specification. Both approaches use all the datasets shown in @tbl-datasets.
 
-```{r include=TRUE, echo=FALSE} 
+```{r include=TRUE, echo=FALSE}
 #| label: tbl-datasets 
 #| tbl-cap: "Datasets" 
 data <- readRDS("Data/processed/Datasets.RDS")
@@ -320,9 +320,7 @@ Adjusted predictions for the FCM level. Each plot shows the predicted values of 
 
 ![](Figures/archive/p_L.png)
 
-![](Figures/archive/p_N.png) 
-
-![](Figures/archive/p_S.png)
+![](Figures/archive/p_N.png) ![](Figures/archive/p_S.png)
 
 GCV (Generalized Cross-Validation) tends to produce more fluctuating smooth effects due to its weaker control over model complexity. Compared to REML (Restricted Maximum Likelihood), it is more likely to select overly complex models, leading to more wiggly estimated smooth curves.
 
