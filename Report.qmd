@@ -321,7 +321,6 @@ Adjusted predictions for the FCM level. Each plot shows the predicted values of 
 ![](Figures/archive/p_L.png)
 
 ![](Figures/archive/p_N.png)
-
 ![](Figures/archive/p_S.png)
 
 GCV (Generalized Cross-Validation) tends to produce more fluctuating smooth effects due to its weaker control over model complexity. Compared to REML (Restricted Maximum Likelihood), it is more likely to select overly complex models, leading to more wiggly estimated smooth curves.
