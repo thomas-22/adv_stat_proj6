@@ -126,7 +126,7 @@ As each sample is associated with one or more hunting event, the main challenge 
 3.  **Highest score**: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on time difference (see @fig-score). The inverse square component is inspired by physical dynamics[^2], spike function was inspired by the general dynamics of stress responses, incorporating insights from Dr. Ferry and further supported by findings on cortisol fluctuations in brown bears following an ACTH challenge, as described in the study 'Blood cortisol and faecal cortisol metabolite concentrations following an ACTH challenge in unanaesthetized brown bears (Ursus arctos) (https://pmc.ncbi.nlm.nih.gov/articles/PMC11734623/))
 (https://en.wikipedia.org/wiki/Pharmacokinetics). The observation with the highest score was selected.
 
-[^2]: such as the inverse square law for sound intensity
+[^2]: such as the inverse square law for sound intensity (http://hyperphysics.phy-astr.gsu.edu/hbase/Acoustic/invsqs.html)
 
 ![Score Function](Figures/Timediff_Function_impact_curve.png){#fig-score}
 
