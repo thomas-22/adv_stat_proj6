@@ -36,7 +36,9 @@ format:
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-The experience of hunting events causes stress in red deer, resulting in elevated faecal cortisol metabolites (FCMs). Modelling FCM levels on the spatial and temporal distance of a given deer to hunting events did not show significant effects due to uncertainty within the data. However, we were able to show some relationship between *sampling delay* and FCM levels.
+<!-- The experience of hunting events causes stress in red deer, resulting in elevated faecal cortisol metabolites (FCMs). Modelling FCM levels on the spatial and temporal distance of a given deer to hunting events did not show significant effects due to uncertainty within the data. However, we were able to show some relationship between *sampling delay* and FCM levels. -->
+
+Hunting activity has an impact on animal populations through removal of individuals. Moreover, it may have a non-lethal effect of inducing stress. In this project, we analyze the short-term stress response of red deer in the Bavarian Forest National Park to hunting events. The stress level of a deer was measured by the concentration of faecal cortisl metabolites (FCMs) in faecal samples. Combining spatiotemporal information about the faecal samples, the deer which produced them, and the hunting events occurred in the time period of sample collection, we aim to address how the FCM level in a deer's faecal matter is associated with the temporal and spatial distance to a hunting event that could have affected the deer.
 
 # Introduction
 
@@ -240,31 +242,49 @@ We propose a xgboost model using the R package `xgboost`, choosing *spatial dist
 -   *features by tree*:  Determines the fraction of features (columns) randomly sampled for each tree, increasing diversity among trees.
 -   *minimum weight of child*:  Minimum sum of instance weight needed in a child node, helping control the complexity of the model by preventing overly specific partitions.
 
-# GAMM Model Evaluation and Results Summary {#sec-results}
+# Model Evaluation {#sec-results}
 
-## Overview
+## GAMMs
 
-In this analysis, we fitted and evaluated GAMM models across three different matching strategies using two smoothing parameter estimation methods: REML and GCV. The evaluation focused on assessing the interpretability of smooth effects and the validity of random effects.
+We fitted and evaluated GAMM models across the three datasets, using REML and GCV as parameter estimation methods. We observed high instability with respect to the choice of dataset and estimation method.
 
-## Main Findings
+<!-- ## Main Findings
 
-### Smooth Effect Analysis
+### Smooth Effect Analysis -->
 
--   Using REML, the smooth effect curves remained relatively stable, showing a consistent pattern.
+::: {#fig-gamm-reml layout-ncol=1}
+
+![Closest in time.](Figures/Models/last_REML_diagnostic_custom.png)
+
+![Nearest.](Figures/Models/last_REML_diagnostic_custom.png)
+
+![Highest score.](Figures/Models/last_REML_diagnostic_custom.png)
+
+Adjusted predictions for the FCM level on the three datasets. The GAMM is fitted with the REML method. Each plot shows the predicted values of the FCM level in dependence of one covariate. The other covariants are held constant at the mean. The grey area shows the approximate confidence band (mean $\pm$ 1.96 standard error).
+:::
+
+In models estimated with the REML method, the smooth effects are penalized to almost linear, as shown in @fig-gamm-reml. While the fitted curves have a similar tendency across the datasets, the standard error in estimation is generally high. Given such high uncertainty, no interpretation of the estimates is reliable. The GCV method yields more wiggly smooth effect estimates, which are visualized in @fig-gamm-gcv, but high uncertainty persists. For the other covariates, we also observe high uncertainty and therefore avoid making any unreliable statement.
+
+On the "Highest Score" dataset which contains more observations than the other two datasets, both estimation methods agree on a negative non-linear effect of Sample Delay. This is in accordance with our prior knowledge that the FCM level in the faecal sample decays after defecation @Huber2003.
+
+Similar to the smooth and linear effects, estimation of the deer-specific random intercepts exhibits high instability. In particular, the estimated random intercepts differ in order of magnitude across different dataset (see @fig-ri).
+
+
+<!-- -   Using REML, the smooth effect curves remained relatively stable, showing a consistent pattern.
 -   Using GCV, the smooth effect curves exhibited strong fluctuations.
 -   Across all datasets, there was high uncertainty (large standard errors) in estimated effects, particularly for time difference and distance.
 -   A consistent sample delay effect was observed with REML: larger sample delay led to lower FCM levels, as expected.
 -   Instability across estimation methods: GCV tended to produce more wiggly smooth effects compared to REML.
--   The estimation of random intercepts was sensitive to the choice of dataset.
+-   The estimation of random intercepts was sensitive to the choice of dataset. -->
 
-## Key Notes and Reflections
+<!-- ## Key Notes and Reflections
 
 ### Model Performance Concerns
 
 The overall performance of the GAMM model, both in terms of fitting and evaluation, was unsatisfactory. Key concerns include:
 
 -   The fluctuation of smooth effects and instability in parameter estimation indicate substantial risks in model reliability.
--   These issues may stem from factors such as limited data availability, instability in data preprocessing strategies, or other underlying methodological constraints.
+-   These issues may stem from factors such as limited data availability, instability in data preprocessing strategies, or other underlying methodological constraints. -->
 
 ## XGBoost
 
@@ -291,40 +311,27 @@ We would like to express our deepest gratitude to *Dr. Nicolas Ferry* for provid
 ::: {#refs}
 :::
 
+\onecolumn
 # Appendix
 
 ## Feature selection {#sec-feature_selection}
 
 As the reproductive data only contain information on a subset of the deer, we were faced with the decision of how to label the rest of the deer ("pregnant"/"not pregnant"/NA). We are convinced that imputing this information would introduce a huge bias. For this reason, we deliberately chose not to include pregnancy data in our model. However, we are strongly in favour of including additional characteristics that could explain a shift in baseline stress levels.
 
-## REML vs. GCV estimation
+## GAMM
 
-### REML Smooth Effects Analysis
+::: {#fig-gamm-gcv layout-ncol=2}
 
-:::::: columns
-::: {.column width="33%"}
-![](Figures/archive/p_L_reml.png)
+![Closest in time.](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+
+![Nearest.](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+
+![Highest score.](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+
+Adjusted predictions for the FCM level on the three datasets. Here the GAMM is fitted using the GCV method.
 :::
 
-::: {.column width="33%"}
-![](Figures/archive/p_N_reml.png)
-:::
-
-::: {.column width="34%"}
-![](Figures/archive/p_S_reml.png)
-:::
-::::::
-
-Adjusted predictions for the FCM level. Each plot shows the predicted values of the FCM level in dependence of one covariate. The other covariants are held constant at the mean. The grey area shows the approximate confidence band (mean $\pm$ 1.96 standard error).
-
-### GCV Smooth Effects Analysis
-
-![](Figures/archive/p_L.png)
-
-![](Figures/archive/p_N.png)
-![](Figures/archive/p_S.png)
-
-GCV (Generalized Cross-Validation) tends to produce more fluctuating smooth effects due to its weaker control over model complexity. Compared to REML (Restricted Maximum Likelihood), it is more likely to select overly complex models, leading to more wiggly estimated smooth curves.
+![Random intercept estimates on the three datasets using REML and GCV.](Figures/Models/partial_effect_feature_5.png){#fig-ri}
 
 ## Additional diagnostic plots
 
