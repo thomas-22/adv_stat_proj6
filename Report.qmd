@@ -176,19 +176,18 @@ Fourth, we assumed that each hunting event was actually a sound event (i.e. a sh
 
 To address how the FCM level depends on time difference and spatial distance, we follow a statistical approach for interpretability and a machine learning approach for exploration. In this section, we present details on model specification. Both approaches use all the datasets shown in @tbl-datasets.
 
-```{r include=TRUE, echo=FALSE}
-#| label: tbl-datasets
-#| tbl-cap: "Datasets"
+```{r include=TRUE, echo=FALSE} 
+#| label: tbl-datasets 
+#| tbl-cap: "Datasets" 
 data <- readRDS("Data/processed/Datasets.RDS")
 data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
 data <- dplyr::select(data, set, filter_criterion, unique_deers, obs)
-tab <- knitr::kable(data,
-             format = "latex",
-             align = c("r", "r", "r", "r"),
-             col.names = c("DataSet",
-                           "Proximity Criterion",
-                           "Deer",
-                           "Observations"))
+tab <- knitr::kable(data, 
+                    format = "latex", 
+                    align = c("r", "r", "r", "r"),
+                    col.names = c("DataSet",
+                                  "Proximity                                           Criterion",
+                                  "Deer", "Observations"))
 kableExtra::kable_styling(tab, font_size = 10)
 ```
 
@@ -197,10 +196,15 @@ kableExtra::kable_styling(tab, font_size = 10)
 For each dataset shown in @tbl-datasets, we consider the five features introduced in @sec-filtering as covariates.
 
 <!-- -   Time Difference between defaction and the most relevant hunting event; -->
+
 <!-- -   Distance (in space) between the deer and the most relevant hunting event; -->
+
 <!-- -   Sample Delay, i.e., the time difference between sample collection and defecation; -->
+
 <!-- -   Defecation Day, i.e., the day of year on which the defecation event occurred; -->
+
 <!-- -   Number of Other Relevant Hunting Events within the specified spatiotemporal frame. -->
+
 <!-- Niko: already have this paragrap in Filtering section -->
 
 The *time difference* and *spatial distance* are of main interest for our first research question. The effect of *sample delay* is the subject of our second research question. We consider the *day of defecation* as a potential confounder, as the deer's stress level exhibits seasonal patterns [@Vilela2020]. The *number of other relevant hunting events* reflects the intensity of recent hunting activity. In time periods of frequent hunting events, a deer might have a generally higher stress level, or adaptation might occur which dampens the stress response towards new hunting events.
@@ -224,140 +228,45 @@ Our model has two major limitations. First, it does not account for potential in
 
 @Chen2016 introduced XGBoost as a machine learning algorithm that improves prediction accuracy by building an ensemble of decision trees sequentially. Each new tree corrects the errors made by previous trees. XGBoost minimizes a loss function using gradient boosting (hence the name) by iteratively adding trees that best reduce the residual errors. Simultaneously, complexity gets penalized through regularization to prevent overfitting. A major feature of XGBoost is that it doesn't require specifying a parametric relationship between target and explanatory variables.
 
-We propose a xgboost model using the R package `xgboost`, choosing *spatial distance* and *time difference* as covariates. To find the best fitting model for each dataset (see @tbl-datasets), we had to tune hyperparamters of the proposed xgboost model. We choose to tune the following paramters, using randomized grid search^[see: @Bergstra2012]:
+We propose a xgboost model using the R package `xgboost`, choosing *spatial distance* and *time difference* as covariates. To find the best fitting model for each dataset (see @tbl-datasets), we had to tune hyperparamters of the proposed xgboost model. We choose to tune the following paramters, using randomized grid search[^3]:
 
-- *maximum depth*:\   Controls the maximum depth of each decision tree, determining how complex each tree can become.
-- $\eta$:\  The learning rate, controls how much each new tree contributes to the ensemble, affecting how quickly or cautiously the model learns.
-- $\gamma$:\  The minimum loss reduction required to make a split, acting as a regularization parameter that prevents creating splits that don't significantly improve the model.
-- *subsample*:\   Specifies the fraction of training data used to build each tree, introducing randomness to prevent overfitting.
-- *features by tree*:\    Determines the fraction of features (columns) randomly sampled for each tree, increasing diversity among trees.
-- *minimum weight of child*:\   Minimum sum of instance weight needed in a child node, helping control the complexity of the model by preventing overly specific partitions.
+[^3]: see: @Bergstra2012
 
-# Model Evaluation {#sec-results}
+-   *maximum depth*:  Controls the maximum depth of each decision tree, determining how complex each tree can become.
+-   $\eta$:  The learning rate, controls how much each new tree contributes to the ensemble, affecting how quickly or cautiously the model learns.
+-   $\gamma$:  The minimum loss reduction required to make a split, acting as a regularization parameter that prevents creating splits that don't significantly improve the model.
+-   *subsample*:  Specifies the fraction of training data used to build each tree, introducing randomness to prevent overfitting.
+-   *features by tree*:  Determines the fraction of features (columns) randomly sampled for each tree, increasing diversity among trees.
+-   *minimum weight of child*:  Minimum sum of instance weight needed in a child node, helping control the complexity of the model by preventing overly specific partitions.
 
-## GAMM
+# GAMM Model Evaluation and Results Summary {#sec-results}
 
-### Parametric Effects of GAMM
+## Overview
 
-**Description**
+In this analysis, we fitted and evaluated GAMM models across three different matching strategies using two smoothing parameter estimation methods: REML and GCV. The evaluation focused on assessing the interpretability of smooth effects and the validity of random effects.
 
-This table shows the **Parametric** effects of variable "Number of other relevant hunting events" across different datasets and estimation methods (REML and GCV), including estimate, exponentiation of estimate (exp(Estimate)), and standard error.
+## Main Findings
 
-**Interpretation**
+### Smooth Effect Analysis
 
--   Negative estimates indicate that with the rising number of other hunting events, the FCM level tends to be lower, while the effect size is relatively small.
--   Difference resulted from datasets and estimation methods reflect the model’s different sensitivities to data uncertainty.
+-   Using REML, the smooth effect curves remained relatively stable, showing a consistent pattern.
+-   Using GCV, the smooth effect curves exhibited strong fluctuations.
+-   Across all datasets, there was high uncertainty (large standard errors) in estimated effects, particularly for time difference and distance.
+-   A consistent sample delay effect was observed with REML: larger sample delay led to lower FCM levels, as expected.
+-   Instability across estimation methods: GCV tended to produce more wiggly smooth effects compared to REML.
+-   The estimation of random intercepts was sensitive to the choice of dataset.
 
-### REML Smooth Effects Analysis
+## Key Notes and Reflections
 
-**i) REML / Closest in Time**
+### Model Performance Concerns
 
-![GAMM: Closest in Time - REML](Figures/archive/p_L_reml.png)
+The overall performance of the GAMM model, both in terms of fitting and evaluation, was unsatisfactory. Key concerns include:
 
-*Time difference*:
-
--   Generally the trend is slightly downwards, which indicates that the FCM levels goes down over the time.
--   The confidence interval is pretty wide, reflecting high uncertainty of such effect, which may be resulted by the limited sample or huge individual difference.
-
-*Distance*:
-
--   An upward trend indicates that the FCM level will rise with the rising distance.
-
-*Sample delay*:
-
--   It shows a downward trend with a moderate confidence interval.
--   It indicates that the FCM level goes down with rising sample delay.
-
-**ii) REML / Nearest**
-
-![GAMM: Nearest - REML](Figures/archive/p_N_reml.png)
-
--   The trend of this set of images is similar to that of Closest in Time, but the confidence intervals of distance and sample delay are relatively larger.
-
-**iii) REML / Highest Score**
-
-![GAMM: Highest Score - REML](Figures/archive/p_S_reml.png)
-
--   The effect of distance tend to be very significant, with the same rising trend.
--   With the rising sample delay, the FCM level goes down at first and then shows a slight increase, but after that drop rapidly, indicating that High Score has a more significant long-term impact on FCM levels.
-
-**Generally the smooth effects estimated by REML tend to be stable, which aligns with biological expectations.**
-
-### GCV Smooth Effects Analysis
-
-**i) GCV / Closest in Time**
-
-![GAMM: Closest in Time - GCV](Figures/archive/p_L.png)
-
--   The curves of time and sample delay fluctuate largely with extremely wide confidence interval. But generally, the effect of time difference shows first an upward then an downward trend over time, which aligns with the expectation.
-
--   Such result indicates that GCV holds a strong risk of overfitting, it may be sensitive to subtle fluctuations in the data, consequently overlooking the general trend.
-
--   The effect of distance is similar to that of REML.
-
-**ii) GCV / Nearest**
-
-![GAMM: Nearest - GCV](Figures/archive/p_N.png)
-
--   Compare with closest in time, the fluctuation of the time difference becomes weaker, but the risk of overfitting for sample delay is still very high.
--   The confidence interval of distance becomes extremely wide.
--   This indicates that GCV may perform well when dealing with simple variables like distance, but the stability goes down rapidly when faced with variables involving temporal characteristics.
-
-**iii) GCV / Highest Score**
-
-![GAMM: Highest Score - GCV](Figures/archive/p_S.png)
-
--   the fluctuation of the time difference becomes stronger and loses its trend. While the curve of sample delay becomes smooth, after a downward and slightly upward trend, the effect goes down rapidly over time. And the confidence interval becomes narrower over time.
-
-**GCV is pretty sensitive to local outlier, resulting in excessively complex smooth curves.**
-
-### Random Intercept Analysis
-
-**1. REML**
-
-![GAMM: Random Intercept - REML](Figures/archive/p_re_reml.png)
-
--   The Q-Q shows，the random effects of REML estimation basically aligns with gaussian distribution.
--   It indicates that the model has a reasonable residual structure when dealing with individual differences(Deer ID).
--   The linear trend is clear, indicating a robust assumption of random effects, which further explain REML's good stability in estimating individual-level differences.
-
-**2. GCV**
-
-![GAMM: Random Intercept - GCV](Figures/archive/p_re_gcv.png)
-
--   The Q-Q also indicates the gaussian distribution of the random effects, but the tail shows apparent deviations, especially in the datasets “Closest in Time” and “Nearest” .
--   This may be resulted by the overfitting of GCV, leading to the random effects for some individuals being strongly influenced by outlier observations.
--   The random effects estimated by GCV shows anomalies in scale(either extreme big or small), reflecting that the stability of GCV on the estimation of random effect tend to be not so good compared with REML.
-
-### GAMM Model Evaluation and Results Summary
-
-In the whole analysis, we fitted and evaluated GAMM models across three different matching strategies using two smoothing parameter estimation methods: **REML** and **GCV**. The evaluation involved assessing the interpretability of smooth effects and the validity of random effects.
-
-**Main findings**
-
-**1. analysis**
-
--   **With the methods of REML**,the curves of smooth effects are basically stable, with the trend aligning with the biological logic. For all of the time difference, distance and sample delay, REML shows relatively stable mode of effects.
--   **With the methods of GCV**, the curves of smooth effects fluctuate strongly, especially in the datasets of “Closest in Time” and “Nearest”, with fluctuations which are hard to be explained and extremely wide confidence interval, showing apparent characteristic of overfitting.
-
-**2. Analysis of random effects**
-
--   The distribution of random effects under the REML was generally consistent with Gaussian distribution, indicating that the model described individual differences more reasonably.
--   The distribution of random effects under GCV is significantly skewed, with significant tail bias, reflecting the high sensitivity of GCV to outliers and the relatively poor stability of random effects.
-
-**3. Key notes and reflections To be especially annotated:The fitting of GAMM model and the evaluation were generally unsatisfactory.**
-
--   Both the fluctuation of the smooth effect and the instability of parameter estimation reveals huge risk of the model.
--   Such phenomenon may be resulted from factors like the lack of the samples, instability of data matching strategies, incomplete selection of variables and so on.
--   As a result, the main goal of the evaluation is to represent a complete analytical processes and ideas, rather than give a biological conclusion directly.
-
-**4. The significance of process demonstrations**
-
-*Although the result is not so ideal, the integrity of the process and the reproducibility of the ideas are still of significant value:*
-
--   Such structured processes include data integration, variable screening, matching strategy, model construction, smoothing parameter selection, model fitting, and effectiveness evaluation, providing standardized templates and space for reflection for further analysis.
+-   The fluctuation of smooth effects and instability in parameter estimation indicate substantial risks in model reliability.
+-   These issues may stem from factors such as limited data availability, instability in data preprocessing strategies, or other underlying methodological constraints.
 
 ## XGBoost
+
 <!-- TO DO -->
 
 After comparing the models with those trained on randomized labels, we concluded that there is some relationship between the covariates and the response, as our models slightly outperformed those trained on randomized labels. However, this relationship was very weak and not obvious or intuitive. After reviewing the hyperparameters we concluded that this was likely not noise. Although the predictive power of the XGBoost models was better than that of all other models, it was still not particularly good.
@@ -389,7 +298,34 @@ As the reproductive data only contain information on a subset of the deer, we we
 
 ## REML vs. GCV estimation
 
+### REML Smooth Effects Analysis
+
+:::::: columns
+::: {.column width="33%"}
+![](Figures/archive/p_L_reml.png)
+:::
+
+::: {.column width="33%"}
+![](Figures/archive/p_N_reml.png)
+:::
+
+::: {.column width="34%"}
+![](Figures/archive/p_S_reml.png)
+:::
+::::::
+
+Adjusted predictions for the FCM level. Each plot shows the predicted values of the FCM level in dependence of one covariate. The other covariants are held constant at the mean. The grey area shows the approximate confidence band (mean $\pm$ 1.96 standard error).
+
+### GCV Smooth Effects Analysis
+
+![](Figures/archive/p_L.png)
+
+![](Figures/archive/p_N.png) 
+
+![](Figures/archive/p_S.png)
+
+GCV (Generalized Cross-Validation) tends to produce more fluctuating smooth effects due to its weaker control over model complexity. Compared to REML (Restricted Maximum Likelihood), it is more likely to select overly complex models, leading to more wiggly estimated smooth curves.
+
 ## Additional diagnostic plots
 
 ## Deviance explained by random intercept
-
