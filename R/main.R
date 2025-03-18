@@ -117,6 +117,7 @@ p_xgboost_combined <- (p_xgboost_last + p_xgboost_nearest + p_xgboost_score) +
     guides = "collect",
     axes = "collect"
   )
+ggsave("Figures/Models/xgboost_combined.png", p_xgboost_combined, width = 12, height = 6, dpi = 300)
 
 cat("Generating 3D plots...\n")
 p_xgboost_3d_last <- plot_xgboost_3d(xgboost_last, res$data[[1]])
