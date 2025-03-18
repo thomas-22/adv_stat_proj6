@@ -118,6 +118,11 @@ p_xgboost_combined <- (p_xgboost_last + p_xgboost_nearest + p_xgboost_score) +
     axes = "collect"
   )
 
+cat("Generating 3D plots...\n")
+p_xgboost_3d_last <- plot_xgboost_3d(xgboost_last, res$data[[1]])
+p_xgboost_3d_nearest <- plot_xgboost_3d(xgboost_nearest, res$data[[1]])
+p_xgboost_3d_score <- plot_xgboost_3d(xgboost_score, res$data[[1]])
+
 # Comparison regarding goodness of fit
 cat("Running comparison...\n")
 rmse_gamm <- fits %>%

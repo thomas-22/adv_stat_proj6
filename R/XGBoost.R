@@ -1,5 +1,6 @@
 library(xgboost)
 library(caTools)
+library(reshape2)
 
 # -------------------------
 # DATA PREPARATION FUNCTION
@@ -214,16 +215,92 @@ train_final_model <- function(X_full, y_full, best_params, best_nrounds, nfold =
   return(final_model)
 }
 
+# -------------------------------------
+# MAIN PIPELINE
+# -------------------------------------
+XGBoost_run_default_pipeline <- function(
+    data_cleanedup,
+    covariables = c("TimeDiff", "Distance"),
+    tune = TRUE,
+    model_path = "Models/final_xgboost_model.rds",
+    max_iterations = 10
+  ) {
+  # Prepare data
+  prepared_data <- prepare_data(data_cleanedup, covariables = covariables)
+  
+  X_train <- prepared_data$X_train
+  y_train <- prepared_data$y_train
+  X_test  <- prepared_data$X_test
+  y_test  <- prepared_data$y_test
+  X_full  <- prepared_data$X_full
+  y_full  <- prepared_data$y_full
+  train_data <- prepared_data$train_data
+  test_data  <- prepared_data$test_data
+  
+  cat("Data preparation complete.\n")
+  
+  # Initialize variables to store best parameters and nrounds
+  best_params <- NULL
+  best_nrounds <- NULL
+  
+  # Either tune hyperparameters or load existing model
+  if (tune) {
+    tuning_results <- tune_xgboost(
+      X_train = X_train, 
+      y_train = y_train, 
+      X_test  = X_test, 
+      y_test  = y_test,
+      best_params = list(
+        max_depth = 5,
+        eta = 0.1734111,
+        gamma = 5.907800,
+        subsample = 0.6074106,
+        colsample_bytree = 1,
+        min_child_weight = 4.798780
+      ),
+      initialize_tuning = FALSE,
+      max_iterations = max_iterations,
+      rmse_converge_tolerance = 1
+    )
+    
+    best_params <- tuning_results$params
+    best_nrounds <- tuning_results$nrounds
+    
+    # Train final model on full data
+    final_model <- xgboost(
+      params = best_params,
+      data = X_full,
+      label = y_full,
+      nrounds = best_nrounds,
+      verbose = 1
+    )
+    
+    # Save both model AND best_params and best_nrounds in one RDS
+    model_and_params <- list(
+      final_model = final_model,
+      best_params = best_params,
+      best_nrounds = best_nrounds
+    )
+    saveRDS(model_and_params, model_path)
+    
+    cat("Final model + params saved to:", model_path, "\n")
+  } else {
+    # Load the model + params
+    loaded_obj <- readRDS(model_path)
+    final_model <- loaded_obj$final_model
+    best_params <- loaded_obj$best_params
+    best_nrounds <- loaded_obj$best_nrounds
+    cat("Loaded pre-trained model from:", model_path, "\n")
+  }
+  
+  return(final_model)
+}
+
 # -------------------------
 # PLOTTING FUNCTIONS
 # 3D plot uses plotly. 2D plot uses ggplot2.
 # -------------------------
-plot_xgboost_3d <- function(
-    model, data,
-    rmse_test_final = 0,
-    gamma_fit_eval_full_mean = 0
-  ) {
-  
+plot_xgboost_3d <- function(model, data) {
   upper_difftime <- ceiling(max(data$TimeDiff))
   upper_distance <- ceiling(max(data$Distance))
   time_diff <- seq(1, upper_difftime, length.out = 50)
@@ -275,7 +352,6 @@ plot_xgboost_2d <- function(
     rmse_test_final = 0,
     gamma_fit_eval_full_mean = 0
   ) {
-  
   upper_difftime <- ceiling(max(data$TimeDiff))
   upper_distance <- ceiling(max(data$Distance))
   time_diff <- seq(0, upper_difftime, length.out = 500)
