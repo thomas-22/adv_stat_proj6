@@ -107,6 +107,10 @@ xgboost_score <- XGBoost_run_default_pipeline(res$data[[3]],
   model_path = "Models/best_xgboost_model_SCORE.rds"
 )
 
+fits_xg <- list("Closest in time" = xgboost_last,
+                "Nearest" = xgboost_nearest,
+                "Highest score" = xgboost_score)
+
 cat("Plotting prediction surfaces...\n")
 p_xgboost_last <- plot_xgboost_2d(xgboost_last, res$data[[1]]) +
   ggtitle("Dataset: \"closest in time\"")
