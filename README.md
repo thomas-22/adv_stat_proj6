@@ -4,7 +4,9 @@
 **authors:** Nikolai German, Thomas Witzani, Ziqi Xu, Zhengchen Yuan, Baisu Zhou
 
 ## General
-**Please read before executing any file**
+
+**Please read this README before executing any file.**
+
 This is the repository for the advanced statistical practical project.
 Apart from the working scripts in the R/ folder, you can find our experiments in R/archive/.
 The final Report is called Report.pdf.
