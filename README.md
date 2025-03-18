@@ -5,7 +5,7 @@
 
 ## General
 **Please read before executing any file**
-This is the repository to the advanced statistical project.
+This is the repository for the advanced statistical practical project.
 Apart from the working scripts in the R/ folder, you can find our experiments in R/archive/.
 The final Report is called Report.pdf.
 
@@ -28,4 +28,4 @@ It is enough to run
   source("R/main.R")
   ```
   to obtain the models.
-Afterwards, you can find the fitted models in the objects fits (GAMM) and in fits_xg (XGBoost).
+Afterwards, you can find the fitted models in the objects `fits` (GAMM) and in `fits_xg` (XGBoost).
