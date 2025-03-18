@@ -148,13 +148,9 @@ Having identified the most relevant hunting event, covariate i) can be calculate
 
 ```{r include=TRUE, echo=FALSE}
 #| label: tbl-thresholds
-#| tbl-cap: "Thresholds"
+#| tbl-cap: "The three proposed DataSets. For each DataSet, *Temporal* refers to the upper limit of Time Difference between Hunting Event an Defecation Event, with the lower limit beeing zero. *Spatial* refers to the upper limit of the distance between deer and Hunting event, with the lower beeing zero as well."
 data <- readRDS("Data/intermediate/param_grid.RDS")
-
-# data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
-# data$filter_criterion[data$filter_criterion == "score"] <- "highest score"
 data <- dplyr::select(data, filter_criterion, gut_retention_time_upper, distance_threshold)
-
 tab <- knitr::kable(data, 
              format = "latex", 
              align = c("l", "r", "r"), 
@@ -184,9 +180,8 @@ To address how the FCM level depends on Time Difference and spatial distance, we
 
 ```{r include=TRUE, echo=FALSE}
 #| label: tbl-datasets 
-#| tbl-cap: "Datasets" 
+#| tbl-cap: "Count of individual deer and faecal sample for each of the proposed DataSets." 
 data <- readRDS("Data/processed/Datasets.RDS")
-# data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
 data <- dplyr::select(data, filter_criterion, unique_deers, obs)
 tab <- knitr::kable(data, 
                     format = "latex", 
