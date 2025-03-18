@@ -121,8 +121,8 @@ ggsave("Figures/Models/xgboost_combined.png", p_xgboost_combined, width = 12, he
 
 cat("Generating 3D plots...\n")
 p_xgboost_3d_last <- plot_xgboost_3d(xgboost_last, res$data[[1]])
-p_xgboost_3d_nearest <- plot_xgboost_3d(xgboost_nearest, res$data[[1]])
-p_xgboost_3d_score <- plot_xgboost_3d(xgboost_score, res$data[[1]])
+p_xgboost_3d_nearest <- plot_xgboost_3d(xgboost_nearest, res$data[[2]])
+p_xgboost_3d_score <- plot_xgboost_3d(xgboost_score, res$data[[3]])
 
 # Comparison regarding goodness of fit
 cat("Running comparison...\n")
