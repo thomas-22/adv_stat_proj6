@@ -69,15 +69,81 @@ fits <- fit_models(df = res %>% left_join(
 # diagnosing models
 # for the used functions, see ModelAnalysis.R
 # -------------------------
-cat("saving Model diagnostics (gratia)...\n")
+cat("Saving Model diagnostics (gratia)...\n")
 # plot_diagnostics_gratia(fits)
 plot_diagnostics_gratia(fits, method = "save")
 
-cat("saving Model diagnostics (custom)...\n")
+cat("Saving Model diagnostics (custom)...\n")
 # plot_diagnostics_custom(fits)
 plot_diagnostics_custom(fits, method = "save")
 
-cat("saving Model partial effects plots...\n")
+cat("Saving Model partial effects plots...\n")
 # plot_partial_effects(fits)
 plot_partial_effects(fits, method = "save")
 
+
+# -------------------------
+# XGBoost.
+# Set `tune = TRUE`` to re-train the models and run hyperparameter tuning.
+# THIS WILL TAKE A LONG TIME!!!
+# Cached models are available in the Models folder.
+# -------------------------
+cat("Loading XGBoost models...\n")
+xgboost_last <- XGBoost_run_default_pipeline(res$data[[1]],
+  tune = FALSE,
+  model_path = "Models/best_xgboost_model_LAST.rds"
+)
+# nearest
+xgboost_nearest <- XGBoost_run_default_pipeline(res$data[[2]],
+  tune = FALSE,
+  model_path = "Models/best_xgboost_model_NEAREST.rds"
+)
+# score
+xgboost_score <- XGBoost_run_default_pipeline(res$data[[3]],
+  tune = FALSE,
+  model_path = "Models/best_xgboost_model_SCORE.rds"
+)
+
+cat("Plotting prediction surfaces...\n")
+p_xgboost_last <- plot_xgboost_2d(xgboost_last, res$data[[1]]) +
+  ggtitle("Dataset: \"closest in time\"")
+p_xgboost_nearest <- plot_xgboost_2d(xgboost_nearest, res$data[[2]]) +
+  ggtitle("Dataset: \"nearest\"")
+p_xgboost_score <- plot_xgboost_2d(xgboost_score, res$data[[3]]) +
+  ggtitle("Dataset: \"highest score\"")
+p_xgboost_combined <- (p_xgboost_last + p_xgboost_nearest + p_xgboost_score) +
+  plot_layout(
+    ncol = 3,
+    guides = "collect",
+    axes = "collect"
+  )
+
+# Comparison regarding goodness of fit
+cat("Running comparison...\n")
+rmse_gamm <- fits %>%
+  select(filter_criterion, method, fit) %>%
+  mutate(
+    rmse = purrr::map_dbl(fit, function(model) {
+      rsd <- residuals(model, type = "response")
+      sqrt(mean(rsd^2))
+    }),
+  ) %>%
+  select(-fit) %>%
+  mutate(method = paste("GAMM", method, sep = "-"))
+rmse_xgboost <- res %>%
+  # Grab datasets from GAMM results
+  select(filter_criterion, data) %>%
+  mutate(models = list(xgboost_last, xgboost_nearest, xgboost_score)) %>%
+  mutate(
+    rmse = purrr::map2_dbl(data, models, function(data, model) {
+      calculate_rmse_full_data(model, data)
+    }),
+  ) %>%
+  select(filter_criterion, rmse) %>%
+  mutate(method = "XGBoost")
+rmse_all <- rbind(rmse_gamm, rmse_xgboost) %>%
+  arrange(filter_criterion)
+# change "last" to "closest in time" for report
+rmse_all$filter_criterion[rmse_all$filter_criterion == "last"] <- "closest in time"
+# save table
+saveRDS(rmse_all, "Data/processed/ComparisonRMSE.RDS")

@@ -137,6 +137,8 @@ plot_partial_effects <- function(data, features = NULL, method = "show") {
     }
   }
 }
+ggsave("Figures/Models/xgboost_combined.png", p_xgboost_combined, width = 12, height = 6, dpi = 300)
+
 
 #----------------------------------#
 
