@@ -156,7 +156,5 @@ rmse_xgboost <- res %>%
   mutate(method = "XGBoost")
 rmse_all <- rbind(rmse_gamm, rmse_xgboost) %>%
   arrange(filter_criterion)
-# # change "last" to "closest in time" for report
-# rmse_all$filter_criterion[rmse_all$filter_criterion == "last"] <- "closest in time"
 # save table
 saveRDS(rmse_all, "Data/processed/ComparisonRMSE.RDS")
