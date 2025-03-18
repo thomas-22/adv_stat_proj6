@@ -303,8 +303,8 @@ XGBoost_run_default_pipeline <- function(
 plot_xgboost_3d <- function(model, data) {
   upper_difftime <- ceiling(max(data$TimeDiff))
   upper_distance <- ceiling(max(data$Distance))
-  time_diff <- seq(1, upper_difftime, length.out = 50)
-  distance  <- seq(1, upper_distance, length.out = 50)
+  time_diff <- seq(1, upper_difftime, length.out = 1500)
+  distance  <- seq(1, upper_distance, length.out = 1500)
   
   combinations <- expand.grid(TimeDiff = time_diff, Distance = distance)
   combos_matrix <- as.matrix(combinations)
@@ -336,9 +336,9 @@ plot_xgboost_3d <- function(model, data) {
       scene = list(
         xaxis = list(title = "Time Difference [h]"),
         yaxis = list(title = "Distance [m]"),
-        zaxis = list(title = "FCM Level [ng/g]"),
+        zaxis = list(title = "FCM Level [ng/g]", tickvals = c(200, 400, 600, 800, 1000)),
         camera = list(
-          eye = list(x = -2, y = -2, z = 1)
+          eye = list(x = -2, y = -1.5, z = 1)
         )
       )
     ) %>%
