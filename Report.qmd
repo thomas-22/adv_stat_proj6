@@ -280,6 +280,22 @@ The overall performance of the GAMM model, both in terms of fitting and evaluati
 
 After comparing the models with those trained on randomized labels, we concluded that there is some relationship between the covariates and the response, as our models slightly outperformed those trained on randomized labels. However, this relationship was very weak and not obvious or intuitive. After reviewing the hyperparameters we concluded that this was likely not noise. Although the predictive power of the XGBoost models was better than that of all other models, it was still not particularly good.
 
+![Predictions of XGBoost models on the three datasets. The points are all observations within each dataset.](Figures/Models/xgboost_combined.png)
+
+```{r include=TRUE, echo=FALSE}
+#| label: tbl-rmse 
+#| tbl-cap: "Comparison of RMSE between GAMMs and XGBoost models. The RMSE score is computed on all observations in each dataset." 
+data <- readRDS("Data/processed/ComparisonRMSE.RDS")
+data$rmse <- round(data$rmse, 2)
+tab <- knitr::kable(data, 
+                    format = "latex", 
+                    align = c("r", "r", "r"),
+                    col.names = c("DataSet",
+                                  "Model",
+                                  "RMSE"))
+kableExtra::kable_styling(tab, font_size = 10)
+```
+
 # Conclusion & Outlook {#sec-outlook}
 
 Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
