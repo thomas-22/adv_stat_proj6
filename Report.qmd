@@ -69,9 +69,6 @@ Therefore our research question is two-fold:
 
 We were provided with four distinct datasets.  In the following subchapters we are going to describe the main features of each data set and address any anomalies.
 
-## Reproduction Data
-The reproduction data has not been used in our analysis and modelling approach, for the reasons see @sec-feature_selection.
-
 ## Hunting Events
 
 The dataset contains the location and time of 697 individual hunting events, spanning from 2020 to 2022. There are three main challenges:
@@ -97,6 +94,10 @@ The faecal sample dataset contains information on 809 faecal samples. Most impor
 ![Samples - Daily Count](Figures/samples_daily_count.png){#fig-samples_daily_count}
 
 ![Samples - Locations](Figures/sp_samples.png){#fig-samples_locations}
+
+## Reproduction Data
+The reproduction data contains reproduction information on some of the deers.
+It has not been used in our analysis and modelling approach, for the reasons see @sec-feature_selection.
 
 # Data Preprocessing
 
@@ -150,14 +151,14 @@ Having identified the most relevant hunting event, covariate i) can be calculate
 #| tbl-cap: "Thresholds"
 data <- readRDS("Data/intermediate/param_grid.RDS")
 
-data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
-data$filter_criterion[data$filter_criterion == "score"] <- "highest score"
+# data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
+# data$filter_criterion[data$filter_criterion == "score"] <- "highest score"
 data <- dplyr::select(data, filter_criterion, gut_retention_time_upper, distance_threshold)
 
 tab <- knitr::kable(data, 
              format = "latex", 
              align = c("l", "r", "r"), 
-             col.names = c("Dataset",
+             col.names = c("DataSet",
                           "Temporal [h]",
                           "Spatial [km]"
                           ))
@@ -185,7 +186,7 @@ To address how the FCM level depends on Time Difference and spatial distance, we
 #| label: tbl-datasets 
 #| tbl-cap: "Datasets" 
 data <- readRDS("Data/processed/Datasets.RDS")
-data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
+# data$filter_criterion[data$filter_criterion == "last"] <- "closest in time"
 data <- dplyr::select(data, filter_criterion, unique_deers, obs)
 tab <- knitr::kable(data, 
                     format = "latex", 
@@ -339,6 +340,6 @@ Adjusted predictions for the FCM level on the three datasets. Here the GAMM is f
 
 ![Random intercept estimates on the three datasets using REML and GCV.](Figures/Models/partial_effect_feature_5.png){#fig-ri}
 
-## Additional diagnostic plots
+<!-- ## Additional diagnostic plots -->
 
-## Deviance explained by random intercept
+<!-- ## Deviance explained by random intercept -->

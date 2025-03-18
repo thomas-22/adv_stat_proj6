@@ -5,7 +5,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
     distance_threshold = 10, # km
     gut_retention_time_lower = 19, # hours
     gut_retention_time_upper = 50, # hours
-    filter_criterion = "last" # possible alternatives: "nearest", "score"
+    filter_criterion = "Closest in time" # possible alternatives: "Nearest", " Highest score"
   ) {
   # Algorithm:
   # 1. For each FCM sample, find all hunting events within `daydiff_threshold` days
@@ -70,7 +70,7 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
     )
 
   # Remove outliers by default (ignore_distance_filter = FALSE)
-  if (ignore_distance_filter == TRUE || filter_criterion == "score") {
+  if (ignore_distance_filter == TRUE || filter_criterion == "Highest score") {
     interesting_data <- deer_sample_hunt_distance_timediff %>%
       filter(!is.na(Distance))
   } else {
@@ -86,18 +86,18 @@ assign_hunts_to_fcm <- function(FCMStress, HuntEvents, Movement,
     )
 
   # Filter by criterion
-  data <- if (filter_criterion == "last") {
+  data <- if (filter_criterion == "Closest in time") {
     interesting_data %>%
       group_by(Sender.ID, Sample.ID) %>%
       filter(abs(TimeDiff - 19) == min(abs(TimeDiff - 19), na.rm = TRUE), !is.na(Distance)) %>%
       #Selects assignment that is closest to 19 hrs
       ungroup()
-  } else if (filter_criterion == "nearest") {
+  } else if (filter_criterion == "Nearest") {
     interesting_data %>%
       group_by(Sender.ID, Sample.ID) %>%
       filter(Distance == min(Distance, na.rm = TRUE), !is.na(TimeDiff)) %>%
       ungroup()
-  } else if (filter_criterion == "score") {
+  } else if (filter_criterion == "Highest score") {
     interesting_data %>%
       group_by(Sender.ID, Sample.ID) %>%
       mutate(Score = (10000000000 / Distance^2) * timediff_evaluation_asym_curve(TimeDiff)) %>%

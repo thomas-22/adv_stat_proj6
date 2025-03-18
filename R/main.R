@@ -16,6 +16,7 @@ HuntEvents <- prepared_data$HuntEvents
 # Data analytics (see DataAnalysis.R)
 # -------------------------
 cat("Running analytics..\n")
+debugonce(analytics)
 analytics(data = prepared_data, method = "save")
 
 # -------------------------
@@ -27,17 +28,17 @@ param_grid <- purrr::list_rbind(list(
   data.frame(gut_retention_time_lower = 0, 
              gut_retention_time_upper = 36, 
              distance_threshold = 10, 
-             filter_criterion = "last"),
+             filter_criterion = "Closest in time"),
   # nearest
   data.frame(gut_retention_time_lower = 0, 
              gut_retention_time_upper = 36, 
              distance_threshold = 10, 
-             filter_criterion = "nearest"),
+             filter_criterion = "Nearest"),
   # score
   data.frame(gut_retention_time_lower = 0, 
              gut_retention_time_upper = 200, 
              distance_threshold = 15, 
-             filter_criterion = "score")
+             filter_criterion = "Highest score")
 ))
 
 saveRDS(param_grid, "Data/intermediate/param_grid.RDS")
@@ -61,8 +62,10 @@ save.model.data(res)
 # see models.R
 # -------------------------
 cat("Fitting Models...\n")
+
+debugonce(fit_models)
 fits <- fit_models(df = res %>% left_join(
-  expand.grid(filter_criterion = c("last", "nearest", "score"), method = c("GCV.Cp", "REML"))),
+  expand.grid(filter_criterion = c("Closest in time", "Nearest", "Highest score"), method = c("GCV.Cp", "REML"))),
   fit.fn = fit_gamm)
 
 # -------------------------
@@ -149,7 +152,7 @@ rmse_xgboost <- res %>%
   mutate(method = "XGBoost")
 rmse_all <- rbind(rmse_gamm, rmse_xgboost) %>%
   arrange(filter_criterion)
-# change "last" to "closest in time" for report
-rmse_all$filter_criterion[rmse_all$filter_criterion == "last"] <- "closest in time"
+# # change "last" to "closest in time" for report
+# rmse_all$filter_criterion[rmse_all$filter_criterion == "last"] <- "closest in time"
 # save table
 saveRDS(rmse_all, "Data/processed/ComparisonRMSE.RDS")

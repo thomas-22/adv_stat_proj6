@@ -12,6 +12,8 @@ analytics <- function(data, method = "show") {
   FCMStress <- data$FCMStress
   HuntEvents <- data$HuntEvents
   
+  deer_order <- levels(FCMStress$Deer.ID)
+  
   # -------------------------
   # FCM Samples times per deer
   # -------------------------
@@ -181,7 +183,7 @@ analytics <- function(data, method = "show") {
   # -------------------------
   sp_hunts_vs_deer_4 <- ggplot() +
     geom_sf(data = Park$osm_multipolygons[1, ]) +
-    geom_sf(data = Movement_sf_selected, aes(color = "Deer"), alpha = .1, size = .1) +
+    geom_sf(data = Movement_sf_selected_4, aes(color = "Deer"), alpha = .1, size = .1) +
     geom_sf(data = HuntEvents_sf, aes(color = "Hunting Event"), alpha = .5, size = .5) +
     facet_wrap(~Sender.ID, ncol = 2) +
     scale_color_manual(

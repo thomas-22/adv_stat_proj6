@@ -70,7 +70,7 @@ fit_models <- function(df, fit.fn) {
   checkmate::assertFunction(fit.fn)
   models <- list()
   for (i in seq_len(nrow(df))) {
-    mod <- fit.fn(df[i, ]$data[[1]],  family = Gamma(link = "log"), method = as.character(df[i, ]$method))
+    mod <- fit.fn(data = df[i, ]$data[[1]], family = Gamma(link = "log"), method = as.character(df[i, ]$method))
     models[[i]] <- mod
   }
   df$fit <- models

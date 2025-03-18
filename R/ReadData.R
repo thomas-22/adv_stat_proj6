@@ -30,7 +30,6 @@ read.FCMStress <- function(path) {
     )
 }
 
-
 read.Reproduction <- function(path, deer.id.levels = NULL) {
   readxl::read_excel(path) %>%
     mutate(Deer.ID = factor(`Genetic_id`, levels = deer.id.levels)) %>%
