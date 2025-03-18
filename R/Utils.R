@@ -27,15 +27,13 @@ score_curve <- function(save = FALSE) {
     ggplot(aes(x, y)) +
     geom_line(color = "black") +
     labs(x = "Time (hours)", y = "Score", title = "Time Difference vs. Score") 
-  if(save) {
+  if (save) {
     ggsave(plot = plot, 
            filename = "Figures/Timediff_Function_impact_curve.png", device = "png")
   } else {
     print(plot)
   }
 }
-
-score_curve(save = TRUE)
 
 # -------------------------
 # Calculuate the distances between deer and hunting events
