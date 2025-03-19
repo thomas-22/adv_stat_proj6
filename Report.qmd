@@ -239,11 +239,11 @@ We fitted and evaluated GAMM models across the three datasets, using REML and GC
 
 ::: {#fig-gamm-reml layout-ncol=1}
 
-![Closest in time.](Figures/Models/last_REML_diagnostic_custom.png)
+![Closest in time](Figures/Models/last_REML_diagnostic_custom.png)
 
-![Nearest.](Figures/Models/nearest_REML_diagnostic_custom.png)
+![Nearest](Figures/Models/nearest_REML_diagnostic_custom.png)
 
-![Highest score.](Figures/Models/score_REML_diagnostic_custom.png)
+![Highest score](Figures/Models/score_REML_diagnostic_custom.png)
 
 Adjusted predictions for the FCM level on the three datasets. The GAMM is fitted with the REML method. Each plot shows the predicted values of the FCM level in dependence of one covariate. The other covariants are held constant at the mean. The grey area shows the approximate confidence band (mean $\pm$ 1.96 standard error).
 :::
@@ -317,11 +317,11 @@ As the reproductive data only contain information on a subset of the deer, we we
 
 ::: {#fig-gamm-gcv layout-ncol=2}
 
-![Closest in time.](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+![Closest in time](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
 
-![Nearest.](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+![Nearest](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
 
-![Highest score.](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+![Highest score](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
 
 Adjusted predictions for the FCM level on the three datasets. Here the GAMM is fitted using the GCV method.
 :::
