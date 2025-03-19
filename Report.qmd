@@ -36,7 +36,7 @@ format:
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-Hunting activity has an impact on animal populations through removal of individuals. Moreover, it may have a non-lethal effect of inducing stress. In this project, we analyze the short-term stress response of red deer in the Bavarian Forest National Park to hunting events. The stress level of a deer was measured by the concentration of faecal cortisl metabolites (FCMs) in faecal samples. Combining spatiotemporal information about the faecal samples, the deer which produced them, and the hunting events occurred in the time period of sample collection, we aim to address how the FCM level in a deer's faecal matter is associated with the temporal and spatial distance to a hunting event that could have affected the deer.
+Hunting activity has an impact on animal populations through removal of individuals. Moreover, it may have a non-lethal effect of inducing stress. In this project, we analyze the short-term stress response of red deer in the Bavarian Forest National Park to hunting events. The stress level of a deer was measured by the concentration of *faecal cortisl metabolites (FCMs)* in faecal samples. Combining spatiotemporal information about the faecal samples, the deer which produced them, and the hunting events occurred in the time period of sample collection, we aim to address how the FCM level in a deer's faecal matter is associated with the temporal and spatial distance to a hunting event that could have affected the deer.
 
 # Introduction
 
@@ -87,7 +87,7 @@ There are 40 collared deers which movements have been tracked completely or part
 
 ## Faecal Sample Data
 
-The faecal sample dataset contains information on 809 faecal samples. Most importantly, the FCM-level (in nanograms per gram \[ng/g\]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
+The faecal sample dataset contains information on 809 faecal samples. Most importantly, the FCM level (in nanograms per gram \[ng/g\]), the location of the sample, as shown in @fig-samples_locations, the associated collared deer, the approximate time of defecation and the time of sampling. The samples were taken at irregular intervals, but with obvious seasonality (see @fig-samples_daily_count) from 2020 to 2022.
 
 ![Samples - Daily Count](Figures/samples_daily_count.png){#fig-samples_daily_count}
 
@@ -139,7 +139,13 @@ $$
 
 Where $d$ is the spatial distance, $t$ the Time Difference between hunting and defecation event, while $\mu = 19$, once again incoporates @Huber2003 findings. $\sigma = 2$ and $b = 2.5$ are shape paramters.
 
-Having identified the most relevant hunting event, covariate i) can be calculated easily as the Time Difference of the hunting event and the defecation event. To obtain covariate ii) we have to take in account, that the movement data is recorded in 1-hour intervals, while the hunting events occur at arbitrary times. Therefore we need to approximate the exact deer positions at hunting event times. We interpolate deer positions at the timestamp of each hunting event, assuming constant velocity and linear movement. Features iii) and iv) are again easy to obtain. For covariate v), we need to define a cutoff point in time and space, to identify which other hunting events could have affected a deer as well (see @tbl-thresholds).
+Having identified the most relevant hunting event, covariate i) can be calculated easily as the Time Difference of the hunting event and the defecation event. To obtain covariate ii) we have to take in account, that the movement data is recorded in 1-hour intervals, while the hunting events occur at arbitrary time points. Therefore we need to approximate the exact deer positions at hunting event times. We interpolate deer positions at the timestamp of each hunting event, assuming constant velocity and linear movement. Suppose a hunting event occurred at time $t$, but we only know the deer's location at time $t_0, t_1$ with $t_0 < t < t_1$. Then we approximate the location $r(t)$ of the deer at time $t$ by
+\begin{equation*}
+  r(t) \approx r(t_0) + \frac{t - t_0}{t_1 - t_0} (r(t_1) - r(t_0)),
+\end{equation*}
+where $r(t_0)$ and $r(t_1)$ denote the recorded locations of the deer at time $t_0$ and $t_1$, respectively. We define covariate ii) to be the distance between the approximated deer location and the location of the hunting event. In cases where the time point of a movement recording coincides with that of a hunting event, we use the exact distance.
+
+Covariates iii) and iv) are again easy to obtain. For covariate v), we need to define a cutoff point in time and space, to identify which other hunting events could have affected a deer as well (see @tbl-thresholds).
 
 ```{r include=TRUE, echo=FALSE}
 #| label: tbl-thresholds
@@ -199,7 +205,7 @@ For the distributional assumption, we use the Gamma family with a log link. Sinc
 \textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim} \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
 \mu_{ij} &= \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
 \eta_{ij} &= \beta_0 \\
-&+ \beta_1 \textup{Number of Other Relevant Hunting Events}_{ij} \\
+&+ \beta_1 \textup{Number of Other Hunts}_{ij} \\
 &+ f_1(\textup{Time Difference}_{ij}) + f_2(\textup{Distance}_{ij}) \\
 &+ f_3(\textup{Sample Delay}_{ij}) + f_4(\textup{Defecation Day}_{ij}) \\
 &+ \gamma_{i}, \\
