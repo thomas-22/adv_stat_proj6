@@ -3,6 +3,8 @@ library(caTools)
 library(reshape2)
 library(grid)
 library(gridExtra)
+library(png)
+library(magick)
 
 # -------------------------
 # DATA PREPARATION FUNCTION
@@ -400,3 +402,24 @@ save_hyperparameter_png <- function() {
   grid.draw(table_grob)
   dev.off()
 }
+
+save_3dplotsasonepng <- function()
+{
+  img_last <- image_read("Figures/Models/xgboost_3d_last.png") %>% image_trim()
+  img_nearest <- image_read("Figures/Models/xgboost_3d_nearest.png") %>% image_trim()
+  img_score <- image_read("Figures/Models/xgboost_3d_score.png") %>% image_trim()
+  grob_last <- rasterGrob(as.raster(img_last), interpolate = TRUE)
+  grob_nearest <- rasterGrob(as.raster(img_nearest), interpolate = TRUE)
+  grob_score <- rasterGrob(as.raster(img_score), interpolate = TRUE)
+  label_last <- textGrob("Closest in time", gp = gpar(fontsize = 12))
+  label_nearest <- textGrob("Nearest", gp = gpar(fontsize = 12))
+  label_score <- textGrob("Highest score", gp = gpar(fontsize = 12))
+  col1 <- arrangeGrob(grob_last, label_last, ncol = 1, heights = c(10, 1))
+  col2 <- arrangeGrob(grob_nearest, label_nearest, ncol = 1, heights = c(10, 1))
+  col3 <- arrangeGrob(grob_score, label_score, ncol = 1, heights = c(10, 1))
+  png("Figures/Models/combined_xgboost_plots.png", width = 2000, height = 800, res = 150)
+  grid.arrange(col1, col2, col3, ncol = 3)
+  dev.off()
+}
+
+

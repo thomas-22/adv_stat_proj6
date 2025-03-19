@@ -333,15 +333,10 @@ Adjusted predictions for the FCM level on the three datasets. Here the GAMM is f
 :::
 
 ![Random intercept estimates on the three datasets using REML and GCV.](Figures/Models/partial_effect_feature_5.png){#fig-ri}
+
+
 ## XGBoost
 
-::: {#fig-xgb layout-ncol=2}
-
-![Closest in time.](Figures/Models/xgboost_3d_last.png)
-
-![Nearest.](Figures/Models/xgboost_3d_nearest.png)
-
-![Highest score.](Figures/Models/xgboost_3d_score.png)
+![3D Visualization of the XGBoost models.](Figures/Models/combined_xgboost_plots.png)
 
 Predictions for the FCM level on the three datasets by the three XGBoost models. The real data are shown as black points.
-:::
