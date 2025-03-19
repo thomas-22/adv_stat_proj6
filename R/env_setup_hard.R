@@ -38,12 +38,12 @@ pkgs <- c("dplyr",
 installed <- rownames(installed.packages())
 
 # install all
-cat("Versuche die benötigen Packages direkt zu installieren:")
+cat("Try to install the necessary packages directly:")
 for (pkg in pkgs) {
   if(any(installed == pkg)) {
     next
   } else {
-    cat("Package <", pkg, "> wird installiert...\n", sep = "")
+    cat("installing package <", pkg, "> ...\n", sep = "")
     install.packages(pkg, verbose = FALSE)
   }
 }
