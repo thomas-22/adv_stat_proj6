@@ -116,17 +116,19 @@ ii) *Spatial Distance* between a deer and the hunting event at the exact time of
 Additionally we identify other covariates:
 
 iii) Time Difference between defecation and sampling (*Sample Delay*)
-iv) day of year \[1-365\] (*Defecation Day*)
+iv) Day of year \[1-365\][^1] (*Defecation Day*)
 v)  Number of hunts a deer experiences before defecation (*Number of Other Hunts*)
+
+[^1]: Not all values between 1 and 365 were observed. As shown in @fig-samples_daily_count, faecal samples were not collected during winter.
 
 As each sample is associated with one or more hunting event, the main challenge is to identify the most relevant hunting event. We propose three different criterions to identify which hunting event is the most relevant one:
 
 1.  *Closest in time*: Choosing the hunting event, which happened closest to 19 hours prior to the defecation event.
   This takes the findings of @Huber2003 into account, that cortisol metabolite concentrations peak around 19 hours post-stress event (see @fig-fcm).
 
-2.  *Nearest*: Choosing the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position at the time of the hunting event.
+1.  *Nearest*: Choosing the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position at the time of the hunting event.
 
-3.  *Highest score*: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on Time Difference (see @fig-score). The inverse square component is inspired by the inverse square law for sound intensity, spike function was inspired by the general dynamics of stress responses, incorporating insights from @Huber2003, and @Pinero2025. The observation with the highest score was selected.
+2.  *Highest score*: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on Time Difference (see @fig-score). The inverse square component is inspired by the inverse square law for sound intensity, spike function was inspired by the general dynamics of stress responses, incorporating insights from @Huber2003, and @Pinero2025. The observation with the highest score was selected.
 
 ![Score Function](Figures/Timediff_Function_impact_curve.png){#fig-score}
 
