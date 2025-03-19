@@ -273,7 +273,7 @@ kableExtra::kable_styling(tab, font_size = 10)
 Predictions of XGBoost models on the three datasets. The points are all observations within each dataset.
 :::
 
-We visualize the predictions of XGBoost models in @fig-xgboost_predictions. One would expect a decrease in the FCM level closer to the zero point, however we did not observe this for models trained on the first two datasets. On the "highest score" dataset we observe a slight increase close to zero, but the same model also predicts a high plateau for time differences above 33 hours and spatial distances between 11.5 and 16 km. The XGBoost models show a relatively weak and very unclear effect.
+We visualize the predictions of XGBoost models in @fig-xgboost_predictions. One would expect an increase in the FCM level closer to the zero point, however we did not observe this for models trained on the first two datasets. On the "highest score" dataset we observe a slight increase close to zero, but the same model also predicts a high plateau for time differences above 33 hours and spatial distances between 11.5 and 16 km. The XGBoost models show a relatively weak and very unclear effect.
 
 # Conclusion & Outlook {#sec-outlook}
 
