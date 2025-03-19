@@ -13,6 +13,14 @@ library(sf)
 library(osmdata)
 library(mgcv)
 
+library(xgboost)
+library(caTools)
+library(reshape2)
+library(grid)
+library(gridExtra)
+library(png)
+library(magick)
+
 # -------------------------
 # the following libraries get accessed via the :: operator
 # -------------------------

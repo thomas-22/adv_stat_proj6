@@ -5,7 +5,6 @@
 # event and calculates the Euclidean distance, the distance in X direction, and
 # the distance in Y direction.
 CalcDist <- function(deer_hunt_pairs, Movement, HuntEvents) {
-  # TBD assertions?
   
   interpolated_positions <- interpolate(
     deer_hunt_pairs, Movement, HuntEvents,
@@ -86,55 +85,3 @@ interpolate <- function(deer_hunt_pairs, Movement, HuntEvents, verbose = FALSE) 
     InterpolatedX, InterpolatedY
   )
 }
-  
-# #-------------------------------------------------------------------------------
-# # Example (written for old data, now outdated, but same issues may still exist)
-
-# # add id column for easier joining
-# HuntEvents <- HuntEvents_Reduced_UTM_New %>%
-#   dplyr::distinct() %>%
-#   dplyr::mutate(Hunt.ID = as.factor(dplyr::row_number()))
-
-# # Here we just get all possible combinations of deer and hunting events,
-# # although in reality we are only interested in hunting events that happened
-# # in a certain time period before each defecation event.
-# all_hunt_ids <- HuntEvents %>% dplyr::filter(!is.na(t_)) %>% dplyr::select(Hunt.ID)
-# all_sender_ids <- Movement %>% dplyr::select(Sender.ID) %>% dplyr::distinct()
-# all_pairs <- dplyr::cross_join(all_sender_ids, all_hunt_ids)
-
-# interpolated_positions <- interpolate(
-#   all_pairs,
-#   Movement,
-#   HuntEvents,
-#   verbose = TRUE
-# )
-
-# # A few issues here:
-
-# # A hunting event might happen between two movement entries that are days apart.
-# # Is interpolation still meaningful?
-# interpolated_positions %>%
-#   dplyr::filter(lubridate::date(t_after) - lubridate::date(t_before) > lubridate::days(1)) %>%
-#   dplyr::select(Sender.ID, HuntEventTime, t_before, t_after)
-
-# # In some cases, there is no movement data prior to the hunting event.
-# no_t_before <- interpolated_positions %>%
-#   dplyr::filter(is.na(t_before)) %>%
-#   dplyr::select(Sender.ID, HuntEventTime, t_before, t_after)
-# # View(no_t_before)
-# # These are the most relevant cases:
-# no_t_before %>%
-#   dplyr::distinct(Sender.ID, HuntEventTime) %>%
-#   dplyr::left_join(
-#     FCMStress %>% dplyr::select(Sender.ID, Collar_t_),
-#     dplyr::join_by(Sender.ID, HuntEventTime <= Collar_t_)
-#   ) %>%
-#   dplyr::filter(Collar_t_ - HuntEventTime < lubridate::hours(30))
-
-# # There might also be hunting events with no movement data after them.
-
-# #-------------------------------------------------------------------------------
-# # Get distances
-# StressEvents_new <- CalcDist(all_pairs, Movement, HuntEvents) %>%
-#   stats::na.omit()
-# #-------------------------------------------------------------------------------
