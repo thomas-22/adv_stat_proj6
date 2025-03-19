@@ -36,8 +36,6 @@ format:
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-<!-- The experience of hunting events causes stress in red deer, resulting in elevated faecal cortisol metabolites (FCMs). Modelling FCM levels on the spatial and temporal distance of a given deer to hunting events did not show significant effects due to uncertainty within the data. However, we were able to show some relationship between *sampling delay* and FCM levels. -->
-
 Hunting activity has an impact on animal populations through removal of individuals. Moreover, it may have a non-lethal effect of inducing stress. In this project, we analyze the short-term stress response of red deer in the Bavarian Forest National Park to hunting events. The stress level of a deer was measured by the concentration of faecal cortisl metabolites (FCMs) in faecal samples. Combining spatiotemporal information about the faecal samples, the deer which produced them, and the hunting events occurred in the time period of sample collection, we aim to address how the FCM level in a deer's faecal matter is associated with the temporal and spatial distance to a hunting event that could have affected the deer.
 
 # Introduction
@@ -124,9 +122,6 @@ v)  Number of hunts a deer experiences before defecation (*Number of Other Hunts
 As each sample is associated with one or more hunting event, the main challenge is to identify the most relevant hunting event. We propose three different criterions to identify which hunting event is the most relevant one:
 
 1.  *Closest in time*: Choosing the hunting event, which happened closest to 19 hours prior to the defecation event.
-  <!-- \begin{equation*}
-    \operatorname*{argmin}_{t_\text{Hunt}}\, |(t_\text{Defecation} - 19h) - t_\text{Hunt}|
-  \end{equation*} -->
   This takes the findings of @Huber2003 into account, that cortisol metabolite concentrations peak around 19 hours post-stress event (see @fig-fcm).
 
 2.  *Nearest*: Choosing the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position at the time of the hunting event.
@@ -232,10 +227,6 @@ We propose a xgboost model using the R package `xgboost`, choosing *spatial dist
 
 We fitted and evaluated GAMM models across the three datasets, using REML and GCV as parameter estimation methods. We observed high instability with respect to the choice of dataset and estimation method.
 
-<!-- ## Main Findings
-
-### Smooth Effect Analysis -->
-
 ::: {#fig-gamm-reml layout-ncol=1}
 
 ![Closest in time.](Figures/Models/last_REML_diagnostic_custom.png)
@@ -252,23 +243,6 @@ In models estimated with the REML method, the smooth effects are penalized to al
 On the "highest score" dataset which contains more observations than the other two datasets, both estimation methods agree on a negative non-linear effect of Sample Delay. This is in accordance with our prior knowledge that the FCM level in the faecal sample decays after defecation [@Huber2003].
 
 Similar to the smooth and linear effects, estimation of the deer-specific random intercepts exhibits high instability. In particular, the estimated random intercepts differ in order of magnitude across different dataset (see @fig-ri).
-
-
-<!-- -   Using REML, the smooth effect curves remained relatively stable, showing a consistent pattern.
--   Using GCV, the smooth effect curves exhibited strong fluctuations.
--   Across all datasets, there was high uncertainty (large standard errors) in estimated effects, particularly for Time Difference and distance.
--   A consistent sample delay effect was observed with REML: larger sample delay led to lower FCM levels, as expected.
--   Instability across estimation methods: GCV tended to produce more wiggly smooth effects compared to REML.
--   The estimation of random intercepts was sensitive to the choice of dataset. -->
-
-<!-- ## Key Notes and Reflections
-
-### Model Performance Concerns
-
-The overall performance of the GAMM model, both in terms of fitting and evaluation, was unsatisfactory. Key concerns include:
-
--   The fluctuation of smooth effects and instability in parameter estimation indicate substantial risks in model reliability.
--   These issues may stem from factors such as limited data availability, instability in data preprocessing strategies, or other underlying methodological constraints. -->
 
 ## XGBoost
 
