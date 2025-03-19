@@ -132,8 +132,8 @@ As each sample is associated with one or more hunting event, the main challenge 
 
 $$ 
 S(d, t) \propto \frac{1}{d^2} \cdot \begin{cases}
-f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{N}(\mu, \sigma^2) &|t \leq \mu \\
-f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{Laplace}(\mu, b) &|t > \mu
+f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{N}(\mu, \sigma^2) &t \leq \mu \\
+f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{Laplace}(\mu, b) &t > \mu
 \end{cases}
 $$
 
