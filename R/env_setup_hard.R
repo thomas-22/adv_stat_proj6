@@ -28,7 +28,7 @@ pkgs <- c("dplyr",
           "gamm4",
           "gratia",
           "checkmate",
-          "knitr"
+          "knitr",
           "kableExtra",
           "quarto",
           "tinytex")
