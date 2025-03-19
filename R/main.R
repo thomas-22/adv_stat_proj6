@@ -106,29 +106,36 @@ xgboost_score <- XGBoost_run_default_pipeline(res$data[[3]],
   model_path = "Models/best_xgboost_model_SCORE.rds"
 )
 
-fits_xg <- list("Closest in time" = xgboost_last,
-                "Nearest" = xgboost_nearest,
-                "Highest score" = xgboost_score)
+fits_xg <- list("last" = xgboost_last,
+                "nearest" = xgboost_nearest,
+                "score" = xgboost_score)
 
 cat("Plotting prediction surfaces...\n")
-p_xgboost_last <- plot_xgboost_2d(xgboost_last, res$data[[1]]) +
-  ggtitle("Dataset: \"closest in time\"")
-p_xgboost_nearest <- plot_xgboost_2d(xgboost_nearest, res$data[[2]]) +
-  ggtitle("Dataset: \"nearest\"")
-p_xgboost_score <- plot_xgboost_2d(xgboost_score, res$data[[3]]) +
-  ggtitle("Dataset: \"highest score\"")
+p_xgboost_last <- plot_xgboost_2d(xgboost_last, res$data[[1]])
+ggsave("Figures/Models/xgboost_last.png", p_xgboost_last, width = 7, height = 4, dpi = 300)
+p_xgboost_nearest <- plot_xgboost_2d(xgboost_nearest, res$data[[2]])
+ggsave("Figures/Models/xgboost_nearest.png", p_xgboost_nearest, width = 7, height = 4, dpi = 300)
+p_xgboost_score <- plot_xgboost_2d(xgboost_score, res$data[[3]])
+ggsave("Figures/Models/xgboost_score.png", p_xgboost_score, width = 7, height = 4, dpi = 300)
 p_xgboost_combined <- (p_xgboost_last + p_xgboost_nearest + p_xgboost_score) +
   plot_layout(
     ncol = 3,
     guides = "collect",
     axes = "collect"
-  )
-ggsave("Figures/Models/xgboost_combined.png", p_xgboost_combined, width = 12, height = 6, dpi = 300)
+  ) & theme(legend.position = 'bottom')
 
 cat("Generating 3D plots...\n")
 p_xgboost_3d_last <- plot_xgboost_3d(xgboost_last, res$data[[1]])
 p_xgboost_3d_nearest <- plot_xgboost_3d(xgboost_nearest, res$data[[2]])
 p_xgboost_3d_score <- plot_xgboost_3d(xgboost_score, res$data[[3]])
+
+# Extract hyperparameters and save as table
+hp_table <- tibble(
+  filter_criterion = c("Closest in time", "Nearest", "Score"),
+  hp = purrr::map(fits_xg, extract_hyperparameters)
+) %>%
+  unnest_wider(hp)
+saveRDS(hp_table, "Data/processed/XGBoostHyperparameters.RDS")
 
 # Comparison regarding goodness of fit
 cat("Running comparison...\n")

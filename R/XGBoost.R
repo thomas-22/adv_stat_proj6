@@ -388,19 +388,8 @@ calculate_rmse_full_data <- function(model, data) {
   sqrt(mean((actual - predicted)^2))
 }
 
-save_hyperparameter_png <- function() {
-  data <- read.csv("./Models/xgboost_models_overview.csv", header = TRUE, stringsAsFactors = FALSE)
-  data <- data[, !(names(data) %in% c("objective", "Mean_RMSE", "SD_RMSE"))]
-  table_grob <- tableGrob(data, rows = NULL, theme = ttheme_minimal())
-  table_width <- convertWidth(sum(table_grob$widths), "inches", valueOnly = TRUE)
-  table_height <- convertHeight(sum(table_grob$heights), "inches", valueOnly = TRUE)
-  dpi <- 96
-  png("./Figures/Models/hyperparametertable.png",
-      width = table_width * dpi,
-      height = table_height * dpi,
-      res = dpi)
-  grid.draw(table_grob)
-  dev.off()
+extract_hyperparameters <- function(model) {
+  model$params[c("max_depth", "eta", "gamma", "subsample", "colsample_bytree", "min_child_weight")]
 }
 
 save_3dplotsasonepng <- function()
