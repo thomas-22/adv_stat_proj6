@@ -272,11 +272,10 @@ The overall performance of the GAMM model, both in terms of fitting and evaluati
 
 ## XGBoost
 
-<!-- TO DO -->
-
-After comparing the models with those trained on randomized labels, we concluded that there is some relationship between the covariates and the response, as our models slightly outperformed those trained on randomized labels. However, this relationship was very weak and not obvious or intuitive. After reviewing the hyperparameters we concluded that this was likely not noise. Although the predictive power of the XGBoost models was better than that of all other models, it was still not particularly good.
-
+The XGBoost model outperforms both GAMM models on the "Highest score" and "Nearest" dataset in predictive power but performs worse on the "Closest in time" dataset. After reviewing the hyperparameters and comparisons between models trained on the actual data and the data with randomized labels we concluded that the XGBoost models likely did not learn noise and therefore are not overfitting.
 ![Predictions of XGBoost models on the three datasets. The points are all observations within each dataset.](Figures/Models/xgboost_combined.png)
+![Hyperparameter values for the three models.](Figures/Models/hyperparametertable.png)
+One would expect a decrease in the FCM level closer to the zero point, however we did not observe this for models trained on the first two datasets. The highest score dataset shows a slight increase close to zero however the same model also predicts a high "plateau" at 33+ hours & 11.5 - 16 km. The XGBoost models show a relatively weak and very unclear effect.
 
 ```{r include=TRUE, echo=FALSE}
 #| label: tbl-rmse 
@@ -294,9 +293,9 @@ kableExtra::kable_styling(tab, font_size = 10)
 
 # Conclusion & Outlook {#sec-outlook}
 
-Due to the high level of uncertainty in the data, we were not able to show an effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
+Due to the high level of uncertainty in the data, we were not able to show a consistent effect of spatial and temporal proximity to a hunting event on the FCM levels. However, we were able to show to a certain extent that the FCM level decreases with increasing sample delay.
 
-We believe that a more rigorous recording of hunting events (i.e. timespans instead of single moments, enforcing complete timestamps) and an overall larger amount of data could lead to less uncertainty and thus a clearer result.
+We believe that a more rigorous approach to recording hunting events (e.g., tracking timespans rather than single moments and enforcing complete timestamps), coupled with a larger dataset and a more directed strategy (e.g., intentionally creating greater overlap of hunting events, movement data, and fecal samples in time and space), could reduce uncertainty and yield clearer results.
 
 \chapter*{Acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements}
@@ -334,7 +333,15 @@ Adjusted predictions for the FCM level on the three datasets. Here the GAMM is f
 :::
 
 ![Random intercept estimates on the three datasets using REML and GCV.](Figures/Models/partial_effect_feature_5.png){#fig-ri}
+## XGBoost
 
-<!-- ## Additional diagnostic plots -->
+::: {#fig-xgb layout-ncol=2}
 
-<!-- ## Deviance explained by random intercept -->
+![Closest in time.](Figures/Models/xgboost_3d_last.png)
+
+![Nearest.](Figures/Models/xgboost_3d_nearest.png)
+
+![Highest score.](Figures/Models/xgboost_3d_score.png)
+
+Predictions for the FCM level on the three datasets by the three XGBoost models. The real data are shown as black points.
+:::
