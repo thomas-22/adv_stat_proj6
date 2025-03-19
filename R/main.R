@@ -90,6 +90,7 @@ plot_partial_effects(fits, method = "save")
 # THIS WILL TAKE A LONG TIME!!!
 # Cached models are available in the Models folder.
 # -------------------------
+set.seed(42)  # in case of re-training, ensure reproducibility
 cat("Loading XGBoost models...\n")
 xgboost_last <- XGBoost_run_default_pipeline(res$data[[1]],
   tune = FALSE,
