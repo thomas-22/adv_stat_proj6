@@ -22,6 +22,8 @@ format:
         {2.3ex \@plus.2ex}%
         {\normalfont\Large\bfseries}}
       \makeatother
+      text: |
+        \usepackage[font={small, rm}]{caption}
     toc: true
     geometry:
       - top=20mm
@@ -272,11 +274,11 @@ kableExtra::kable_styling(tab, font_size = 10)
 
 ::: {#fig-xgboost_predictions layout-ncol=1}
 
-![Closest in time.](Figures/Models/xgboost_last.png)
+![Closest in time](Figures/Models/xgboost_last.png)
 
-![Nearest.](Figures/Models/xgboost_nearest.png)
+![Nearest](Figures/Models/xgboost_nearest.png)
 
-![Highest score.](Figures/Models/xgboost_score.png)
+![Highest score](Figures/Models/xgboost_score.png)
 
 Predictions of XGBoost models on the three datasets. The points are all observations within each dataset.
 :::
