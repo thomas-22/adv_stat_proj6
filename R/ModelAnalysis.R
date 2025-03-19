@@ -131,9 +131,9 @@ plot_partial_effects <- function(data, features = NULL, method = "show") {
   } else if (method == "return") {
     return(partial_effect)
   } else {
-    for (i in seq_len(nrow(fits))) {
-      filename <- sprintf("Figures/Models/partial_effect_feature_%d.png", i)
-      ggsave(filename = filename, plot = partial_effect[[i]], width = 12, height = 6, dpi = 300)
+    for (l in seq_along(features)) {
+      filename <- sprintf("Figures/Models/partial_effect_feature_%d.png", l)
+      ggsave(filename = filename, plot = partial_effect[[l]], width = 12, height = 6, dpi = 300)
     }
   }
 }

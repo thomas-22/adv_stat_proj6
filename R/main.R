@@ -62,7 +62,6 @@ save.model.data(res)
 # -------------------------
 cat("Fitting Models...\n")
 
-debugonce(fit_models)
 fits <- fit_models(df = res %>% left_join(
   expand.grid(filter_criterion = c("Closest in time", "Nearest", "Highest score"), method = c("GCV.Cp", "REML"))),
   fit.fn = fit_gamm)
