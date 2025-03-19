@@ -272,22 +272,7 @@ The overall performance of the GAMM model, both in terms of fitting and evaluati
 
 ## XGBoost
 
-The XGBoost model outperforms both GAMM models on the "Highest score" and "Nearest" dataset in predictive power but performs worse on the "Closest in time" dataset. After reviewing the hyperparameters and comparisons between models trained on the actual data and the data with randomized labels we concluded that the XGBoost models likely did not learn noise and therefore are not overfitting.
-
-<!-- ![Predictions of XGBoost models on the three datasets. The points are all observations within each dataset.](Figures/Models/xgboost_combined.png){#fig-xgboost_predictions fig-env="figure*"} -->
-
-::: {#fig-xgboost_predictions layout-ncol=1}
-
-![Closest in time.](Figures/Models/xgboost_last.png)
-
-![Nearest.](Figures/Models/xgboost_nearest.png)
-
-![Highest score.](Figures/Models/xgboost_score.png)
-
-Predictions of XGBoost models on the three datasets. The points are all observations within each dataset.
-:::
-
-One would expect a decrease in the FCM level closer to the zero point, however we did not observe this for models trained on the first two datasets. The highest score dataset shows a slight increase close to zero however the same model also predicts a high "plateau" at 33+ hours & 11.5 - 16 km. The XGBoost models show a relatively weak and very unclear effect.
+The XGBoost model outperforms both GAMM models on the "highest score" and "nearest" dataset in predictive power but performs worse on the "closest in time" dataset (see @tbl-rmse). After reviewing the hyperparameters and comparisons between models trained on the actual data and the data with randomized labels we concluded that the XGBoost models likely did not learn noise and therefore are not overfitting.
 
 ```{r include=TRUE, echo=FALSE}
 #| label: tbl-rmse 
@@ -302,6 +287,19 @@ tab <- knitr::kable(data,
                                   "RMSE"))
 kableExtra::kable_styling(tab, font_size = 10)
 ```
+
+::: {#fig-xgboost_predictions layout-ncol=1}
+
+![Closest in time.](Figures/Models/xgboost_last.png)
+
+![Nearest.](Figures/Models/xgboost_nearest.png)
+
+![Highest score.](Figures/Models/xgboost_score.png)
+
+Predictions of XGBoost models on the three datasets. The points are all observations within each dataset.
+:::
+
+We visualize the predictions of XGBoost models in @fig-xgboost_predictions. One would expect a decrease in the FCM level closer to the zero point, however we did not observe this for models trained on the first two datasets. On the "highest score" dataset we observe a slight increase close to zero, but the same model also predicts a high plateau for time differences above 33 hours and spatial distances between 11.5 and 16 km. The XGBoost models show a relatively weak and very unclear effect.
 
 # Conclusion & Outlook {#sec-outlook}
 
