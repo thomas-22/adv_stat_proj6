@@ -9,6 +9,7 @@ fit_gamm <- function(data, family = gaussian(), method = "GCV.Cp") {
   )
 }
 
+# not used
 fit_gamm_interact <- function(data, family = gaussian(), method = "GCV.Cp") {
   gam(
     ng_g ~ te(TimeDiff, Distance, k = 20) +
@@ -34,6 +35,7 @@ fit_gam <- function(data, family = gaussian(), method = "GCV.Cp", sp = NULL) {
   )
 }
 
+# not used
 fit_gam_interact <- function(data, family = gaussian(), method = "GCV.Cp", sp = NULL) {
   gam(
     ng_g ~ te(TimeDiff, Distance, k = 20) +
@@ -47,6 +49,7 @@ fit_gam_interact <- function(data, family = gaussian(), method = "GCV.Cp", sp = 
   )
 }
 
+# not used
 fit_gam_tp <- function(data, family = gaussian()) {
   gam(
     ng_g ~ s(TimeDiff, bs = "ps") + s(DistanceX, DistanceY, bs = "tp") + s(SampleDelay, bs = "ps") +
@@ -56,6 +59,7 @@ fit_gam_tp <- function(data, family = gaussian()) {
   )
 }
 
+# not used
 fig_glm <- function(data, family = gaussian()) {
   lme4::lmer(
     ng_g ~ TimeDiff + Distance + SampleDelay + DefecDay + NumOtherHunts + (1 | Deer.ID),
