@@ -319,9 +319,9 @@ As the reproductive data only contain information on a subset of the deer, we we
 
 ![Closest in time](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
 
-![Nearest](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+![Nearest](Figures/Models/nearest_GCV.Cp_diagnostic_custom.png)
 
-![Highest score](Figures/Models/last_GCV.Cp_diagnostic_custom.png)
+![Highest score](Figures/Models/Highest score_GCV.Cp_diagnostic_custom.png)
 
 Adjusted predictions for the FCM level on the three datasets. Here the GAMM is fitted using the GCV method.
 :::
