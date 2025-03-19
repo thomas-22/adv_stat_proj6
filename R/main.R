@@ -16,7 +16,6 @@ HuntEvents <- prepared_data$HuntEvents
 # Data analytics (see DataAnalysis.R)
 # -------------------------
 cat("Running analytics..\n")
-debugonce(analytics)
 analytics(data = prepared_data, method = "save")
 
 # -------------------------
