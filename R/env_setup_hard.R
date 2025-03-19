@@ -31,6 +31,7 @@ pkgs <- c("dplyr",
           "knitr",
           "kableExtra",
           "quarto",
+          "plotly",
           "tinytex")
 
 
