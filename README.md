@@ -16,7 +16,7 @@ The final Report is called Report.pdf.
 ### Restoring the environment
 
   1.  Open the repo as a new R-project.\
-  **You'll neeed R Version 4.4+ and an appropriate version of RTools!**\
+  **You'll neeed R version 4.4+ and a recent version of RTools!**\
   
   2.  Please execute the following command to install the necessary packages
   ```
