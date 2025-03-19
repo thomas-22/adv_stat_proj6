@@ -121,27 +121,25 @@ v)  Number of hunts a deer experiences before defecation (*Number of Other Hunts
 
 [^1]: Not all values between 1 and 365 were observed. As shown in @fig-samples_daily_count, faecal samples were not collected during winter.
 
-While each faecal sample can be associated with one or more hunting events prior to defecation, we do not use all possible pairings for our analysis. Suppose two hunting events occured before a deer defecated. The first hunting event occurred, say, 3 days before defecation, and the second event occurred 20 hours before defecation. According to @Huber2003, the FCM level increases as stress response, but this increase is short-term (see also @fig-fcm). If we did observe an increase of FCM level, this increase should predominantly be associated with the second hunting event. However, this assumption is only reasonable, if both hunting events had a small distance to the deer, as we expect far way hunting events to have little influence. With both temporal and spatial distance in mind, we focus on the *most relevant hunting event* for each faecal sample and propose the following definitions for this notion:
+While each faecal sample can be associated with one or more hunting events prior to defecation, we do not use all possible pairings for our analysis. Suppose two hunting events occured before a deer defecated. The first hunting event occurred, say, 3 days prior to defecation, and the second event occurred 20 hours prior to defecation. According to @Huber2003, the FCM level increases as stress response, but this increase is short-term (see also @fig-fcm). If we did observe an increase of FCM level, this increase should predominantly be associated with the second hunting event. However, this assumption is only reasonable, if both hunting events had a small distance to the deer, as we expect far way hunting events to have little influence. With both temporal and spatial distance in mind, we focus on the *most relevant hunting event* for each faecal sample and propose the following definitions for this notion:
 
 1.  *Closest in time*: Choosing the hunting event, which happened closest to 19 hours prior to the defecation event.
   This takes the findings of @Huber2003 into account, that cortisol metabolite concentrations peak around 19 hours post-stress event (see @fig-fcm).
 
 1.  *Nearest*: Choosing the observation with the shortest spatial distance between the hunting event and the deer’s interpolated position at the time of the hunting event.
 
-2.  *Highest score*: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on Time Difference (see @fig-score). The inverse square component is inspired by the inverse square law for sound intensity, spike function was inspired by the general dynamics of stress responses, incorporating insights from @Huber2003, and @Pinero2025. The observation with the highest score was selected.
+2.  *Highest score*: Introducing a scoring function to consider both spatial and temporal distance. We designed a score proportional to the inverse square of the distance and a "spike" function based on Time Difference (see @fig-score). The inverse square component is inspired by the inverse square law for sound intensity, spike function was inspired by the general dynamics of stress responses, incorporating insights from @Huber2003, and @Pinero2025. The observation with the highest score was selected. The scoring function is precisely given by
+\begin{equation*}
+  S(d, t) \propto \frac{1}{d^2} \cdot \begin{cases}
+  f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{N}(\mu, \sigma^2) &t \leq \mu \\
+  f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{Laplace}(\mu, b) &t > \mu,
+  \end{cases}
+\end{equation*}
+where $d$ is the spatial distance, $t$ the Time Difference between hunting and defecation event, while $\mu = 19$, once again incoporates @Huber2003 findings. $\sigma = 2$ and $b = 2.5$ are shape paramters.
 
 ![Score Function](Figures/Timediff_Function_impact_curve.png){#fig-score}
 
-$$ 
-S(d, t) \propto \frac{1}{d^2} \cdot \begin{cases}
-f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{N}(\mu, \sigma^2) &t \leq \mu \\
-f_\textbf{t}(t), \hspace{.1cm} \textbf{t} \sim \mathcal{Laplace}(\mu, b) &t > \mu
-\end{cases}
-$$
-
-Where $d$ is the spatial distance, $t$ the Time Difference between hunting and defecation event, while $\mu = 19$, once again incoporates @Huber2003 findings. $\sigma = 2$ and $b = 2.5$ are shape paramters.
-
-Having identified the most relevant hunting event, covariate i) can be calculated easily as the Time Difference of the hunting event and the defecation event. To obtain covariate ii) we have to take in account, that the movement data is recorded in 1-hour intervals, while the hunting events occur at arbitrary time points. Therefore we need to approximate the exact deer positions at hunting event times. We interpolate deer positions at the timestamp of each hunting event, assuming constant velocity and linear movement. Suppose a hunting event occurred at time $t$, but we only know the deer's location at time $t_0, t_1$ with $t_0 < t < t_1$. Then we approximate the location $r(t)$ of the deer at time $t$ by
+Having identified the most relevant hunting event, covariate i) can be calculated easily as the time difference between the hunting event and the defecation event. To obtain covariate ii) we have to take in account, that the movement data is recorded in 1-hour intervals, while the hunting events occur at arbitrary time points. Therefore we need to approximate the exact deer positions at hunting event times. We interpolate deer positions at the timestamp of each hunting event, assuming constant velocity and linear movement. Suppose a hunting event occurred at time $t$, but we only know the deer's location at time $t_0, t_1$ with $t_0 < t < t_1$. Then we approximate the location $r(t)$ of the deer at time $t$ by
 \begin{equation*}
   r(t) \approx r(t_0) + \frac{t - t_0}{t_1 - t_0} (r(t_1) - r(t_0)),
 \end{equation*}
@@ -203,16 +201,18 @@ The *Time Difference* and *spatial distance* are of main interest for our first 
 
 We propose a generalized additive mixed model (GAMM) to account for potentially non-linear effects of covariates and potential individual differences between the observed deer. We use the R package `mgcv` [@mgcv] to fit the models. The covariates Time Difference, Distance, Sample Delay, and Defecation Day are encoded by penalized cubic regression splines. We do not use a cyclical spline for Defecation Day, because faecal samples were not collected during winter and therefore Defecation Day is not a cyclical variable. The Number of Other Relevant Hunting Events is adopted as a linear effect. We further introduce a random intercept for each deer.
 
-For the distributional assumption, we use the Gamma family with a log link. Since the FCM level is non-negative, we expect the Gamma assumption to more appropriate than Gaussian. A full specification of our GAMM model is as follows. Let $i = 1,\dots,N$ be the indices of the deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer \begin{align*}
-\textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim} \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
-\mu_{ij} &= \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
-\eta_{ij} &= \beta_0 \\
-&+ \beta_1 \textup{Number of Other Hunts}_{ij} \\
-&+ f_1(\textup{Time Difference}_{ij}) + f_2(\textup{Distance}_{ij}) \\
-&+ f_3(\textup{Sample Delay}_{ij}) + f_4(\textup{Defecation Day}_{ij}) \\
-&+ \gamma_{i}, \\
-\gamma_i &\overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_\gamma^2),
-\end{align*} where $f_1, f_2, f_3, f_4$ are penalized cubic regression splines, $\sigma_\gamma^2 > 0$, and $\nu > 0$.
+For the distributional assumption, we use the Gamma family with a log link. Since the FCM level is non-negative, we expect the Gamma assumption to more appropriate than Gaussian. A full specification of our GAMM model is as follows. Let $i = 1,\dots,N$ be the indices of the deer and $j = 1,\dots,n_i$ be the indices of faecal samples for each deer
+\begin{align*}
+  \textup{FCM}_{ij} &\overset{\mathrm{iid}}{\sim} \mathcal{Ga}\left( \nu, \frac{\nu}{\mu_{ij}} \right) \quad\text{for}\; j = 1,\dots,n_i, \\
+  \mu_{ij} &= \mathbb{E}(\textup{FCM}_{ij}) = \exp(\eta_{ij}), \\
+  \eta_{ij} &= \beta_0 \\
+  &+ \beta_1 \textup{Number of Other Hunts}_{ij} \\
+  &+ f_1(\textup{Time Difference}_{ij}) + f_2(\textup{Distance}_{ij}) \\
+  &+ f_3(\textup{Sample Delay}_{ij}) + f_4(\textup{Defecation Day}_{ij}) \\
+  &+ \gamma_{i}, \\
+  \gamma_i &\overset{\mathrm{iid}}{\sim} \mathcal{N}(0, \sigma_\gamma^2),
+\end{align*}
+where $f_1, f_2, f_3, f_4$ are penalized cubic regression splines, $\sigma_\gamma^2 > 0$, and $\nu > 0$.
 
 Our model has two major limitations. First, it does not account for potential interactions between the covariates. Second, the random intercept term can only capture different base stress levels, but not differences in stress response. However, given the limited data, one must trade off between model complexity and stability in estimation. In fact, our current model already exhibits instability with respect to estimation procedures, which we discuss in @sec-results.
 
