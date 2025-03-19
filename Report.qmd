@@ -246,7 +246,7 @@ Similar to the smooth and linear effects, estimation of the deer-specific random
 
 ## XGBoost
 
-The XGBoost model outperforms both GAMM models on the "highest score" and "nearest" dataset in predictive power but performs worse on the "closest in time" dataset (see @tbl-rmse). After reviewing the hyperparameters and comparisons between models trained on the actual data and the data with randomized labels we concluded that the XGBoost models likely did not learn noise and therefore are not overfitting.
+The XGBoost model outperforms both GAMM models on the "highest score" and "nearest" dataset in predictive power but performs worse on the "closest in time" dataset (see @tbl-rmse). After reviewing the hyperparameters (see @tbl-xgboost_hp) and comparisons between models trained on the actual data and the data with randomized labels we concluded that the XGBoost models likely did not learn noise and therefore are not overfitting.
 
 ```{r include=TRUE, echo=FALSE}
 #| label: tbl-rmse 
@@ -318,11 +318,14 @@ Adjusted predictions for the FCM level on the three datasets. Here the GAMM is f
 
 ![Random intercept estimates on the three datasets using REML and GCV.](Figures/Models/partial_effect_feature_5.png){#fig-ri}
 
+\newpage
 ## XGBoost
+
+![3D Visualization of predictions for the FCM level on the three datasets by the XGBoost models. The observed data are shown as black points.](Figures/Models/combined_xgboost_plots.png)
 
 ```{r include=TRUE, echo=FALSE}
 #| label: tbl-xgboost_hp 
-#| tbl-cap: "Hyperparameters of XGBoost models on the three datasets."
+#| tbl-cap: "Tuned hyperparameters for the XGBoost models."
 data <- readRDS("Data/processed/XGBoostHyperparameters.RDS")
 tab <- knitr::kable(data, 
                     format = "latex", 
@@ -339,7 +342,3 @@ tab <- knitr::kable(data,
                     escape = FALSE)
 kableExtra::kable_styling(tab, font_size = 10)
 ```
-
-![3D Visualization of the XGBoost models.](Figures/Models/combined_xgboost_plots.png)
-
-Predictions for the FCM level on the three datasets by the three XGBoost models. The real data are shown as black points.
