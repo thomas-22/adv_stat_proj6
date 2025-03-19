@@ -220,7 +220,7 @@ Our model has two major limitations. First, it does not account for potential in
 
 @Chen2016 introduced XGBoost as a machine learning algorithm that improves prediction accuracy by building an ensemble of decision trees sequentially. Each new tree corrects the errors made by previous trees. XGBoost minimizes a loss function using gradient boosting (hence the name) by iteratively adding trees that best reduce the residual errors. Simultaneously, complexity gets penalized through regularization to prevent overfitting. A major feature of XGBoost is that it doesn't require specifying a parametric relationship between target and explanatory variables.
 
-We propose a xgboost model using the R package `xgboost`, choosing *spatial distance* and *Time Difference* as covariates. To find the best fitting model for each dataset (see @tbl-datasets), we tune hyperparamters of the proposed xgboost model. We choose to tune the following paramters, using randomized grid search [@Bergstra2012]:
+We propose a xgboost model using the R package `xgboost` [@ChenXgboost], choosing *spatial distance* and *Time Difference* as covariates. To find the best fitting model for each dataset (see @tbl-datasets), we tune hyperparamters of the proposed xgboost model. We choose to tune the following paramters, using randomized grid search [@Bergstra2012]:
 
 -   *maximum depth*:  Controls the maximum depth of each decision tree, determining how complex each tree can become.
 -   $\eta$:  The learning rate, controls how much each new tree contributes to the ensemble, affecting how quickly or cautiously the model learns.
