@@ -121,7 +121,7 @@ v)  Number of hunts a deer experiences before defecation (*Number of Other Hunts
 
 [^1]: Not all values between 1 and 365 were observed. As shown in @fig-samples_daily_count, faecal samples were not collected during winter.
 
-As each sample is associated with one or more hunting event, the main challenge is to identify the most relevant hunting event. We propose three different criterions to identify which hunting event is the most relevant one:
+While each faecal sample can be associated with one or more hunting events prior to defecation, we do not use all possible pairings for our analysis. Suppose two hunting events occured before a deer defecated. The first hunting event occurred, say, 3 days before defecation, and the second event occurred 20 hours before defecation. According to @Huber2003, the FCM level increases as stress response, but this increase is short-term (see also @fig-fcm). If we did observe an increase of FCM level, this increase should predominantly be associated with the second hunting event. However, this assumption is only reasonable, if both hunting events had a small distance to the deer, as we expect far way hunting events to have little influence. With both temporal and spatial distance in mind, we focus on the *most relevant hunting event* for each faecal sample and propose the following definitions for this notion:
 
 1.  *Closest in time*: Choosing the hunting event, which happened closest to 19 hours prior to the defecation event.
   This takes the findings of @Huber2003 into account, that cortisol metabolite concentrations peak around 19 hours post-stress event (see @fig-fcm).
