@@ -22,7 +22,11 @@ The final Report is called Report.pdf.
   ```
   renv::restore()
   ```
-  3. If ...
+  3. If the restoring does not work, you can run
+  ```
+  source("R/env_setup_hard.R")
+  ``` 
+  WARNING: this installs many packages directly to your machine!
   
 ### Run the models
 
